@@ -6,6 +6,19 @@
         android:label="dialer_app"
         android:icon="@mipmap/ic_launcher">
 
+       <service android:name="com.example.flutter_voip_kit.VoipConnectionService"
+           android:label="VoipConnectionService"
+           android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE">
+       </service>
+
+       <service
+           android:name=".services.MyCallScreeningService"
+           android:permission="android.permission.BIND_SCREENING_SERVICE">
+           <intent-filter>
+               <action android:name="android.telecom.CallScreeningService" />
+           </intent-filter>
+       </service>
+
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
@@ -32,6 +45,20 @@
               />
 
             <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <action android:name="android.intent.action.DIAL" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="tel" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.DIAL" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <intent-filter>
                 <action android:name="android.intent.action.PHONE_STATE" />
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -50,6 +77,14 @@
     <uses-permission android:name="android.permission.WRITE_CONTACTS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="true" />
 
 </manifest>
 

@@ -1,193 +1,247 @@
+
 // @dart=2.9
-import 'dart:async';
+import 'dart:developer' as dev;
+import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_phone_state/extensions_static.dart';
-import 'package:flutter_phone_state/flutter_phone_state.dart';
-import 'package:flutter_phone_state/phone_event.dart';
+import 'dart:async';
 
-
+import 'package:flutter_voip_kit/call.dart';
+import 'package:flutter_voip_kit/flutter_voip_kit.dart';
+import 'package:uuid/uuid.dart';
 
 void main() {
   runApp(MyApp());
 }
 
-///
-/// The example app has the ability to initiate a call from within the app; otherwise, it lists all
-/// calls with their state
-///
 class MyApp extends StatefulWidget {
   @override
   _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  List<RawPhoneEvent> _rawEvents;
-  List<PhoneCallEvent> _phoneEvents;
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: HomePage(),
+    );
+  }
+}
 
-  /// The result of the user typing
-  String _phoneNumber;
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  List<Call> calls = [];
+  bool hasPermission = false;
+  bool callShouldFail = false;
 
   @override
   void initState() {
     super.initState();
-    _phoneEvents = _accumulate(FlutterPhoneState.phoneCallEvents);
-    _rawEvents = _accumulate(FlutterPhoneState.rawPhoneEvents);
-  }
 
-  List<R> _accumulate<R>(Stream<R> input) {
-    final items = <R>[];
-    input.forEach((item) {
-      if (item != null) {
-        setState(() {
-          items.add(item);
-        });
-      }
+    FlutterVoipKit.init(
+        callStateChangeHandler: callStateChangeHandler,
+        callActionHandler: callActionHandler);
+
+    checkPermissionsUntilGranted();
+
+    //listens to when call list is updated
+    FlutterVoipKit.callListStream.listen((allCalls) {
+      setState(() {
+        calls = allCalls;
+      });
     });
-    return items;
   }
 
-  /// Extracts a list of phone calls from the accumulated events
-  Iterable<PhoneCall> get _completedCalls =>
-      Map.fromEntries(_phoneEvents.reversed.map((PhoneCallEvent event) {
-        return MapEntry(event.call.id, event.call);
-      })).values.where((c) => c.isComplete).toList();
+  Future<bool> callStateChangeHandler(call) async {
+    dev.log("widget call state changed lisener: $call");
+    setState(
+            () {}); //calls states have been updated, setState so ui can reflect that
+
+    //it is important we perform logic and return true/false for every CallState possible
+    switch (call.callState) {
+      case CallState
+          .connecting: //simulate connection time of 3 seconds for our VOIP service
+        dev.log("--------------> Call connecting");
+        await Future.delayed(const Duration(seconds: 3));
+        return true;
+      case CallState
+          .active: //here we would likely begin playig audio out of speakers
+        dev.log("--------> Call active");
+        return true;
+      case CallState.ended: //end audio, disconnect
+        dev.log("--------> Call ended");
+        await Future.delayed(const Duration(seconds: 1));
+        return true;
+      case CallState.failed: //cleanup
+        dev.log("--------> Call failed");
+        return true;
+      case CallState.held: //pause audio for specified call
+        dev.log("--------> Call held");
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  Future<bool> callActionHandler(Call call, CallAction action) async {
+    dev.log("widget call action handler: $call");
+    setState(
+            () {}); //calls states have been updated, setState so ui can reflect that
+
+    //it is important we perform logic and return true/false for every CallState possible
+    switch (action) {
+      case CallAction.muted:
+      //EXAMPLE: here we would perform the logic on our end to mute the audio streams between the caller and reciever
+        return true;
+        break;
+      default:
+        return false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('Phone Call State Example App'),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Flutter Voip Kit Example'),
+      ),
+      body: !hasPermission
+          ? Center(
+        child: ElevatedButton(
+          child: Text("Grant Phone Permissions"),
+          onPressed: () {
+            FlutterVoipKit.checkPermissions(openSettings: true)
+                .then((value) => setState(() {
+              hasPermission = value;
+            }));
+          },
         ),
-        body: ListView(
-          padding: EdgeInsets.all(10),
+      )
+          : SafeArea(
+        child: Column(
           children: [
-            Row(children: [
-              Flexible(
-                  flex: 1,
-                  child: TextField(
-                    onChanged: (v) => _phoneNumber = v,
-                    decoration: InputDecoration(labelText: "Phone number"),
-                  )),
-              MaterialButton(
-                onPressed: () => _initiateCall(),
-                child: Text("Make Call", style: TextStyle(color: Colors.white)),
-                color: Colors.blue,
+            ElevatedButton(
+              child: Text("Simlualate incoming call"),
+              onPressed: () {
+                Future.delayed(const Duration(seconds: 2)).then((value) {
+                  FlutterVoipKit.reportIncomingCall(
+                      handle: "${Random().nextInt(10)}" * 9,
+                      uuid: Uuid().v4());
+                });
+              },
+            ),
+            ElevatedButton(
+              child: Text("Start Call outgoing call"),
+              onPressed: () {
+                FlutterVoipKit.startCall(
+                  "${Random().nextInt(10)}" * 9,
+                );
+              },
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemBuilder: (context, index) {
+                  final call = calls[index];
+                  return Container(
+                    color: call.callState == CallState.active
+                        ? Colors.green[300]
+                        : call.callState == CallState.held
+                        ? Colors.yellow[800]
+                        : (call.callState == CallState.connecting
+                        ? Colors.yellow[200]
+                        : Colors.red),
+                    padding: EdgeInsets.all(16.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Text("Number: ${call.address}"),
+                        ),
+                        if (call.callState == CallState.connecting)
+                          CircularProgressIndicator(),
+                        if (call.callState != CallState.connecting &&
+                            call.callState != CallState.incoming)
+                          ElevatedButton(
+                            onPressed: () {
+                              call.hold(
+                                  onHold: !(call.callState ==
+                                      CallState.held));
+                            },
+                            child: Text(call.callState == CallState.held
+                                ? "Resume"
+                                : "Hold"),
+                          ),
+                        if (call.callState == CallState.active) ...[
+                          IconButton(
+                            icon: const Icon(
+                              Icons.phone_disabled_sharp,
+                              size: 30,
+                              color: Colors.red,
+                            ),
+                            onPressed: () {
+                              call.end();
+                            },
+                          ),
+                          IconButton(
+                              icon: Icon(
+                                call.muted ? Icons.mic : Icons.mic_off,
+                                size: 30,
+                              ),
+                              onPressed: () {
+                                call.mute(muted: !call.muted);
+                              })
+                        ]
+                      ],
+                    ),
+                  );
+                },
+                itemCount: calls.length,
               ),
-            ]),
-            verticalSpace,
-            _title("Current Calls"),
-            for (final call in FlutterPhoneState.activeCalls)
-              _CallCard(phoneCall: call),
-            if (FlutterPhoneState.activeCalls.isEmpty)
-              Center(child: Text("No Active Calls")),
-            _title("Call History"),
-            for (final call in _completedCalls)
-              _CallCard(
-                phoneCall: call,
-              ),
-            if (_completedCalls.isEmpty)
-              Center(child: Text("No Completed Calls")),
-            verticalSpace,
-            _title("Raw Event History"),
-            if (_rawEvents.isNotEmpty)
-              Padding(
-                padding: EdgeInsets.all(10),
-                child: Table(
-                  children: [
-                    TableRow(children: [
-                      Text(
-                        "id",
-                        style: listHeaderStyle,
-                        maxLines: 1,
-                      ),
-                      Text("number", style: listHeaderStyle),
-                      Text("event", style: listHeaderStyle),
-                    ]),
-                    for (final event in _rawEvents)
-                      TableRow(children: [
-                        _cell(truncate(event.id, 8)),
-                        _cell(event.phoneNumber),
-                        _cell(value(event.type)),
-                        //TODO
-                      ]),
-                  ],
-                ),
-              ),
-            if (_rawEvents.isEmpty) Center(child: Text("No Raw Events")),
+            )
           ],
         ),
       ),
     );
   }
 
-  Widget _cell(text) {
-    return Padding(
-        padding: EdgeInsets.all(5),
-        child: Text(
-          text?.toString() ?? '-',
-          maxLines: 1,
-        ));
-  }
+  void checkPermissionsUntilGranted() {
+    Future.delayed(const Duration(milliseconds: 100)).then((value) async {
+      //delay to wait for init state to be done
+      hasPermission =
+      await FlutterVoipKit.checkPermissions(openSettings: false);
+      bool first = true; //dont bring to settings first time
+      while (!hasPermission) {
+        await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("No Permissions"),
+              content: Text(
+                  "You allow this app to use your phone and add it to phone list in settings."),
+              actions: <Widget>[
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text("Ok"),
+                )
+              ],
+            );
+          },
+        );
 
-  Widget _title(text) {
-    return Padding(
-        padding: EdgeInsets.only(bottom: 10, top: 5),
-        child: Text(text?.toString() ?? '-', maxLines: 1, style: headerStyle));
-  }
-
-  _initiateCall() {
-    if (_phoneNumber?.isNotEmpty == true) {
-      setState(() {
-        FlutterPhoneState.startPhoneCall(_phoneNumber);
-      });
-    }
-  }
-}
-
-class _CallCard extends StatelessWidget {
-  final PhoneCall phoneCall;
-
-  const _CallCard({Key key, this.phoneCall}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-          dense: true,
-          leading: Icon(
-              phoneCall.isOutbound ? Icons.arrow_upward : Icons.arrow_downward),
-          title: Text(
-            "+${phoneCall.phoneNumber ?? "Unknown number"}: ${value(phoneCall.status)}",
-            overflow: TextOverflow.visible,
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (phoneCall.id?.isNotEmpty == true)
-                Text("id: ${truncate(phoneCall.id, 12)}"),
-              for (final event in phoneCall.events)
-                Text(
-                  "- ${value(event.status) ?? "-"}",
-                  maxLines: 1,
-                ),
-            ],
-          ),
-          trailing: FutureBuilder<PhoneCall>(
-            builder: (context, snap) {
-              if (snap.hasData && snap.data?.isComplete == true) {
-                return Text("${phoneCall.duration?.inSeconds ?? '?'}s");
-              } else {
-                return CircularProgressIndicator();
-              }
-            },
-            future: Future.value(phoneCall.done),
-          )),
-    );
+        hasPermission =
+        await FlutterVoipKit.checkPermissions(openSettings: !first);
+        first = false;
+        if (!hasPermission) {
+          await Future.delayed(const Duration(seconds: 1));
+        }
+      }
+      setState(() {});
+    });
   }
 }
-
-const headerStyle = TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
-const listHeaderStyle = TextStyle(fontWeight: FontWeight.bold);
-const verticalSpace = SizedBox(height: 10);

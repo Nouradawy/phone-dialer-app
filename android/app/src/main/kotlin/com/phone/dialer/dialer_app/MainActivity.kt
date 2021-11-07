@@ -6,15 +6,22 @@ import android.os.BatteryManager
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.os.Bundle
+import android.telecom.Call
+import android.telecom.CallScreeningService
+
 
 
 import androidx.annotation.NonNull
+
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
+
+public
 class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
@@ -44,10 +51,21 @@ class MainActivity : FlutterActivity() {
 
 
     private val CHANNEL = "ReadBatteryMethod"
+    private val RejectCall = "RejectCallMethod"
 
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+
+
+       fun handlePhoneCall(
+           response: CallScreeningService.CallResponse.Builder
+       ):CallScreeningService.CallResponse.Builder {
+            response.apply { setRejectCall(true) }
+           return response
+       }
+
 
 
         fun GetBatteryLevel(): Int {
@@ -63,17 +81,28 @@ class MainActivity : FlutterActivity() {
             return batteryLevel
         }
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
+//        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
+//            // Note: this method is invoked on the main thread.
+//            call, result ->
+//            if (call.method == "GetBatteryLevel") {
+//                val batteryLevel = GetBatteryLevel()
+//
+//                if (batteryLevel != -1) {
+//                    result.success(batteryLevel)
+//                } else {
+//                    result.error("UNAVAILABLE", "Battery level not available.", null)
+//                }
+//            } else {
+//                result.notImplemented()
+//            }
+//        }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, RejectCall).setMethodCallHandler {
             // Note: this method is invoked on the main thread.
             call, result ->
-            if (call.method == "GetBatteryLevel") {
-                val batteryLevel = GetBatteryLevel()
-
-                if (batteryLevel != -1) {
-                    result.success(batteryLevel)
-                } else {
-                    result.error("UNAVAILABLE", "Battery level not available.", null)
-                }
+            if (call.method == "RejectCallA") {
+                val response = CallScreeningService.CallResponse.Builder()
+                result.success(handlePhoneCall(response.build()))
+                result.error("unavilable","faild to Reject",null)
             } else {
                 result.notImplemented()
             }
@@ -81,4 +110,8 @@ class MainActivity : FlutterActivity() {
 
 
     }
+
+
+
 }
+
