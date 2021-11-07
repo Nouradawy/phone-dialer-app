@@ -40,9 +40,11 @@ dependencies:
   conditional_builder_null_safety: ^0.0.4
 #  flutter_phone_state: ^0.5.8
   hexcolor: ^2.0.5
-  firebase_messaging: ^11.0.0
+#  firebase_messaging: ^11.0.0
   flutter_voip_kit: ^0.0.6
 
+  flutter_phone_state:
+    path: assets/packages/flutter_phone_state
 
 dev_dependencies:
   flutter_test:
