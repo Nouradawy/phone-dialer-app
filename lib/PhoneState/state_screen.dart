@@ -6,12 +6,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
-
-import 'dart:async';
-
 import 'package:flutter_phone_state/extensions_static.dart';
 import 'package:flutter_phone_state/flutter_phone_state.dart';
 import 'package:flutter_phone_state/phone_event.dart';
+
+import 'dart:async';
+
+
 import 'package:flutter_voip_kit/call_manager.dart';
 
 import 'package:hexcolor/hexcolor.dart';
@@ -30,8 +31,8 @@ class PhoneStateScreen extends StatefulWidget {
 }
 
 class _PhoneStateScreenState extends State<PhoneStateScreen> {
-  List<RawPhoneEvent>? _rawEvents;
-  List<PhoneCallEvent>? _phoneEvents;
+  late List<RawPhoneEvent> _rawEvents;
+  late List<PhoneCallEvent> _phoneEvents;
   List<Call> calls = [];
   bool hasPermission = false;
   bool callShouldFail = false;
@@ -40,21 +41,13 @@ class _PhoneStateScreenState extends State<PhoneStateScreen> {
   bool Endcall =false;
   static const RejectCall = MethodChannel("RejectCallMethod");
 
-  Future<void> RejectCallA() async{
-    try{
-      await RejectCall.invokeMethod("RejectCallA");
-
-    } on PlatformException catch (e){
-      print("Error on Rejection: ${e.message}");
-
-    }
-  }
-
   @override
   void initState() {
     super.initState();
     _phoneEvents = _accumulate(FlutterPhoneState.phoneCallEvents);
     _rawEvents = _accumulate(FlutterPhoneState.rawPhoneEvents);
+
+
     FlutterVoipKit.init(
         callStateChangeHandler: callStateChangeHandler,
         callActionHandler: callActionHandler);
@@ -114,7 +107,7 @@ class _PhoneStateScreenState extends State<PhoneStateScreen> {
   }
 
 
-  List<R> _accumulate<R>(Stream<R> input) {
+  List<R> _accumulate<R>(Stream<R?> input) {
     final items = <R>[];
     input.forEach((item) {
       if (item != null) {
@@ -126,13 +119,13 @@ class _PhoneStateScreenState extends State<PhoneStateScreen> {
     return items;
   }
 
-  Iterable<PhoneCall> get _completedCalls =>
-      Map.fromEntries(_phoneEvents!.reversed.map((PhoneCallEvent event) {
-        return MapEntry(event.call.id, event.call);
-      })).values.where((c) => c.isComplete).toList();
+  // Iterable<PhoneCall> get _completedCalls => Map.fromEntries(_phoneEvents.reversed.map((PhoneCallEvent event) {
+  //   return MapEntry(event.call.id, event.call);
+  // })).values.where((c) => c.isComplete).toList();
 
 
   Widget build(BuildContext context) {
+    // RejectCallA();
     return Scaffold(
       backgroundColor: HexColor("#010A0A"),
       body: SafeArea(
@@ -170,7 +163,7 @@ class _PhoneStateScreenState extends State<PhoneStateScreen> {
                                 color: HexColor("#D1D1D1"),
                                 size: 70,),
                             ]),
-                        SizedBox(height: 10,),
+                        const SizedBox(height: 10,),
                         Stack(
                           children: [
                             Row(
@@ -218,7 +211,7 @@ class _PhoneStateScreenState extends State<PhoneStateScreen> {
                         for (final call in FlutterPhoneState.activeCalls)
                           GetPhoneNumber(phoneCall: call),
                         if (FlutterPhoneState.activeCalls.isEmpty)
-                          Center(child: Text("No Active Calls")),
+                          Center(child: const Text("No Active Calls")),
                       ],
                     ),
 
@@ -273,6 +266,15 @@ class _PhoneStateScreenState extends State<PhoneStateScreen> {
                               // Endcall = !Endcall ;
                               // print(Endcall.toString());
                               // FlutterVoipKit.endCall(uuid);
+                            Future<void> RejectCallA() async{
+                              try{
+                                await RejectCall.invokeMethod("RejectCallA");
+
+                              } on PlatformException catch (e){
+                                print("Error on Rejection: ${e.message}");
+
+                              }
+                            }
                               RejectCallA();
 
                           },
