@@ -38,13 +38,13 @@ dependencies:
   bloc: ^7.1.0
   flutter_bloc: ^7.1.0
   conditional_builder_null_safety: ^0.0.4
-#  flutter_phone_state: ^0.5.8
+#  flutter_phone_state: ^0.5.9
   hexcolor: ^2.0.5
 #  firebase_messaging: ^11.0.0
   flutter_voip_kit: ^0.0.6
-
+  permission_handler: ^8.2.6
   flutter_phone_state:
-    path: assets/packages/flutter_phone_state
+    path: assets/packages/flutter_phone_state-0.5.9
 
 dev_dependencies:
   flutter_test:

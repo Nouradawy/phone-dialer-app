@@ -2,15 +2,17 @@ package com.phone.dialer.dialer_app.services
 
 import android.telecom.Call
 import android.telecom.CallScreeningService
+import com.phone.dialer.dialer_app.End_Call
+import com.phone.dialer.dialer_app.RejectCall
 import com.phone.dialer.dialer_app.commons.FORBIDDEN_PHONE_CALL_NUMBER
 import com.phone.dialer.dialer_app.commons.events.MessageEvent
 import com.phone.dialer.dialer_app.commons.extensions.parseCountryCode
 import com.phone.dialer.dialer_app.commons.extensions.removeTelPrefix
 import com.phone.dialer.dialer_app.commons.utils.NotificationManagerImpl
+import io.flutter.plugin.common.MethodChannel
 import org.greenrobot.eventbus.EventBus
 
 class MyCallScreeningService : CallScreeningService() {
-
     private val notificationManager = NotificationManagerImpl()
 
     override fun onScreenCall(callDetails: Call.Details) {
@@ -19,20 +21,26 @@ class MyCallScreeningService : CallScreeningService() {
         response = handlePhoneCall(response,phoneNumber)
 
         respondToCall(callDetails, response.build())
+        End_Call = false
+
     }
+
+
 
     private fun handlePhoneCall(
             response: CallResponse.Builder,
             phoneNumber: String
     ): CallResponse.Builder {
-
             response.apply {
-                setRejectCall(true)
-                setDisallowCall(true)
-                setSkipCallLog(false)
-                //
-                displayToast(String.format("Rejected call from %s", phoneNumber))
+                if((End_Call)){
+                    setRejectCall(true)
+                    setDisallowCall(true)
+                    setSkipNotification(true)
+                    //
+                    displayToast(String.format("Rejected call from %s", phoneNumber))
+                }
             }
+
         return response
     }
 

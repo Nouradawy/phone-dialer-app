@@ -6,6 +6,7 @@ import com.phone.dialer.dialer_app.commons.events.UiEvent
 
 abstract class BaseActivity : AppCompatActivity() {
 
+
     /**
      * Event that can be received in every activity that extends [BaseActivity]
      */

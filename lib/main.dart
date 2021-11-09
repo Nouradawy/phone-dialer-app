@@ -1,13 +1,15 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'Constants/constants.dart';
 import 'Cubit/cubit.dart';
 import 'PhoneState/state_screen.dart';
 import 'home.dart';
 
-void main() {
+
+main() {
 
   Bloc.observer = MyBlocObserver();
   WidgetsFlutterBinding.ensureInitialized();

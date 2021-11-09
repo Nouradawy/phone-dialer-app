@@ -33,13 +33,26 @@ class PhoneStateScreen extends StatefulWidget {
 class _PhoneStateScreenState extends State<PhoneStateScreen> {
   late List<RawPhoneEvent> _rawEvents;
   late List<PhoneCallEvent> _phoneEvents;
-  List<Call> calls = [];
-  bool hasPermission = false;
-  bool callShouldFail = false;
-  String? phoneid;
-  late final String uuid;
-  bool Endcall =false;
+
+
+  bool EndCallisActive = false;
   static const RejectCall = MethodChannel("RejectCallMethod");
+
+
+  Future<void> RejectCallA() async{
+    setState(() {
+      EndCallisActive = !EndCallisActive ;
+    });
+
+    print(EndCallisActive.toString());
+      await RejectCall.invokeMethod("EndCall").then((value) {
+        print(value.toString());
+      }).catchError((error) {
+        print(error.toString());
+      });
+
+  }
+
 
   @override
   void initState() {
@@ -47,65 +60,7 @@ class _PhoneStateScreenState extends State<PhoneStateScreen> {
     _phoneEvents = _accumulate(FlutterPhoneState.phoneCallEvents);
     _rawEvents = _accumulate(FlutterPhoneState.rawPhoneEvents);
 
-
-    FlutterVoipKit.init(
-        callStateChangeHandler: callStateChangeHandler,
-        callActionHandler: callActionHandler);
-
-    FlutterVoipKit.callListStream.listen((allCalls) {
-      setState(() {
-        calls = allCalls;
-      });
-    });
   }
-
-  Future<bool> callStateChangeHandler(call) async {
-    dev.log("widget call state changed lisener: $call");
-    setState(
-            () {}); //calls states have been updated, setState so ui can reflect that
-
-    //it is important we perform logic and return true/false for every CallState possible
-    switch (call.callState) {
-      case CallState
-          .connecting: //simulate connection time of 3 seconds for our VOIP service
-        dev.log("--------------> Call connecting");
-        await Future.delayed(const Duration(seconds: 3));
-        return true;
-      case CallState
-          .active: //here we would likely begin playig audio out of speakers
-        dev.log("--------> Call active");
-        return true;
-      case CallState.ended: //end audio, disconnect
-        dev.log("--------> Call ended");
-        await Future.delayed(const Duration(seconds: 1));
-        return true;
-      case CallState.failed: //cleanup
-        dev.log("--------> Call failed");
-        return true;
-      case CallState.held: //pause audio for specified call
-        dev.log("--------> Call held");
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  Future<bool> callActionHandler(Call call, CallAction action) async {
-    dev.log("widget call action handler: $call");
-    setState(
-            () {}); //calls states have been updated, setState so ui can reflect that
-
-    //it is important we perform logic and return true/false for every CallState possible
-    switch (action) {
-      case CallAction.muted:
-      //EXAMPLE: here we would perform the logic on our end to mute the audio streams between the caller and reciever
-        return true;
-        break;
-      default:
-        return false;
-    }
-  }
-
 
   List<R> _accumulate<R>(Stream<R?> input) {
     final items = <R>[];
@@ -124,6 +79,7 @@ class _PhoneStateScreenState extends State<PhoneStateScreen> {
   // })).values.where((c) => c.isComplete).toList();
 
 
+  @override
   Widget build(BuildContext context) {
     // RejectCallA();
     return Scaffold(
@@ -144,7 +100,7 @@ class _PhoneStateScreenState extends State<PhoneStateScreen> {
                     ),
                     child: Column(
                       children: [
-                        SizedBox(height: 120,),
+                        const SizedBox(height: 120,),
                         Stack(
                             alignment: AlignmentDirectional.center,
                             children:[
@@ -263,20 +219,9 @@ class _PhoneStateScreenState extends State<PhoneStateScreen> {
                             backgroundColor: HexColor("#FC5757"),
                             child:Image.asset("assets/Images/call_end.png",scale: 3.5,),),
                           onTap: (){
-                              // Endcall = !Endcall ;
-                              // print(Endcall.toString());
+
                               // FlutterVoipKit.endCall(uuid);
-                            Future<void> RejectCallA() async{
-                              try{
-                                await RejectCall.invokeMethod("RejectCallA");
-
-                              } on PlatformException catch (e){
-                                print("Error on Rejection: ${e.message}");
-
-                              }
-                            }
                               RejectCallA();
-
                           },
                         ),
                         const SizedBox(width: 165,),
@@ -306,33 +251,9 @@ class _PhoneStateScreenState extends State<PhoneStateScreen> {
     );
 
   }
-
-  _initiateCall() {
-      setState(() {
-        FlutterPhoneState.startPhoneCall("0233841909");
-      });
-  }
-  Future CallsHandel({required final PhoneCall phoneCall}) async {
-    print("End call button :   "+Endcall.toString());
-    if (phoneCall.status == PhoneCallStatus.ringing) {
-      // phoneCall.eventStream;
-      phoneid = "${truncate(phoneCall.id, 12)}";
-      uuid=Uuid().v4();
-      print("uuid on Creation :  $uuid");
-      final call = Call(
-          address: phoneid.toString(),
-          outgoing: false,
-          callState: CallState.incoming,
-          uuid:uuid,
-      );
-      CallManager().addCall(call);
-      await callStateChangeHandler(call..callState = CallState.incoming);
-
-    }
-  }
   Widget GetPhoneNumber({required final PhoneCall phoneCall}) {
+    // if (phoneCall.status == PhoneCallStatus.ringing) {}
 
-    CallsHandel(phoneCall: phoneCall);
     return Column(
       children: [
         Text("${phoneCall.phoneNumber ?? "Unknown number"}",style: TextStyle(
@@ -352,16 +273,5 @@ class _PhoneStateScreenState extends State<PhoneStateScreen> {
 
 }
 
-
-// class _CallCard extends StatelessWidget {
-//   final PhoneCall? phoneCall;
-//
-//   const _CallCard({Key? key, this.phoneCall}) : super(key: key);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Text("+${phoneCall?.phoneNumber ?? "Unknown number"}: ${value(phoneCall?.status)}");
-//   }
-// }
 
 

@@ -84,14 +84,14 @@ class CapabilitiesRequestorImpl : CapabilitiesRequestor {
     private fun displayCallScreeningPermissionDialog(positiveButtonHandler: (() -> Unit)?) {
         activityReference?.get()?.let {
             AlertDialog.Builder(it)
-                    .setTitle(R.string.global_message_title)
-                    .setMessage(R.string.global_call_screening_required_message)
-                    .setPositiveButton(android.R.string.ok) { _, _ ->
-                        positiveButtonHandler?.invoke()
-                    }
-                    .setNegativeButton(android.R.string.cancel, { dialog, item -> })
-                    .create()
-                    .show()
+                .setTitle(R.string.global_message_title)
+                .setMessage(R.string.global_call_screening_required_message)
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    positiveButtonHandler?.invoke()
+                }
+                .setNegativeButton(android.R.string.cancel, { dialog, item -> })
+                .create()
+                .show()
         }
     }
 
