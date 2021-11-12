@@ -37,12 +37,16 @@ class _PhoneStateScreenState extends State<PhoneStateScreen> {
 
   bool EndCallisActive = false;
   static const RejectCall = MethodChannel("RejectCallMethod");
+  static const onpressed = BasicMessageChannel<dynamic>("onpressedcall", JSONMessageCodec());
 
 
   Future<void> RejectCallA() async{
     setState(() {
       EndCallisActive = !EndCallisActive ;
     });
+// Send message to platform and receive reply.
+    final String reply = await onpressed.send('true');
+    print(reply);
 
     print(EndCallisActive.toString());
       await RejectCall.invokeMethod("EndCall").then((value) {

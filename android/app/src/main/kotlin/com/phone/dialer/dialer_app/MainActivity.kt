@@ -1,51 +1,27 @@
 package com.phone.dialer.dialer_app
 
-import android.Manifest
-import android.content.*
-import android.content.pm.PackageManager
-import android.os.Bundle
-import android.telephony.TelephonyManager
-import androidx.annotation.NonNull
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 
-import androidx.lifecycle.Observer
-import com.phone.dialer.dialer_app.commons.base.BaseActivity
+import android.app.PendingIntent
+import android.content.Intent
+import androidx.annotation.NonNull
+import com.phone.dialer.dialer_app.helpers.CallManager
+import com.phone.dialer.dialer_app.receivers.CallActionReceiver
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
-
-import com.phone.dialer.dialer_app.commons.events.*
-import com.phone.dialer.dialer_app.commons.utils.CapabilitiesRequestorImpl
-import com.phone.dialer.dialer_app.commons.utils.ManifestPermissionRequesterImpl
-import com.phone.dialer.dialer_app.services.MyCallScreeningService
 import io.flutter.plugin.common.MethodChannel
 
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
-import pub.devrel.easypermissions.AppSettingsDialog
-
-import java.lang.ref.WeakReference
 var End_Call : Boolean = false
 val RejectCall = "RejectCallMethod"
+
+
 class MainActivity : FlutterActivity() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        if (ContextCompat.checkSelfPermission(
-                this, Manifest.permission.READ_PHONE_STATE
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.READ_PHONE_STATE), 369
-            )
-        }
 
-    }
+
+
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
 //        fun GetBatteryLevel(): Int {
 //            val batteryLevel: Int
 //            if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
@@ -64,9 +40,9 @@ class MainActivity : FlutterActivity() {
             // Note: this method is invoked on the main thread.
                 call, result ->
             if (call.method.equals("EndCall"))
-                { End_Call =  true
-
-                    result.success("End_Call set to True")
+                {
+                    CallManager.reject()
+                    result.success("test")
                     result.error("unavilable", "faild to Reject", null)
 
                 }
@@ -80,6 +56,7 @@ class MainActivity : FlutterActivity() {
 
 
     }
+
 
 
 }

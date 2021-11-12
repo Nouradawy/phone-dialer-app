@@ -11,6 +11,7 @@ import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
 class FlutterPhoneStatePlugin(context: Context) : MethodCallHandler, EventChannel.StreamHandler {
+
     companion object {
         @JvmStatic
         fun registerWith(registrar: Registrar) {
