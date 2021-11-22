@@ -1,23 +1,17 @@
 package com.phone.dialer.dialer_app
 
 
-import android.app.PendingIntent
-import android.content.Intent
 import androidx.annotation.NonNull
 import com.phone.dialer.dialer_app.helpers.CallManager
-import com.phone.dialer.dialer_app.receivers.CallActionReceiver
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-
-var End_Call : Boolean = false
-val RejectCall = "RejectCallMethod"
 
 
 class MainActivity : FlutterActivity() {
 
 
-
+    val RejectCall = "RejectCallMethod"
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -42,12 +36,13 @@ class MainActivity : FlutterActivity() {
             if (call.method.equals("EndCall"))
                 {
                     CallManager.reject()
-                    result.success("test")
+                    MethodChannel(flutterEngine.dartExecutor.binaryMessenger,RejectCall).setMethodCallHandler(null)
+                    result.success("Done")
+//                    result.success(CallManager.cancel())
                     result.error("unavilable", "faild to Reject", null)
 
                 }
                 else {
-                    End_Call = false
                 result.notImplemented()
 
             }

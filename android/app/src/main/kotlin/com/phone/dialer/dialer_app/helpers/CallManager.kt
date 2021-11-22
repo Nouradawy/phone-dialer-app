@@ -16,6 +16,11 @@ class CallManager {
         fun accept() {
             call?.answer(VideoProfile.STATE_AUDIO_ONLY)
         }
+//        fun cancel(){
+//            if(call!!.state == Call.STATE_DIALING)
+//                call!!.disconnect()
+//
+//        }
 
         fun reject() {
             if (call != null) {

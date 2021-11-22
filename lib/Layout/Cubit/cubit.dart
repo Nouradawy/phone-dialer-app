@@ -1,11 +1,10 @@
-
-
 import 'package:bloc/bloc.dart';
 import 'package:contacts_service/contacts_service.dart';
-import 'package:dialer_app/Cubit/states.dart';
+import 'package:dialer_app/Layout/Cubit/states.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../AppContacts.dart';
+import '../../Modules/Contacts/appcontacts.dart';
 
 
 class AppCubit extends Cubit<AppStates>
@@ -14,9 +13,12 @@ class AppCubit extends Cubit<AppStates>
 
   static AppCubit get(context) => BlocProvider.of(context);
 List<AppContact> Contacts = [];
-bool contactsLoaded = false;
+// bool contactsLoaded = false;
 
-
+// List <Widget> Screens=
+// [
+//
+// ];
   Future<void> GetContacts() async {
     emit(AppgetContactsLoading());
     List colors = [
@@ -35,7 +37,7 @@ bool contactsLoaded = false;
       return new AppContact(info: contact, color: baseColor);
     }).toList();
       Contacts = _contacts;
-      contactsLoaded = true;
+      // contactsLoaded = true;
       emit(AppgetContactsSuccess());
   }
 

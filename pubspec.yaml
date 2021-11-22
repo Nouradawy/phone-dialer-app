@@ -43,6 +43,8 @@ dependencies:
 #  firebase_messaging: ^11.0.0
   flutter_voip_kit: ^0.0.6
   permission_handler: ^8.2.6
+  flutter_phone_direct_caller: ^2.1.0
+  indexed: ^0.0.6
   flutter_phone_state:
     path: assets/packages/flutter_phone_state-0.5.9
 
@@ -92,6 +94,26 @@ flutter:
     - family: ZenKurenaido-Regular
       fonts:
         - asset: assets/Fonts/ZenKurenaido-Regular.ttf
+    - family: Cairo
+      fonts:
+        - asset: assets/Fonts/Cairo-Black.ttf
+        - asset: assets/Fonts/Cairo-Bold.ttf
+        - asset: assets/Fonts/Cairo-ExtraBold.ttf
+        - asset: assets/Fonts/Cairo-ExtraLight.ttf
+        - asset: assets/Fonts/Cairo-Regular.ttf
+        - asset: assets/Fonts/Cairo-SemiBold.ttf
+    - family: OpenSans
+      fonts:
+        - asset: assets/Fonts/OpenSans-Bold.ttf
+        - asset: assets/Fonts/OpenSans-Light.ttf
+        - asset: assets/Fonts/OpenSans-LightItalic.ttf
+          style: italic
+        - asset: assets/Fonts/OpenSans-Italic.ttf
+          style: italic
+        - asset: assets/Fonts/OpenSans-Medium.ttf
+        - asset: assets/Fonts/OpenSans-Regular.ttf
+        - asset: assets/Fonts/OpenSans-SemiBold.ttf
+
   # fonts:
   #   - family: Schyler
   #     fonts:

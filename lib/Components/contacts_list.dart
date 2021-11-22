@@ -1,45 +1,52 @@
+
+
 import 'dart:typed_data';
 
 import 'package:contacts_service/contacts_service.dart';
+import 'package:dialer_app/Layout/Cubit/cubit.dart';
+import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-import '../AppContacts.dart';
+import 'package:hexcolor/hexcolor.dart';
 
 class ContactsList extends StatelessWidget {
-  final List<AppContact>? contacts;
+  final List<AppContact> contacts;
   Function() reloadContacts;
-  ContactsList({Key? key,  this.contacts, required this.reloadContacts}) : super(key: key);
+  ContactsList({Key? key,  required this.contacts, required this.reloadContacts}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return Expanded(
+    return RefreshIndicator(
+      onRefresh: AppCubit.get(context).GetContacts,
       child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: contacts!.length,
+        // shrinkWrap: true,
+        itemCount: contacts.length,
         itemBuilder: (context, index) {
-          AppContact contact = contacts![index];
-
-          return ListTile(
-
-              onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) => ContactDetails(
-                      contact,
-                      onContactDelete: (AppContact _contact) {
-                        reloadContacts();
-                        Navigator.of(context).pop();
-                      },
-                      onContactUpdate: (AppContact _contact) {
-                        reloadContacts();
-                      },
-                    )
-                ));
-              },
-              title: Text(contact.info!.displayName.toString()),
-              subtitle: Text(
-                  contact.info!.phones!.length > 0 ? contact.info!.phones!.elementAt(0).value.toString() : ''
-              ),
-              leading: ContactAvatar(contact, 36)
+          AppContact contact = contacts[index];
+          return ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width,
+            ),
+            child: ListTile(
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (BuildContext context) => ContactDetails(
+                        contact,
+                        onContactDelete: (AppContact _contact) {
+                          reloadContacts();
+                          Navigator.of(context).pop();
+                        },
+                        onContactUpdate: (AppContact _contact) {
+                          reloadContacts();
+                        },
+                      )
+                  ));
+                },
+                title: Text(contact.info!.displayName.toString()),
+                subtitle: Text(
+                    contact.info!.phones!.length > 0 ? contact.info!.phones!.elementAt(0).value.toString() : ''
+                ),
+                leading: ContactAvatar(contact, 36),
+                ),
           );
         },
       ),
@@ -215,6 +222,8 @@ class ContactAvatar extends StatelessWidget {
     return Container(
         width: size,
         height: size,
+        decoration: BoxDecoration(
+            shape: BoxShape.circle, gradient: getColorGradient(contact.color)),
         child:buildCircleAvatar(contact.info!.avatar,contact.info!.initials()));
   }
 }
@@ -229,12 +238,12 @@ CircleAvatar buildCircleAvatar(Uint8List? avatar, String initials) {
   }
 }
 
-// LinearGradient getColorGradient(Color color) {
-//   var baseColor = color as dynamic;
-//   Color color1 = baseColor[800];
-//   Color color2 = baseColor[400];
-//   return LinearGradient(colors: [
-//     color1,
-//     color2,
-//   ], begin: Alignment.bottomLeft, end: Alignment.topRight);
-// }
+LinearGradient getColorGradient(Color? color) {
+  var baseColor = color as dynamic;
+  Color color1 = baseColor[800];
+  Color color2 = baseColor[400];
+  return LinearGradient(colors: [
+    color1,
+    color2,
+  ], begin: Alignment.bottomLeft, end: Alignment.topRight);
+}

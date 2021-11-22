@@ -3,9 +3,6 @@
     package="com.phone.dialer.dialer_app">
 
     <uses-feature
-        android:name="android.hardware.telephony"
-        android:required="true" />
-    <uses-feature
         android:name="android.hardware.microphone"
         android:required="true" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
@@ -54,17 +51,8 @@
                <action android:name="com.phone.dialer.dialer_app.action.DECLINE_CALL" />
            </intent-filter>
        </receiver>
-<!--       <service-->
-<!--           android:name=".services.MyCallScreeningService"-->
-<!--           android:permission="android.permission.BIND_INCALL_SERVICE">-->
-<!--           <meta-data android:name="android.telecom.IN_CALL_SERVICE_UI" android:value="true"/>-->
-<!--           <meta-data android:name="android.telecom.IN_CALL_SERVICE_RINGING"-->
-<!--               android:value="true"/>-->
-<!--           <intent-filter>-->
-<!--               <action android:name="android.telecom.InCallService" />-->
-<!--               <action android:name="android.telecom.CallScreeningService"/>-->
-<!--           </intent-filter>-->
-<!--       </service>-->
+
+
 
         <activity
             android:name=".MainActivity"
@@ -125,7 +113,6 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.WRITE_CONTACTS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <uses-permission android:name="android.permission.WRITE_CALL_LOG" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
