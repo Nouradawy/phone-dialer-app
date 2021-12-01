@@ -214,7 +214,7 @@ Stream<RawPhoneEvent> _nativeEvents;
 
 /// A stream of [RawPhoneEvent] instances.  The stream only contains null values if there was an error
 Stream<RawPhoneEvent> get _initializedNativeEvents {
-  _nativeEvents ??=
+  _nativeEvents =
       _phoneStateCallEventChannel.receiveBroadcastStream().map((dyn) {
     try {
       if (dyn == null) return null;

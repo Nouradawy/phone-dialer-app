@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hexcolor/hexcolor.dart';
@@ -15,8 +16,10 @@ ThemeData LightThemeData() {
       //   borderRadius: BorderRadius.circular(7)
       // ),
     ),
-    fontFamily: 'OpenSans',
     primarySwatch: Colors.blue,
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor:HexColor("#FFD8E4"),
+    ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       type: BottomNavigationBarType.fixed,
       selectedItemColor: Colors.blue,
@@ -35,18 +38,20 @@ ThemeData LightThemeData() {
       ),
       headline3: TextStyle(
         fontFamily: "Quicksand",
-        fontWeight: FontWeight.bold,
+        // fontWeight: FontWeight.w300,
         fontSize: 35,
-        color:Colors.black.withOpacity(0.6)
+        // height: 0.5,
+        color:Colors.black.withOpacity(0.50)
       ),
       headline4: TextStyle(
           fontFamily: "Roboto",
           fontSize: 10,
-          color:HexColor("#8F8F8").withOpacity(0.6)
+          color:HexColor("#8F8F8F").withOpacity(0.6)
       ),
       bodyText1:TextStyle(
         fontFamily: "Cairo",
         fontSize: 15,
+        height: 1,
         color:HexColor("#292929"),
       ),
       bodyText2: TextStyle(
@@ -67,16 +72,17 @@ ThemeData LightThemeData() {
       ),
       button:  TextStyle(
         fontFamily: "Quicksand",
-        fontWeight: FontWeight.w300,
-        fontSize: 8,
-        color: Colors.white,
-        letterSpacing: -20,
+        fontWeight: FontWeight.w400,
+        fontSize: 10,
+        color: Colors.white.withOpacity(0.80),
+        letterSpacing: 0,
       ),
       caption: TextStyle(
-        fontFamily: "Quicksand",
-        fontSize: 8,
-        color: Colors.white,
-        letterSpacing: -40,
+        fontFamily: "Cairo",
+        fontSize: 10,
+        color: Colors.black,
+        letterSpacing: 0,
+        fontWeight: FontWeight.w500,
       ),
 
     ),

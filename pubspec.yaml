@@ -45,8 +45,8 @@ dependencies:
   permission_handler: ^8.2.6
   flutter_phone_direct_caller: ^2.1.0
   indexed: ^0.0.6
-  flutter_phone_state:
-    path: assets/packages/flutter_phone_state-0.5.9
+#  flutter_phone_state:
+#    path: assets/packages/flutter_phone_state-0.5.9
 
 dev_dependencies:
   flutter_test:
@@ -113,6 +113,10 @@ flutter:
         - asset: assets/Fonts/OpenSans-Medium.ttf
         - asset: assets/Fonts/OpenSans-Regular.ttf
         - asset: assets/Fonts/OpenSans-SemiBold.ttf
+    - family : Quicksand
+      fonts:
+        - asset: assets/Fonts/Quicksand/static/Quicksand-Regular.ttf
+
 
   # fonts:
   #   - family: Schyler

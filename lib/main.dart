@@ -1,4 +1,4 @@
-// @dart = 2.9
+
 
 import 'package:bloc/bloc.dart';
 import 'package:dialer_app/Themes/light_theme.dart';
@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'Components/constants.dart';
 
 import 'Layout/Cubit/cubit.dart';
+import 'PhoneState/state_screen.dart';
 import 'home.dart';
 
 
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
         debugShowMaterialGrid: false,
         theme: LightThemeData(),
         themeMode: ThemeMode.light,
-        home: Home(),
+        home: PhoneStateScreen(),
       );
 
   }

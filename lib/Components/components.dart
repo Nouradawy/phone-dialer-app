@@ -1,31 +1,39 @@
+import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Themes/light_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hexcolor/hexcolor.dart';
 
-AppBar MyAppBar(BuildContext context, double AppbarSize) {
+AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController Searchcontroller) {
   return AppBar(
     automaticallyImplyLeading: false,
-    title:Stack(
-      children: [
-        Container(
-          height: 28,
-          width: MediaQuery.of(context).size.width*0.55,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadiusDirectional.circular(3),
-            color:SearchBackgroundColor(),
-          ),
+    title:Container(
+      height: 28,
+      width:MediaQuery.of(context).size.width*0.55,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadiusDirectional.circular(3),
+        color:SearchBackgroundColor(),
+      ),
+      child: TextField(
+        // style: Theme.of(context).textTheme.headline2,
+        controller: Searchcontroller,
+        textAlignVertical: TextAlignVertical.center,
+        onChanged: (value){
+          AppCubit.get(context).filterContacts(Searchcontroller);
+        },
+        decoration: InputDecoration(
+          hintText: "Search among ${AppCubit.get(context).Contacts.length} contact(s)",
+          // contentPadding: EdgeInsets.all(0),
+          // alignLabelWithHint: true,
+          // labelText:"Search",
+          hintStyle:Theme.of(context).textTheme.headline2,
+          // isCollapsed: true,
+          prefixIcon: Icon(Icons.search,color: SearchIconColor(),size: 25,),
+          border:InputBorder.none,
+          // fillColor: SearchBackgroundColor(),
         ),
-        Padding(
-          padding: const EdgeInsets.only(left:4.0),
-          child: Icon(Icons.search,color: SearchIconColor(),size: 28,),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left:37.0,top:6),
-          //TODO: Add the correct contacts number
-          child: Text("Search among 292 contact(s)",style:Theme.of(context).textTheme.headline2 ,),
-        ),
-
-      ],),
+      ),
+    ),
     actions: [
       Padding(
         padding: const EdgeInsets.only(top:16.0,right:15),
@@ -91,6 +99,251 @@ AppBar MyAppBar(BuildContext context, double AppbarSize) {
         Tab(text:"Phone"),
         Tab(text:"Contacts"),
       ],),
+  );
+}
+Column Dialpad(BuildContext context, double AppbarSize ) {
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    mainAxisAlignment: MainAxisAlignment.end,
+    children:[
+      Row(
+          children: [
+            InkWell(
+              customBorder:RoundedRectangleBorder(
+                borderRadius:BorderRadiusDirectional.only(
+                  topStart: Radius.circular(30),
+                ),
+              ) ,
+              onTap: (){
+              },
+              child: Container(
+                width:MediaQuery.of(context).size.width/3,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                color: Colors.transparent,
+                child:Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  // crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text("1",style: Theme.of(context).textTheme.headline3),
+                    Transform.translate(
+                        offset: Offset(0,-4),
+                        child: Icon(Icons.voicemail,size:15)),
+                  ],
+                ),
+              ),
+            ),
+            InkWell(
+              onTap: (){
+
+              },
+              child: Container(
+                width:MediaQuery.of(context).size.width/3,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                child:Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  // crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text("2",style: Theme.of(context).textTheme.headline3),
+                    Transform.translate(
+                        offset: Offset(0,-4),
+                        child: Text("ABC",style:Theme.of(context).textTheme.headline4)),
+                  ],
+                ),
+              ),
+            ),
+            InkWell(
+              customBorder:RoundedRectangleBorder(
+                borderRadius:BorderRadiusDirectional.only(
+                  topEnd: Radius.circular(30),
+                ),
+              ) ,
+              onTap: (){},
+              child: Container(
+                color: Colors.transparent,
+                width:MediaQuery.of(context).size.width/3,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+
+                child:Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  // crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text("3",style: Theme.of(context).textTheme.headline3),
+                    Transform.translate(
+                        offset: Offset(0,-4),
+                        child: Text("DEF",style:Theme.of(context).textTheme.headline4)),
+                  ],
+                ),
+              ),
+            ),
+          ]
+      ),
+      Row(
+          children: [
+            InkWell(
+              onTap: (){},
+              child: Container(
+                width:MediaQuery.of(context).size.width/3,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                child:Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  // crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text("4",style: Theme.of(context).textTheme.headline3),
+                    Transform.translate(
+                        offset: Offset(0,-4),
+                        child: Text("GHI",style:Theme.of(context).textTheme.headline4)),
+                  ],
+                ),
+              ),
+            ),
+            InkWell(
+              onTap: (){},
+              child: Container(
+                width:MediaQuery.of(context).size.width/3,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                child:Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  // crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text("5",style: Theme.of(context).textTheme.headline3),
+                    Transform.translate(
+                        offset: Offset(0,-4),
+                        child: Text("JKL",style:Theme.of(context).textTheme.headline4)),
+                  ],
+                ),
+              ),
+            ),
+            InkWell(
+              onTap: (){},
+              child: Container(
+                width:MediaQuery.of(context).size.width/3,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                child:Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  // crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text("6",style: Theme.of(context).textTheme.headline3),
+                    Transform.translate(
+                        offset: Offset(0,-4),
+                        child: Text("MNO",style:Theme.of(context).textTheme.headline4)),
+                  ],
+                ),
+              ),
+            ),
+          ]
+      ),
+      Row(
+          children: [
+            InkWell(
+              onTap: (){},
+              child: Container(
+                width:MediaQuery.of(context).size.width/3,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                child:Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  // crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text("7",style: Theme.of(context).textTheme.headline3),
+                    Transform.translate(
+                        offset: Offset(0,-4),
+                        child: Text("PQRS",style:Theme.of(context).textTheme.headline4)),
+                  ],
+                ),
+              ),
+            ),
+            InkWell(
+              onTap: (){},
+              child: Container(
+                width:MediaQuery.of(context).size.width/3,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                child:Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  // crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text("8",style: Theme.of(context).textTheme.headline3),
+                    Transform.translate(
+                        offset: Offset(0,-4),
+                        child: Text("TUV",style:Theme.of(context).textTheme.headline4)),
+                  ],
+                ),
+              ),
+            ),
+            InkWell(
+              onTap: (){},
+              child: Container(
+                width:MediaQuery.of(context).size.width/3,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                child:Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  // crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text("9",style: Theme.of(context).textTheme.headline3),
+                    Transform.translate(
+                        offset: Offset(0,-4),
+                        child: Text("WXYZ",style:Theme.of(context).textTheme.headline4)),
+                  ],
+                ),
+              ),
+            ),
+          ]
+      ),
+      Row(
+          children: [
+            InkWell(
+              onTap: (){},
+              child: Container(
+                width:MediaQuery.of(context).size.width/3,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                child:Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  // crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text("*",style: Theme.of(context).textTheme.headline3),
+                    Transform.translate(
+                        offset: Offset(0,-4),
+                        child: Text("",style:Theme.of(context).textTheme.headline4)),
+                  ],
+                ),
+              ),
+            ),
+            InkWell(
+              onTap: (){},
+              child: Container(
+                width:MediaQuery.of(context).size.width/3,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                child:Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  // crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text("0",style: Theme.of(context).textTheme.headline3),
+                    Transform.translate(
+                        offset: Offset(0,-4),
+                        child: Text("+",style:Theme.of(context).textTheme.headline4)),
+                  ],
+                ),
+              ),
+            ),
+            InkWell(
+              onTap: (){},
+              child: Container(
+                width:MediaQuery.of(context).size.width/3,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                child:Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  // crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text("#",style: Theme.of(context).textTheme.headline3),
+                    Transform.translate(
+                        offset: Offset(0,-4),
+                        child: Text("",style:Theme.of(context).textTheme.headline4)),
+                  ],
+                ),
+              ),
+            ),
+          ]
+      ),
+    ],
+
   );
 }
 
