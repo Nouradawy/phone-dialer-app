@@ -1,8 +1,13 @@
+import 'dart:ui';
+
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Themes/light_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:hexcolor/hexcolor.dart';
+
+
 
 AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController Searchcontroller) {
   return AppBar(
@@ -101,11 +106,40 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
       ],),
   );
 }
-Column Dialpad(BuildContext context, double AppbarSize ) {
+Column Dialpad(BuildContext context, double AppbarSize , TextEditingController dialerController ) {
+bool DualSIM = false;
+
   return Column(
     mainAxisSize: MainAxisSize.min,
     mainAxisAlignment: MainAxisAlignment.end,
     children:[
+      Padding(
+        padding: const EdgeInsets.only(top:8.0),
+        child: Container(
+          width: 30,
+          height: 1,
+          color:Colors.grey,),
+      ),
+
+      Container(
+        child: dialerController.text.isNotEmpty?TextFormField(
+          style: Theme
+              .of(context)
+              .textTheme
+              .headline3,
+          textAlign: TextAlign.center,
+          controller: dialerController,
+          onChanged: (value) {
+            AppCubit.get(context).ShowHide();
+          },
+          // readOnly: true,
+          showCursor: true,
+          decoration: const InputDecoration(
+            contentPadding: EdgeInsets.symmetric(horizontal: 30),
+            border: InputBorder.none,
+          ),
+        ):null,
+      ),
       Row(
           children: [
             InkWell(
@@ -115,13 +149,22 @@ Column Dialpad(BuildContext context, double AppbarSize ) {
                 ),
               ) ,
               onTap: (){
+                if(dialerController.text.isEmpty)
+                  {
+                    AppCubit.get(context).ShowHide();
+                  }
+
+                // String value = "1";
+                dialerController.text = dialerController.text.isEmpty?"1":dialerController.text +"1";
+
               },
               child: Container(
                 width:MediaQuery.of(context).size.width/3,
-                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
                 color: Colors.transparent,
                 child:Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+
                   // crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text("1",style: Theme.of(context).textTheme.headline3),
@@ -134,14 +177,23 @@ Column Dialpad(BuildContext context, double AppbarSize ) {
             ),
             InkWell(
               onTap: (){
+                if(dialerController.text.isEmpty)
+                {
+                  AppCubit.get(context).ShowHide();
+                }
+                if(dialerController.text.length==1){
+                  AppCubit.get(context).ShowHide();
+                }
+                dialerController.text = dialerController.text.isEmpty?"2":dialerController.text +"2";
 
               },
               child: Container(
                 width:MediaQuery.of(context).size.width/3,
-                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
                 child:Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   // crossAxisAlignment: CrossAxisAlignment.center,
+
                   children: [
                     Text("2",style: Theme.of(context).textTheme.headline3),
                     Transform.translate(
@@ -157,11 +209,22 @@ Column Dialpad(BuildContext context, double AppbarSize ) {
                   topEnd: Radius.circular(30),
                 ),
               ) ,
-              onTap: (){},
+              onTap: (){
+
+                if(dialerController.text.isEmpty)
+                {
+                  AppCubit.get(context).ShowHide();
+                }
+                if(dialerController.text.length==1){
+                  AppCubit.get(context).ShowHide();
+                }
+                dialerController.text = dialerController.text.isEmpty?"3":dialerController.text +"3";
+
+              },
               child: Container(
                 color: Colors.transparent,
                 width:MediaQuery.of(context).size.width/3,
-                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
 
                 child:Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -180,10 +243,19 @@ Column Dialpad(BuildContext context, double AppbarSize ) {
       Row(
           children: [
             InkWell(
-              onTap: (){},
+              onTap: (){
+                if(dialerController.text.isEmpty)
+                {
+                  AppCubit.get(context).ShowHide();
+                }
+                if(dialerController.text.length==1){
+                  AppCubit.get(context).ShowHide();
+                }
+                dialerController.text = dialerController.text.isEmpty?"4":dialerController.text +"4";
+              },
               child: Container(
                 width:MediaQuery.of(context).size.width/3,
-                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
                 child:Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   // crossAxisAlignment: CrossAxisAlignment.center,
@@ -197,10 +269,19 @@ Column Dialpad(BuildContext context, double AppbarSize ) {
               ),
             ),
             InkWell(
-              onTap: (){},
+              onTap: (){
+                if(dialerController.text.isEmpty)
+                {
+                  AppCubit.get(context).ShowHide();
+                }
+                if(dialerController.text.length==1){
+                  AppCubit.get(context).ShowHide();
+                }
+                dialerController.text = dialerController.text.isEmpty?"5":dialerController.text +"5";
+              },
               child: Container(
                 width:MediaQuery.of(context).size.width/3,
-                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
                 child:Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   // crossAxisAlignment: CrossAxisAlignment.center,
@@ -214,10 +295,19 @@ Column Dialpad(BuildContext context, double AppbarSize ) {
               ),
             ),
             InkWell(
-              onTap: (){},
+              onTap: (){
+                if(dialerController.text.isEmpty)
+                {
+                  AppCubit.get(context).ShowHide();
+                }
+                if(dialerController.text.length==1){
+                  AppCubit.get(context).ShowHide();
+                }
+                dialerController.text = dialerController.text.isEmpty?"6":dialerController.text +"6";
+              },
               child: Container(
                 width:MediaQuery.of(context).size.width/3,
-                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
                 child:Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   // crossAxisAlignment: CrossAxisAlignment.center,
@@ -235,10 +325,19 @@ Column Dialpad(BuildContext context, double AppbarSize ) {
       Row(
           children: [
             InkWell(
-              onTap: (){},
+              onTap: (){
+                if(dialerController.text.isEmpty)
+                {
+                  AppCubit.get(context).ShowHide();
+                }
+                if(dialerController.text.length==1){
+                  AppCubit.get(context).ShowHide();
+                }
+                dialerController.text = dialerController.text.isEmpty?"7":dialerController.text +"7";
+              },
               child: Container(
                 width:MediaQuery.of(context).size.width/3,
-                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
                 child:Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   // crossAxisAlignment: CrossAxisAlignment.center,
@@ -255,7 +354,7 @@ Column Dialpad(BuildContext context, double AppbarSize ) {
               onTap: (){},
               child: Container(
                 width:MediaQuery.of(context).size.width/3,
-                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
                 child:Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   // crossAxisAlignment: CrossAxisAlignment.center,
@@ -272,7 +371,7 @@ Column Dialpad(BuildContext context, double AppbarSize ) {
               onTap: (){},
               child: Container(
                 width:MediaQuery.of(context).size.width/3,
-                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
                 child:Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   // crossAxisAlignment: CrossAxisAlignment.center,
@@ -293,7 +392,7 @@ Column Dialpad(BuildContext context, double AppbarSize ) {
               onTap: (){},
               child: Container(
                 width:MediaQuery.of(context).size.width/3,
-                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
                 child:Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   // crossAxisAlignment: CrossAxisAlignment.center,
@@ -310,7 +409,7 @@ Column Dialpad(BuildContext context, double AppbarSize ) {
               onTap: (){},
               child: Container(
                 width:MediaQuery.of(context).size.width/3,
-                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
                 child:Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   // crossAxisAlignment: CrossAxisAlignment.center,
@@ -327,7 +426,7 @@ Column Dialpad(BuildContext context, double AppbarSize ) {
               onTap: (){},
               child: Container(
                 width:MediaQuery.of(context).size.width/3,
-                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/5,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
                 child:Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   // crossAxisAlignment: CrossAxisAlignment.center,
@@ -342,10 +441,165 @@ Column Dialpad(BuildContext context, double AppbarSize ) {
             ),
           ]
       ),
+      SizedBox(height: 7,),
+      Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            InkWell(
+              borderRadius: BorderRadius.circular(5),
+              onTap: (){
+                AppCubit.get(context).dialpadShow();
+              },
+              child: Container(
+                width:MediaQuery.of(context).size.width*0.07,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/9,
+                child:Image.asset("assets/Images/dialpad.png",scale:1.7),
+              ),
+            ),
+
+            CallButton(context, AppbarSize , DualSIM , dialerController),
+
+            InkWell(
+              onTap: (){
+                dialerController.text = dialerController.text.isNotEmpty ? dialerController.text.substring(0,dialerController.text.length-1) : dialerController.text;
+                if(dialerController.text.isEmpty){
+                  AppCubit.get(context).ShowHide();
+                }
+
+              },
+              onLongPress: (){
+              },
+              child: Container(
+                width:MediaQuery.of(context).size.width*0.08,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/9,
+                child:Image.asset("assets/Images/backspace.png",scale:1.4,),
+              ),
+            ),
+          ]
+      ),
+      SizedBox(height: 17,),
     ],
 
   );
 }
+
+Row CallButton(BuildContext context, double AppbarSize , bool DualSIM , TextEditingController dialerController) {
+
+  if(DualSIM==true) {
+    return Row(
+      children: [
+        InkWell(
+          onTap: () {},
+          child: Stack(
+            alignment: AlignmentDirectional.centerStart,
+            children: [
+              Container(
+                alignment: AlignmentDirectional.center,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(14),
+                    bottomLeft: Radius.circular(14),
+                  ),
+                  color: HexColor("#57E3A0"),
+                ),
+                width: MediaQuery.of(context).size.width * 0.28,
+                height:
+                    ((MediaQuery.of(context).size.height - AppbarSize) / 2) / 8,
+                child: const Padding(
+                  padding: EdgeInsets.only(left: 10.0),
+                  child: Text("SIM1",
+                      style: TextStyle(
+                        fontFamily: "Roboto",
+                        fontSize: 13,
+                        color: Colors.white,
+                      )),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child:
+                    Image.asset("assets/Images/call_black_36dp.png", scale: 7),
+              ),
+            ],
+          ),
+        ),
+        InkWell(
+          onTap: () {},
+          child: Stack(
+            alignment: AlignmentDirectional.centerStart,
+            children: [
+              Container(
+                alignment: AlignmentDirectional.center,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                    topRight: Radius.circular(14),
+                    bottomRight: Radius.circular(14),
+                  ),
+                  color: HexColor("#57E3A0"),
+                ),
+                width: MediaQuery.of(context).size.width * 0.29,
+                height:
+                    ((MediaQuery.of(context).size.height - AppbarSize) / 2) / 8,
+                child: const Padding(
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: Text("SIM2",
+                      style: TextStyle(
+                        fontFamily: "Roboto",
+                        fontSize: 13,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w400,
+                      )),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child:
+                    Image.asset("assets/Images/call_black_36dp.png", scale: 7),
+              ),
+              Transform.translate(
+                  offset: Offset(0, 0),
+                  child: Container(
+                    width: 0.7,
+                    height:
+                        (((MediaQuery.of(context).size.height - AppbarSize) /
+                                    2) /
+                                8) -
+                            18,
+                    color: HexColor("#808080").withOpacity(0.28),
+                  )),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+  else {
+    return Row(
+      children: [
+        SizedBox(width:MediaQuery.of(context).size.width*0.22),
+         InkWell(
+           onTap: (){
+             FlutterPhoneDirectCaller.callNumber(dialerController.text);
+           },
+           child: Container(
+            width:55,
+            height:55,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color:HexColor("#57E3A0"),
+            ),
+            child:Image.asset("assets/Images/call_black_36dp.png", scale: 6),
+        ),
+         ),
+        SizedBox(width:MediaQuery.of(context).size.width*0.22),
+      ],
+    );
+  }
+}
+
+
+
+
 
 class MyCustomeClipper extends CustomClipper<Path>{
   @override
@@ -361,10 +615,6 @@ class MyCustomeClipper extends CustomClipper<Path>{
     path.cubicTo(0, size.height * 0.86, 0, size.height * 0.86, 0, size.height);
     path.cubicTo(0, size.height, 0, size.height * 0.14, 0, size.height * 0.14);
     return path;
-
-
-
-
   }
 
   @override

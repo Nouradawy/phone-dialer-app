@@ -6,8 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'Components/constants.dart';
 
-import 'Layout/Cubit/cubit.dart';
-import 'PhoneState/state_screen.dart';
+import 'NativeBridge/native_bridge.dart';
 import 'home.dart';
 
 
@@ -26,18 +25,18 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    // return MultiBlocProvider(
-    //   providers: [
-    //     BlocProvider(
-    //         create: (context)=>AppCubit()),
-    //   ],
-    return MaterialApp(
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+            create: (context)=>NativeBridge()..invokeNativeMethod("methodName")..phonestateEvents(),),
+      ],
+    child: MaterialApp(
         debugShowCheckedModeBanner: false,
         debugShowMaterialGrid: false,
         theme: LightThemeData(),
         themeMode: ThemeMode.light,
-        home: PhoneStateScreen(),
-      );
+        home: Home(),
+    ));
 
   }
 }

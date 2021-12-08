@@ -1,5 +1,6 @@
 abstract class AppStates {}
 
+// class NativeStates extends AppStates{}
 class AppInitialState extends AppStates{}
 
 class AppgetContactsSuccess extends AppStates{}
@@ -11,4 +12,7 @@ class getIndexSuccess extends AppStates{}
 class SearchLoadingState extends AppStates{}
 class SearchSuccessState extends AppStates{}
 class isShowenSuccessState extends AppStates{}
+class dailerInputLoadingstate extends AppStates{}
+class dailerInputSuccessstate extends AppStates{}
+
 

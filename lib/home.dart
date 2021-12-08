@@ -1,6 +1,3 @@
-import 'dart:typed_data';
-
-import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,7 +6,9 @@ import 'Components/components.dart';
 import 'Modules/Contacts/contacts_screen.dart';
 import 'Layout/Cubit/cubit.dart';
 import 'Layout/Cubit/states.dart';
-import 'Modules/Contacts/contacts_screen.dart';
+import 'NativeBridge/native_bridge.dart';
+import 'NativeBridge/native_states.dart';
+import 'PhoneState/incall_screen.dart';
 
 class Home extends StatelessWidget {
 
@@ -19,63 +18,71 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var SearchController =TextEditingController();
+    var searchController =TextEditingController();
+    var dialerController =TextEditingController();
     return BlocProvider(
       create: (context)=>AppCubit()..GetContacts(),
-      child: BlocConsumer<AppCubit, AppStates>(
-        listener: (context, state) {
-          if(SearchController.text.isEmpty){
-            AppCubit.get(context).isSearching = false;
-          } else{
-            AppCubit.get(context).isSearching = true;
-            // if(SearchController.text.length < SearchController.text.length)
-            //   {
-            //     AppCubit.get(context).FilterdContacts.clear();
-            //     AppCubit.get(context).FilterdContacts.addAll(AppCubit.get(context).Contacts);
-            //   }
+      child: BlocConsumer<NativeBridge,NativeStates>(
+        listener:(context , state){
+          if(state is PhoneStateRinging)
+          {
+            Navigator.pushAndRemoveUntil(context,
+              MaterialPageRoute(builder: (BuildContext context) => InCallScreen()),
+                  (Route<dynamic>route)=>false,);
           }
         },
-        builder: (context, state) {
-          var Cubit = AppCubit.get(context);
-          double AppbarSize = MediaQuery.of(context).size.height*0.09;
+        builder: (context ,state)=>BlocConsumer<AppCubit, AppStates>(
+          listener: (context, state) {
+            if(searchController.text.isEmpty){
+              AppCubit.get(context).isSearching = false;
+            } else{
+              AppCubit.get(context).isSearching = true;
+            }
 
 
+          },
+          builder: (context, state) {
+            var Cubit = AppCubit.get(context);
+            double AppbarSize = MediaQuery.of(context).size.height*0.09;
+            return
+              DefaultTabController(
+                length: 2,
+                child: Scaffold(
 
-          return
-            DefaultTabController(
-              length: 2,
-              child: Scaffold(
+                  key: scaffoldkey,
+                  appBar:MainAppBar(context, AppbarSize , searchController),
 
-                key: scaffoldkey,
-                appBar:MainAppBar(context, AppbarSize , SearchController),
+                  floatingActionButton: Cubit.isShowen==false?FloatingActionButton(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    onPressed: () {
+                      Cubit.dialpadShow();
+                  },
+                    child:Image.asset("assets/Images/dialpad.png",scale:1.8),
+                  ):null,
+                  body: Stack(
+                    alignment: AlignmentDirectional.bottomCenter,
+                    children: [
+                      ContactsScreen(),
+                      Material(
+                          color: HexColor("#F9F9F9"),
+                          borderRadius: BorderRadiusDirectional.only(
+                            topStart: Radius.circular(30),
+                            topEnd: Radius.circular(30),
+                          ),
+                          elevation: 10,
+                          child: Cubit.isShowen?BlocProvider.value(
 
-                floatingActionButton: FloatingActionButton(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                              value: AppCubit(),
+                              child: Dialpad(context, AppbarSize , dialerController)):null),
+
+                    ],
                   ),
-                  onPressed: () {
-                    Cubit.dialpadShow();
-                },
-                  child:Image.asset("assets/Images/dialpad.png",scale:1.8),
-                ),
-                body: Stack(
-                  alignment: AlignmentDirectional.bottomCenter,
-                  children: [
-                    ContactsScreen(),
-                    Material(
-                        color: HexColor("#F9F9F9"),
-                        borderRadius: BorderRadiusDirectional.only(
-                          topStart: Radius.circular(30),
-                          topEnd: Radius.circular(30),
-                        ),
-                        elevation: 10,
-                        child: Dialpad(context, AppbarSize )),
-
-                  ],
-                ),
-          ),
-            );
-        },
+            ),
+              );
+          },
+        ),
       ),
     );
   }

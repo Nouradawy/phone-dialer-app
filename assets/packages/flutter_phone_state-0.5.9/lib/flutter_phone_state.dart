@@ -219,7 +219,7 @@ Stream<RawPhoneEvent> get _initializedNativeEvents {
     try {
       if (dyn == null) return null;
       if (dyn is! Map) {
-        _log.warning("Unexpected result type for phone event.  "
+        _log.warning("Unexpected result type for phone event."
             "Expected Map<String, dynamic> but got ${dyn?.runtimeType ?? 'null'} ");
       }
       final Map<String, dynamic> event = (dyn as Map).cast();
