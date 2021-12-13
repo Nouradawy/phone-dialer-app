@@ -10,6 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class NativeBridge extends Cubit<NativeStates> {
   NativeBridge() : super(NativeBridgeInitialState());
   MethodChannel platform = MethodChannel("NativeBridge");
+  bool? isRinging = true;
   static NativeBridge get(context) => BlocProvider.of(context);
 
   NativePhoneEvent? nativePhoneEvent;

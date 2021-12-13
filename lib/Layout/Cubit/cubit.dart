@@ -4,6 +4,7 @@ import 'package:dialer_app/Layout/Cubit/states.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../Modules/Contacts/appcontacts.dart';
 
 
@@ -12,17 +13,34 @@ class AppCubit extends Cubit<AppStates>
   AppCubit() : super(AppInitialState());
 
   static AppCubit get(context) => BlocProvider.of(context);
+  double AppbarSize = 0.09;
 List<AppContact> Contacts = [];
 List<AppContact> FilterdContacts = [];
+List<AppContact> FavoratesContacts = [];
+
 bool isSearching = false;
 bool contactsLoaded = false;
 bool isShowen = false;
 
+Future<void> PermissionHandle() async {
+  var status = await Permission.contacts.status;
+  if (status.isDenied) {
+    // We didn't ask for permission yet or the permission has been denied before but not permanently.
+    await [
+      Permission.contacts,
+      Permission.phone,
+      Permission.microphone,
+    ].request();
+  }
+
+}
 
 // List <Widget> Screens=
 // [
 //
 // ];
+
+
   Future<void> GetContacts() async {
     emit(AppgetContactsLoading());
     List colors = [
@@ -51,12 +69,15 @@ bool isShowen = false;
   void ShowHide(){
    emit(dailerInputSuccessstate());
   }
+
   void dialpadShow(){
     isShowen =! isShowen;
     emit(isShowenSuccessState());
   }
 
+AddorRemoveFavorates(index){
 
+}
 
   filterContacts(TextEditingController SearchController){
     emit(SearchLoadingState());

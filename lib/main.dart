@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'Components/constants.dart';
 
+import 'Layout/Cubit/cubit.dart';
+import 'Modules/Login/login_screen.dart';
 import 'NativeBridge/native_bridge.dart';
 import 'home.dart';
 
@@ -29,13 +31,15 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider(
             create: (context)=>NativeBridge()..invokeNativeMethod("methodName")..phonestateEvents(),),
+        BlocProvider(
+            create: (context)=>AppCubit()),
       ],
     child: MaterialApp(
         debugShowCheckedModeBanner: false,
         debugShowMaterialGrid: false,
         theme: LightThemeData(),
         themeMode: ThemeMode.light,
-        home: Home(),
+        home: LoginScreen(),
     ));
 
   }

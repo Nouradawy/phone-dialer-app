@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hexcolor/hexcolor.dart';
 
-class ContactsScreen extends StatelessWidget {
+class PhoneScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var Cubit = AppCubit.get(context);
@@ -46,9 +46,9 @@ class ContactsScreen extends StatelessWidget {
                     },
                     title: Text(contact.info!.displayName.toString(),style: Theme.of(context).textTheme.bodyText1,),
                     subtitle: Text(
-                        contact.info!.phones!.length > 0 ? contact.info!.phones!
-                            .elementAt(0).value.toString() : ''
-                    ,style: Theme.of(context).textTheme.bodyText2,),
+                        contact.info!.phones!.isNotEmpty ? contact.info!.phones!
+                            .elementAt(0).value.toString() : '',
+                      style: Theme.of(context).textTheme.bodyText2,),
                     leading: ContactAvatar(contact, 45),
                     trailing: ConstrainedBox(
                       constraints: BoxConstraints(

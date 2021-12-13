@@ -1,9 +1,10 @@
+import 'package:dialer_app/Modules/Phone/contacts_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'Components/components.dart';
-import 'Modules/Contacts/contacts_screen.dart';
+import 'Modules/Contacts/phone_screen.dart';
 import 'Layout/Cubit/cubit.dart';
 import 'Layout/Cubit/states.dart';
 import 'NativeBridge/native_bridge.dart';
@@ -20,8 +21,8 @@ class Home extends StatelessWidget {
   Widget build(BuildContext context) {
     var searchController =TextEditingController();
     var dialerController =TextEditingController();
-    return BlocProvider(
-      create: (context)=>AppCubit()..GetContacts(),
+    return BlocProvider.value(
+      value: AppCubit.get(context)..GetContacts(),
       child: BlocConsumer<NativeBridge,NativeStates>(
         listener:(context , state){
           if(state is PhoneStateRinging)
@@ -43,12 +44,12 @@ class Home extends StatelessWidget {
           },
           builder: (context, state) {
             var Cubit = AppCubit.get(context);
-            double AppbarSize = MediaQuery.of(context).size.height*0.09;
+            double AppbarSize = MediaQuery.of(context).size.height*Cubit.AppbarSize;
             return
               DefaultTabController(
                 length: 2,
                 child: Scaffold(
-
+                  extendBodyBehindAppBar: true,
                   key: scaffoldkey,
                   appBar:MainAppBar(context, AppbarSize , searchController),
 
@@ -64,10 +65,15 @@ class Home extends StatelessWidget {
                   body: Stack(
                     alignment: AlignmentDirectional.bottomCenter,
                     children: [
-                      ContactsScreen(),
+                      TabBarView(
+                        children:<Widget> [
+                          PhoneScreen(),
+                          ContactsScreen(),
+                        ],
+                      ),
                       Material(
                           color: HexColor("#F9F9F9"),
-                          borderRadius: BorderRadiusDirectional.only(
+                          borderRadius: const BorderRadiusDirectional.only(
                             topStart: Radius.circular(30),
                             topEnd: Radius.circular(30),
                           ),

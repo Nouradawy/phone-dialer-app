@@ -35,18 +35,17 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   contacts_service: ^0.6.3
+  system_settings: ^2.0.0
   bloc: ^7.1.0
   flutter_bloc: ^7.1.0
   conditional_builder_null_safety: ^0.0.4
-#  flutter_phone_state: ^0.5.9
   hexcolor: ^2.0.5
 #  firebase_messaging: ^11.0.0
   flutter_voip_kit: ^0.0.6
-  permission_handler: ^8.2.6
+  permission_handler: ^8.3.0
   flutter_phone_direct_caller: ^2.1.0
   indexed: ^0.0.6
-#  flutter_phone_state:
-#    path: assets/packages/flutter_phone_state-0.5.9
+
 
 dev_dependencies:
   flutter_test:
