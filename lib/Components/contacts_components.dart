@@ -8,7 +8,7 @@ import 'package:hexcolor/hexcolor.dart';
 Container FavoritesContactsGroups(double AppbarSize, AppCubit Cubit, List<Color> FavColors) {
   return Container(
     height: AppbarSize*2,
-    width: double.infinity,
+    // width: double.infinity,
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(9),
       color:HexColor("#F2F2F2"),

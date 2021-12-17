@@ -42,23 +42,76 @@ class MainActivity : FlutterActivity() {
         eventChannel.setStreamHandler(MyStreamHandler(context))
 
 
-
-
-
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, platform).setMethodCallHandler {
             // Note: this method is invoked on the main thread.
                 call, result ->
             val states = call.method
-                if (states.equals("RejectCall"))  {
+            if (states.equals("num1"))  {
+                CallManager.keypad('1')
+                result.success("Done")
+                result.error("unavilable", "faild to Reject", null)
+            }
+            if (states.equals("num2")) {
+                CallManager.keypad('2')
+                result.success("Done")
+                result.error("unavilable", "faild to Reject", null)
+            }
+            if (states.equals("num3"))  {
+                CallManager.keypad('3')
+                result.success("Done")
+                result.error("unavilable", "faild to Reject", null)
+            }
+            if (states.equals("num4"))  {
+                CallManager.keypad('4')
+                result.success("Done")
+                result.error("unavilable", "faild to Reject", null)
+            }
+            if (states.equals("num5"))  {
+                CallManager.keypad('5')
+                result.success("Done")
+                result.error("unavilable", "faild to Reject", null)
+            }
+            if (states.equals("num6"))  {
+                CallManager.keypad('6')
+                result.success("Done")
+                result.error("unavilable", "faild to Reject", null)
+            }
+            if (states.equals("num7"))  {
+                CallManager.keypad('7')
+                result.success("Done")
+                result.error("unavilable", "faild to Reject", null)
+            }
+            if (states.equals("num8"))  {
+                CallManager.keypad('8')
+                result.success("Done")
+                result.error("unavilable", "faild to Reject", null)
+            }
+            if (states.equals("num9"))  {
+                CallManager.keypad('9')
+                result.success("Done")
+                result.error("unavilable", "faild to Reject", null)
+            }
+            if (states.equals("num0"))  {
+                CallManager.keypad('0')
+                result.success("Done")
+                result.error("unavilable", "faild to Reject", null)
+            }
+            if (states.equals("num*"))  {
+                CallManager.keypad('*')
+                result.success("Done")
+                result.error("unavilable", "faild to Reject", null)
+            }
+            if (states.equals("num#"))  {
+                CallManager.keypad('#')
+                result.success("Done")
+                result.error("unavilable", "faild to Reject", null)
+            }
+            if (states.equals("RejectCall"))  {
                     CallManager.reject()
                     result.success("Done")
                     result.error("unavilable", "faild to Reject", null)
                     }
-            if (states.equals("num1"))  {
-                    CallManager.keypad('1')
-                    result.success("Done")
-                    result.error("unavilable", "faild to Reject", null)
-                }
+
             if (states.equals("AcceptCall")) {
                     CallManager.accept()
                     result.success("Done")

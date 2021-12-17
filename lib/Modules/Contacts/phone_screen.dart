@@ -5,7 +5,6 @@ import 'package:contacts_service/contacts_service.dart';
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Layout/Cubit/states.dart';
 import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hexcolor/hexcolor.dart';

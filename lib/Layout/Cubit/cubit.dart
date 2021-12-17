@@ -1,3 +1,4 @@
+import 'package:azlistview/azlistview.dart';
 import 'package:bloc/bloc.dart';
 import 'package:contacts_service/contacts_service.dart';
 import 'package:dialer_app/Layout/Cubit/states.dart';
@@ -16,7 +17,10 @@ class AppCubit extends Cubit<AppStates>
   double AppbarSize = 0.09;
 List<AppContact> Contacts = [];
 List<AppContact> FilterdContacts = [];
+List<AppContact> DialpadFilterdContacts = [];
 List<AppContact> FavoratesContacts = [];
+List<_AZItem> Azitem =[];
+
 
 bool isSearching = false;
 bool contactsLoaded = false;
@@ -35,11 +39,6 @@ Future<void> PermissionHandle() async {
 
 }
 
-// List <Widget> Screens=
-// [
-//
-// ];
-
 
   Future<void> GetContacts() async {
     emit(AppgetContactsLoading());
@@ -50,6 +49,7 @@ Future<void> PermissionHandle() async {
       Colors.orange
     ];
     int colorIndex = 0;
+
     List<AppContact> _contacts = (await ContactsService.getContacts().catchError((error){
       print("Contacts Error : " + error.toString());
     })).map((contact) {
@@ -60,10 +60,19 @@ Future<void> PermissionHandle() async {
       }
       return new AppContact(info: contact, color: baseColor);
     }).toList();
-      Contacts = _contacts;
-
+    // final SortedContacts = _contacts..sort((a,b)=> a.info!.givenName!.compareTo(b.info!.givenName!));
+      Contacts =_contacts;
+    GetAZData();
       // contactsLoaded = true;
       emit(AppgetContactsSuccess());
+  }
+  Future<void> GetAZData() async {
+    Azitem = (await ContactsService.getContacts().catchError((error){
+      print("Contacts Error : " + error.toString());
+    })).map((contact) {
+      return new _AZItem(title: contact.givenName, tag: contact.givenName![0].toUpperCase());
+    }).toList();
+
   }
 
   void ShowHide(){
@@ -75,9 +84,6 @@ Future<void> PermissionHandle() async {
     emit(isShowenSuccessState());
   }
 
-AddorRemoveFavorates(index){
-
-}
 
   filterContacts(TextEditingController SearchController){
     emit(SearchLoadingState());
@@ -90,5 +96,52 @@ AddorRemoveFavorates(index){
     });
     emit(SearchSuccessState());
   }
+String SearchTerm ="";
+List<String> SearchTermlist=[];
+  int Searchindex = 0;
+
+   Future DialpadSearch () async{
+    emit(SearchLoadingState());
+    FilterdContacts.clear();
+    DialpadFilterdContacts.clear();
+    DialpadFilterdContacts.addAll(Contacts);
+
+
+    DialpadFilterdContacts.retainWhere((contact){
+      String contactName = contact.info!.displayName!.toLowerCase();
+      return contactName.contains(SearchTerm);
+    });
+
+    if(DialpadFilterdContacts.isNotEmpty)
+      {
+
+        FilterdContacts.addAll(DialpadFilterdContacts);
+
+      } else {
+      SearchTerm =  SearchTerm.substring(0,SearchTerm.length - 3);
+      print("searchTerm Bug Remove = "+SearchTerm.toString());
+      SearchTerm = SearchTerm.toString() + SearchTermlist[Searchindex].toString();
+      print("searchTerm Fix ="+SearchTerm.toString());
+      Searchindex++;
+      Searchindex>=3?Searchindex=0:Searchindex;
+      DialpadSearch();
+    }
+    emit(SearchSuccessState());
+    }
+
+}
+
+
+class _AZItem extends ISuspensionBean{
+
+  final String? title;
+  final String tag;
+  _AZItem({
+    required this.title,
+    required this.tag,
+});
+
+  @override
+  String getSuspensionTag() => tag;
 }
 

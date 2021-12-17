@@ -1,9 +1,8 @@
-import 'dart:ui';
 
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
+import 'package:dialer_app/NativeBridge/native_bridge.dart';
 import 'package:dialer_app/Themes/light_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:hexcolor/hexcolor.dart';
 
@@ -149,6 +148,9 @@ bool DualSIM = false;
                 ),
               ) ,
               onTap: (){
+                NativeBridge.get(context)
+                    .invokeNativeMethod("num1");
+
                 if(dialerController.text.isEmpty)
                   {
                     AppCubit.get(context).ShowHide();
@@ -177,6 +179,13 @@ bool DualSIM = false;
             ),
             InkWell(
               onTap: (){
+                AppCubit.get(context).SearchTerm = AppCubit.get(context).SearchTerm!=null?AppCubit.get(context).SearchTerm.toString()+'abc':'abc';
+                AppCubit.get(context).SearchTermlist = ["a","b","c"];
+                print("SearchTerm Before searching = "+AppCubit.get(context).SearchTerm.toString());
+                AppCubit.get(context).DialpadSearch();
+                NativeBridge.get(context)
+                    .invokeNativeMethod("num2");
+
                 if(dialerController.text.isEmpty)
                 {
                   AppCubit.get(context).ShowHide();
@@ -210,6 +219,12 @@ bool DualSIM = false;
                 ),
               ) ,
               onTap: (){
+                AppCubit.get(context).SearchTerm = AppCubit.get(context).SearchTerm!=null?AppCubit.get(context).SearchTerm.toString()+'def':'def';
+                AppCubit.get(context).SearchTermlist = ["d","e","f"];
+                print("SearchTerm Before searching = "+AppCubit.get(context).SearchTerm.toString());
+                AppCubit.get(context).DialpadSearch();
+                NativeBridge.get(context)
+                    .invokeNativeMethod("num3");
 
                 if(dialerController.text.isEmpty)
                 {
@@ -219,7 +234,6 @@ bool DualSIM = false;
                   AppCubit.get(context).ShowHide();
                 }
                 dialerController.text = dialerController.text.isEmpty?"3":dialerController.text +"3";
-
               },
               child: Container(
                 color: Colors.transparent,
@@ -244,6 +258,13 @@ bool DualSIM = false;
           children: [
             InkWell(
               onTap: (){
+                AppCubit.get(context).SearchTerm = AppCubit.get(context).SearchTerm!=null?AppCubit.get(context).SearchTerm.toString()+'ghi':'ghi';
+                AppCubit.get(context).SearchTermlist = ["g","h","i"];
+                print("SearchTerm Before searching = "+AppCubit.get(context).SearchTerm.toString());
+                AppCubit.get(context).DialpadSearch();
+                NativeBridge.get(context)
+                    .invokeNativeMethod("num4");
+
                 if(dialerController.text.isEmpty)
                 {
                   AppCubit.get(context).ShowHide();
@@ -270,6 +291,13 @@ bool DualSIM = false;
             ),
             InkWell(
               onTap: (){
+                AppCubit.get(context).SearchTerm = AppCubit.get(context).SearchTerm!=null?AppCubit.get(context).SearchTerm.toString()+'jkl':'jkl';
+                AppCubit.get(context).SearchTermlist = ["j","k","l"];
+                print("SearchTerm Before searching = "+AppCubit.get(context).SearchTerm.toString());
+                AppCubit.get(context).DialpadSearch();
+                NativeBridge.get(context)
+                    .invokeNativeMethod("num5");
+
                 if(dialerController.text.isEmpty)
                 {
                   AppCubit.get(context).ShowHide();
@@ -296,6 +324,13 @@ bool DualSIM = false;
             ),
             InkWell(
               onTap: (){
+                AppCubit.get(context).SearchTerm = AppCubit.get(context).SearchTerm!=null?AppCubit.get(context).SearchTerm.toString()+'mno':'mno';
+                AppCubit.get(context).SearchTermlist = ["m","n","o"];
+                print("SearchTerm Before searching = "+AppCubit.get(context).SearchTerm.toString());
+                AppCubit.get(context).DialpadSearch();
+                NativeBridge.get(context)
+                    .invokeNativeMethod("num6");
+
                 if(dialerController.text.isEmpty)
                 {
                   AppCubit.get(context).ShowHide();
@@ -326,6 +361,13 @@ bool DualSIM = false;
           children: [
             InkWell(
               onTap: (){
+                AppCubit.get(context).SearchTerm = AppCubit.get(context).SearchTerm!=null?AppCubit.get(context).SearchTerm.toString()+'pqrs':'pqrs';
+                AppCubit.get(context).SearchTermlist = ["p","q","o","s"];
+                print("SearchTerm Before searching = "+AppCubit.get(context).SearchTerm.toString());
+                AppCubit.get(context).DialpadSearch();
+                NativeBridge.get(context)
+                    .invokeNativeMethod("num7");
+
                 if(dialerController.text.isEmpty)
                 {
                   AppCubit.get(context).ShowHide();
@@ -351,7 +393,22 @@ bool DualSIM = false;
               ),
             ),
             InkWell(
-              onTap: (){},
+              onTap: (){
+                AppCubit.get(context).SearchTerm = AppCubit.get(context).SearchTerm!=null?AppCubit.get(context).SearchTerm.toString()+'tuv':'tuv';
+                AppCubit.get(context).SearchTermlist = ["t","u","v"];
+                print("SearchTerm Before searching = "+AppCubit.get(context).SearchTerm.toString());
+                AppCubit.get(context).DialpadSearch();
+                NativeBridge.get(context)
+                    .invokeNativeMethod("num8");
+                if(dialerController.text.isEmpty)
+                {
+                  AppCubit.get(context).ShowHide();
+                }
+                if(dialerController.text.length==1){
+                  AppCubit.get(context).ShowHide();
+                }
+                dialerController.text = dialerController.text.isEmpty?"8":dialerController.text +"8";
+              },
               child: Container(
                 width:MediaQuery.of(context).size.width/3,
                 height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
@@ -368,7 +425,22 @@ bool DualSIM = false;
               ),
             ),
             InkWell(
-              onTap: (){},
+              onTap: (){
+                AppCubit.get(context).SearchTerm = AppCubit.get(context).SearchTerm!=null?AppCubit.get(context).SearchTerm.toString()+'wxyz':'wxyz';
+                AppCubit.get(context).SearchTermlist = ["w","X","y","z"];
+                print("SearchTerm Before searching = "+AppCubit.get(context).SearchTerm.toString());
+                AppCubit.get(context).DialpadSearch();
+                NativeBridge.get(context)
+                    .invokeNativeMethod("num9");
+                if(dialerController.text.isEmpty)
+                {
+                  AppCubit.get(context).ShowHide();
+                }
+                if(dialerController.text.length==1){
+                  AppCubit.get(context).ShowHide();
+                }
+                dialerController.text = dialerController.text.isEmpty?"9":dialerController.text +"9";
+              },
               child: Container(
                 width:MediaQuery.of(context).size.width/3,
                 height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
@@ -389,7 +461,19 @@ bool DualSIM = false;
       Row(
           children: [
             InkWell(
-              onTap: (){},
+              onTap: (){
+                NativeBridge.get(context)
+                    .invokeNativeMethod("num*");
+                if(dialerController.text.isEmpty)
+                {
+                  AppCubit.get(context).ShowHide();
+                }
+                if(dialerController.text.length==1){
+                  AppCubit.get(context).ShowHide();
+                }
+                dialerController.text = dialerController.text.isEmpty?"*":dialerController.text +"*";
+
+              },
               child: Container(
                 width:MediaQuery.of(context).size.width/3,
                 height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
@@ -406,7 +490,18 @@ bool DualSIM = false;
               ),
             ),
             InkWell(
-              onTap: (){},
+              onTap: (){
+                NativeBridge.get(context)
+                    .invokeNativeMethod("num0");
+                if(dialerController.text.isEmpty)
+                {
+                  AppCubit.get(context).ShowHide();
+                }
+                if(dialerController.text.length==1){
+                  AppCubit.get(context).ShowHide();
+                }
+                dialerController.text = dialerController.text.isEmpty?"0":dialerController.text +"0";
+              },
               child: Container(
                 width:MediaQuery.of(context).size.width/3,
                 height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
@@ -423,7 +518,18 @@ bool DualSIM = false;
               ),
             ),
             InkWell(
-              onTap: (){},
+              onTap: (){
+                NativeBridge.get(context)
+                    .invokeNativeMethod("num#");
+                if(dialerController.text.isEmpty)
+                {
+                  AppCubit.get(context).ShowHide();
+                }
+                if(dialerController.text.length==1){
+                  AppCubit.get(context).ShowHide();
+                }
+                dialerController.text = dialerController.text.isEmpty?"#":dialerController.text +"#";
+              },
               child: Container(
                 width:MediaQuery.of(context).size.width/3,
                 height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
@@ -462,12 +568,14 @@ bool DualSIM = false;
             InkWell(
               onTap: (){
                 dialerController.text = dialerController.text.isNotEmpty ? dialerController.text.substring(0,dialerController.text.length-1) : dialerController.text;
+                AppCubit.get(context).SearchTerm = AppCubit.get(context).SearchTerm !=null ? AppCubit.get(context).SearchTerm.substring(0,AppCubit.get(context).SearchTerm.length-1) : AppCubit.get(context).SearchTerm;
                 if(dialerController.text.isEmpty){
                   AppCubit.get(context).ShowHide();
                 }
 
               },
               onLongPress: (){
+                AppCubit.get(context).SearchTerm="";
               },
               child: Container(
                 width:MediaQuery.of(context).size.width*0.08,

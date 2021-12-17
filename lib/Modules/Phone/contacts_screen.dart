@@ -1,13 +1,13 @@
 
 import 'dart:typed_data';
 
+import 'package:azlistview/azlistview.dart';
 import 'package:contacts_service/contacts_service.dart';
 import 'package:dialer_app/Components/contacts_components.dart';
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Layout/Cubit/states.dart';
 import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -36,53 +36,66 @@ class ContactsScreen extends StatelessWidget {
     return BlocProvider.value(
       value:AppCubit(),
       child: BlocConsumer<AppCubit,AppStates>(
-        listener:(context,state){},
+          listener:(context,state){},
           builder:(context,state)
           {
-            return SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.only(top:AppbarSize*1.40),
-                child: Column(
-                  children: [
-                    FavoritesContactsGroups(AppbarSize, Cubit, FavColors),
-                    const Text("Contacts"),
-                    ListView.builder(
-                      physics: NeverScrollableScrollPhysics(),
-                      // scrollDirection: Axis.vertical,
-                      padding:EdgeInsets.symmetric(horizontal: 10.0) ,
-                      shrinkWrap: true,
-                      itemCount: Cubit.isSearching == true?Cubit.FilterdContacts.length:Cubit.Contacts.length,
-                      itemBuilder: (context, index) {
-                        AppContact contact = Cubit.isSearching == true?Cubit.FilterdContacts[index]:Cubit.Contacts[index];
-                        return ListTile(
-                          contentPadding: EdgeInsets.symmetric(horizontal: 5,vertical: 0),
-                          onTap: () {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (BuildContext context) =>
-                                    ContactDetails(
-                                      contact,
-                                      onContactDelete: (AppContact _contact) {
-                                        Cubit.GetContacts();
-                                        Navigator.of(context).pop();
-                                      },
-                                      onContactUpdate: (AppContact _contact) {
-                                        Cubit.GetContacts();
-                                      },
-                                    )
-                            ));
-                          },
-                          title: Text(contact.info!.displayName.toString(),style: Theme.of(context).textTheme.bodyText1,),
-                          subtitle: Text(
-                              contact.info!.phones!.isNotEmpty ? contact.info!.phones!
-                                  .elementAt(0).value.toString() : '',
-                            style: Theme.of(context).textTheme.bodyText2,),
-                          leading: ContactAvatar(contact, 45),
-                          trailing: ContactsTagsNotes(context),
-                        );
-                      },
+            return Padding(
+              padding: EdgeInsets.only(top:AppbarSize*1.40),
+              child: Container(
+                  height: MediaQuery.of(context).size.height,
+                  child: AzListView(
+                      indexBarMargin:EdgeInsets.only(top:45),
+                    indexBarOptions: IndexBarOptions(
+
                     ),
-                  ],
-                ),
+                      data:Cubit.Azitem,
+                      itemCount: Cubit.isSearching == true?Cubit.FilterdContacts.length:Cubit.Contacts.length,
+                      itemBuilder:(context , index)
+                      {
+                        AppContact contact = Cubit.isSearching == true?Cubit.FilterdContacts[index]:Cubit.Contacts[index];
+                        return Column(
+                          children: [
+                            index==0?FavoritesContactsGroups(AppbarSize, Cubit, FavColors):Container(),
+                            index==0?Text("Contacts"):Container(),
+                            ListTile(
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 0),
+                              onTap: () {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (BuildContext context) =>
+                                        ContactDetails(
+                                          contact,
+                                          onContactDelete: (AppContact _contact) {
+                                            Cubit.GetContacts();
+                                            Navigator.of(context).pop();
+                                          },
+                                          onContactUpdate: (AppContact _contact) {
+                                            Cubit.GetContacts();
+                                          },
+                                        )
+                                ));
+                              },
+                              title: Text(
+                                contact.info!.displayName.toString(), style: Theme
+                                  .of(context)
+                                  .textTheme
+                                  .bodyText1,),
+                              subtitle: Text(
+                                contact.info!.phones!.isNotEmpty ? contact.info!
+                                    .phones!
+                                    .elementAt(0).value.toString() : '',
+                                style: Theme
+                                    .of(context)
+                                    .textTheme
+                                    .bodyText2,),
+                              leading: ContactAvatar(contact, 45),
+                              trailing: ContactsTagsNotes(context),
+                            ),
+                          ],
+                        );
+                      }
+                  )
+
               ),
             );}
       ),
@@ -92,6 +105,7 @@ class ContactsScreen extends StatelessWidget {
 
 
 }
+
 
 class ContactDetails extends StatefulWidget {
   ContactDetails(this.contact, {required this.onContactUpdate, required this.onContactDelete});
@@ -171,96 +185,96 @@ class _ContactDetailsState extends State<ContactDetails> {
       print(action);
     }
     return BlocConsumer<AppCubit,AppStates>(
-      listener: (context , state){},
-      builder: (context , state) {
-        return Scaffold(
-          body: SafeArea(
-            child: Column(
-              children: <Widget>[
-                Container(
-                  height: 180,
-                  decoration: BoxDecoration(color: Colors.grey[300]),
-                  child: Stack(
-                    alignment: Alignment.topCenter,
-                    children: <Widget>[
-                      Center(child: ContactAvatar(widget.contact, 100)),
-                      Align(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: IconButton(
-                            icon: Icon(Icons.arrow_back),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ),
-                        alignment: Alignment.topLeft,
-                      ),
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(onPressed: (){
-                              AppCubit.get(context).FavoratesContacts.add(widget.contact);
-                            }, icon:Icon(Icons.star)),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: PopupMenuButton(
-                                onSelected: onAction,
-                                itemBuilder: (BuildContext context) {
-                                  return actions.map((String action) {
-                                    return PopupMenuItem(
-                                      value: action,
-                                      child: Text(action),
-                                    );
-                                  }).toList();
-                                },
-                              ),
-                            ),
-
-                          ],
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: ListView(shrinkWrap: true, children: <Widget>[
-                    ListTile(
-                      title: Text("Name"),
-                      trailing: Text(widget.contact.info!.givenName ?? ""),
-                    ),
-                    ListTile(
-                      title: Text("Family name"),
-                      trailing: Text(widget.contact.info!.familyName ?? ""),
-                    ),
-                    Column(
+        listener: (context , state){},
+        builder: (context , state) {
+          return Scaffold(
+            body: SafeArea(
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    height: 180,
+                    decoration: BoxDecoration(color: Colors.grey[300]),
+                    child: Stack(
+                      alignment: Alignment.topCenter,
                       children: <Widget>[
-                        ListTile(title: Text("Phones")),
-                        Column(
-                          children: widget.contact.info!.phones!
-                              .map(
-                                (i) => Padding(
-                              padding:
-                              const EdgeInsets.symmetric(horizontal: 16.0),
-                              child: ListTile(
-                                title: Text(i.label ?? ""),
-                                trailing: Text(i.value ?? ""),
-                              ),
+                        Center(child: ContactAvatar(widget.contact, 100)),
+                        Align(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: IconButton(
+                              icon: Icon(Icons.arrow_back),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
                             ),
-                          )
-                              .toList(),
+                          ),
+                          alignment: Alignment.topLeft,
+                        ),
+                        Align(
+                          alignment: Alignment.topRight,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(onPressed: (){
+                                AppCubit.get(context).FavoratesContacts.add(widget.contact);
+                              }, icon:Icon(Icons.star)),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: PopupMenuButton(
+                                  onSelected: onAction,
+                                  itemBuilder: (BuildContext context) {
+                                    return actions.map((String action) {
+                                      return PopupMenuItem(
+                                        value: action,
+                                        child: Text(action),
+                                      );
+                                    }).toList();
+                                  },
+                                ),
+                              ),
+
+                            ],
+                          ),
                         )
                       ],
-                    )
-                  ]),
-                )
-              ],
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView(shrinkWrap: true, children: <Widget>[
+                      ListTile(
+                        title: Text("Name"),
+                        trailing: Text(widget.contact.info!.givenName ?? ""),
+                      ),
+                      ListTile(
+                        title: Text("Family name"),
+                        trailing: Text(widget.contact.info!.familyName ?? ""),
+                      ),
+                      Column(
+                        children: <Widget>[
+                          ListTile(title: Text("Phones")),
+                          Column(
+                            children: widget.contact.info!.phones!
+                                .map(
+                                  (i) => Padding(
+                                padding:
+                                const EdgeInsets.symmetric(horizontal: 16.0),
+                                child: ListTile(
+                                  title: Text(i.label ?? ""),
+                                  trailing: Text(i.value ?? ""),
+                                ),
+                              ),
+                            )
+                                .toList(),
+                          )
+                        ],
+                      )
+                    ]),
+                  )
+                ],
+              ),
             ),
-          ),
-        );
-      }
+          );
+        }
     );
   }
 }
@@ -285,7 +299,7 @@ CircleAvatar buildCircleAvatar(Uint8List? avatar, String initials) {
   } else {
     return CircleAvatar(child: Text(initials.toString(),
         style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.transparent,
+      backgroundColor: Colors.transparent,
     );
   }
 }

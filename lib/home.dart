@@ -34,11 +34,14 @@ class Home extends StatelessWidget {
         },
         builder: (context ,state)=>BlocConsumer<AppCubit, AppStates>(
           listener: (context, state) {
-            if(searchController.text.isEmpty){
+            if(searchController.text.isEmpty || dialerController.text.isEmpty){
               AppCubit.get(context).isSearching = false;
-            } else{
+            }
+
+            if(searchController.text.isNotEmpty || dialerController.text.isNotEmpty){
               AppCubit.get(context).isSearching = true;
             }
+
 
 
           },
@@ -78,10 +81,7 @@ class Home extends StatelessWidget {
                             topEnd: Radius.circular(30),
                           ),
                           elevation: 10,
-                          child: Cubit.isShowen?BlocProvider.value(
-
-                              value: AppCubit(),
-                              child: Dialpad(context, AppbarSize , dialerController)):null),
+                          child: Cubit.isShowen?Dialpad(context, AppbarSize , dialerController):null),
 
                     ],
                   ),
