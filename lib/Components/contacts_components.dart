@@ -1,6 +1,6 @@
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
-import 'package:dialer_app/Modules/Contacts/phone_screen.dart';
+import 'package:dialer_app/Modules/Contacts/contacts_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';

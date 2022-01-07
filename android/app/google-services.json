@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "53486967805",
+    "project_id": "dialer-app-97799",
+    "storage_bucket": "dialer-app-97799.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:53486967805:android:892a8a9a6033034b811794",
+        "android_client_info": {
+          "package_name": "com.phone.dialer.dialer_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "53486967805-3r3rums6hmm973qurkam3qqhvk8sl3d3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.phone.dialer.dialer_app",
+            "certificate_hash": "c045ffe8f479116b81fae8fb1696de47bd5aa8e5"
+          }
+        },
+        {
+          "client_id": "53486967805-vv1ij9qgre49gfgri3jhi40ljv98qv6t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGrINNzjoa5EUTzQXs_RUzkt122pz78U8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "53486967805-vv1ij9qgre49gfgri3jhi40ljv98qv6t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

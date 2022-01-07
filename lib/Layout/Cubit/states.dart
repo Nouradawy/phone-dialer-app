@@ -14,5 +14,8 @@ class SearchSuccessState extends AppStates{}
 class isShowenSuccessState extends AppStates{}
 class dailerInputLoadingstate extends AppStates{}
 class dailerInputSuccessstate extends AppStates{}
+class PhoneloglistSuccess extends AppStates{}
+class CallerIDSuccess extends AppStates{}
+class TimerStarted extends AppStates{}
 
 

@@ -1,10 +1,16 @@
-import 'package:azlistview/azlistview.dart';
+import 'dart:math';
+
 import 'package:bloc/bloc.dart';
+import 'package:call_log/call_log.dart';
 import 'package:contacts_service/contacts_service.dart';
+import 'package:custom_timer/custom_timer.dart';
 import 'package:dialer_app/Layout/Cubit/states.dart';
+import 'package:dialer_app/Models/phone_log_model.dart';
+import 'package:dialer_app/NativeBridge/native_bridge.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../Modules/Contacts/appcontacts.dart';
 
@@ -19,12 +25,18 @@ List<AppContact> Contacts = [];
 List<AppContact> FilterdContacts = [];
 List<AppContact> DialpadFilterdContacts = [];
 List<AppContact> FavoratesContacts = [];
-List<_AZItem> Azitem =[];
 
+List SearchableCallerIDList = [];
+List CallerID = [];
+
+List PhoneCallLogs =[];
+List PhoneCallLogsCallerID =[];
 
 bool isSearching = false;
 bool contactsLoaded = false;
 bool isShowen = false;
+
+
 
 Future<void> PermissionHandle() async {
   var status = await Permission.contacts.status;
@@ -39,6 +51,50 @@ Future<void> PermissionHandle() async {
 
 }
 
+void GetCallerID(PhoneNumberQuery,bool? InCall) {
+  SearchableCallerIDList.clear();
+   Contacts.map((element){
+     SearchableCallerIDList.add({
+       "CallerID" : element.info?.displayName.toString(),
+       "PhoneNumber" :
+         element.info?.phones?.map((e) {
+          return e.value?.replaceAll(' ', '');
+         }),
+
+     });
+   }).toList();
+
+   CallerID = PhoneNumberQuery !=null ?SearchableCallerIDList.where((element) {
+     String SearchIN = element["PhoneNumber"].toString();
+     return SearchIN.contains(PhoneNumberQuery.toString());
+   }).toList():[];
+InCall ==true?emit(CallerIDSuccess()):null;
+}
+  CustomTimerController CallTimerController = CustomTimerController();
+void StartTimer(){
+  CallTimerController.start();
+  emit(TimerStarted());
+}
+
+  Future<void> GetPhoneLog() async {
+    (await CallLog.query()).map((element) {
+      GetCallerID(element.number,false);
+     return PhoneCallLogs.add(
+          {
+            "PhoneNumber": element.number,
+            "ContactName": element.name!=null?element.name:CallerID.isNotEmpty?CallerID[0]["CallerID"].toString():"UNKNOWN",
+            "PhoneState": element.callType.toString().replaceAll("CallType.",""),
+            "Duration": element.duration,
+            "Date":DateTime.fromMillisecondsSinceEpoch(element.timestamp!),
+            "AccountID": element.phoneAccountId,
+            "SIMname": element.simDisplayName,
+      });
+    }).toList();
+    // PhoneCallLogs.map((element) {
+    //   GetCallerID(element["PhoneNumber"]);
+    //   element["ContactName"] = CallerID.isNotEmpty?CallerID[0]["CallerID"].toString():"UNKNOWN";
+    // }).toList();
+  }
 
   Future<void> GetContacts() async {
     emit(AppgetContactsLoading());
@@ -50,7 +106,7 @@ Future<void> PermissionHandle() async {
     ];
     int colorIndex = 0;
 
-    List<AppContact> _contacts = (await ContactsService.getContacts().catchError((error){
+    List<AppContact> _contacts = (await ContactsService.getContacts(withThumbnails: false).catchError((error){
       print("Contacts Error : " + error.toString());
     })).map((contact) {
       Color baseColor = colors[colorIndex];
@@ -58,22 +114,15 @@ Future<void> PermissionHandle() async {
       if (colorIndex == colors.length) {
         colorIndex = 0;
       }
-      return new AppContact(info: contact, color: baseColor);
+      return AppContact(info: contact, color: baseColor , tag:contact.displayName![0].toUpperCase());
     }).toList();
     // final SortedContacts = _contacts..sort((a,b)=> a.info!.givenName!.compareTo(b.info!.givenName!));
       Contacts =_contacts;
-    GetAZData();
+
       // contactsLoaded = true;
       emit(AppgetContactsSuccess());
   }
-  Future<void> GetAZData() async {
-    Azitem = (await ContactsService.getContacts().catchError((error){
-      print("Contacts Error : " + error.toString());
-    })).map((contact) {
-      return new _AZItem(title: contact.givenName, tag: contact.givenName![0].toUpperCase());
-    }).toList();
 
-  }
 
   void ShowHide(){
    emit(dailerInputSuccessstate());
@@ -96,52 +145,73 @@ Future<void> PermissionHandle() async {
     });
     emit(SearchSuccessState());
   }
-String SearchTerm ="";
-List<String> SearchTermlist=[];
-  int Searchindex = 0;
+List<String> SearchTerm =[];
+  List<AppContact> Firstchr = [];
+  List<AppContact> secondchr = [];
+  List<AppContact> thirdchr = [];
 
-   Future DialpadSearch () async{
+   Future DialpadSearch (TextEditingController dialerController) async{
     emit(SearchLoadingState());
-    FilterdContacts.clear();
-    DialpadFilterdContacts.clear();
-    DialpadFilterdContacts.addAll(Contacts);
+    // if(dialerController.text[0].toString() == "2") {
+    //   SearchTerm = ["a", "b", "c"];
+    // }
+    // if(dialerController.text[dialerController.text.length] == "3") {
+    //   SearchTerm = ["d", "e", "f"];
+    // }
+    // if(dialerController.text[dialerController.text.length] == "4") {
+    //   SearchTerm = ["g", "h", "i"];
+    // }
+    // if(dialerController.text[dialerController.text.length] == "5") {
+    //   SearchTerm = ["j", "k", "l"];
+    // }
+    // if(dialerController.text[dialerController.text.length] == "6")
+    //   SearchTerm = ["m","n","o"];
+    // if(dialerController.text[dialerController.text.length] == "7")
+    //   SearchTerm = ["p","q","r"];
+    // if(dialerController.text[dialerController.text.length] == "8")
+    //   SearchTerm = ["t","u","v"];
+    // if(dialerController.text[dialerController.text.length] == "9")
+    //   SearchTerm = ["w","x","y"];
 
+    dialerController.text.isEmpty ?FilterdContacts.clear():null;
+    Firstchr.clear();
+    secondchr.clear();
+    thirdchr.clear();
+    FilterdContacts.isEmpty?Firstchr.addAll(Contacts):Firstchr.addAll(FilterdContacts);
+    FilterdContacts.isEmpty?secondchr.addAll(Contacts):secondchr.addAll(FilterdContacts);
+    FilterdContacts.isEmpty?thirdchr.addAll(Contacts):thirdchr.addAll(FilterdContacts);
 
-    DialpadFilterdContacts.retainWhere((contact){
-      String contactName = contact.info!.displayName!.toLowerCase();
-      return contactName.contains(SearchTerm);
+    Firstchr.retainWhere((contact){
+      String contactName = contact.info!.displayName![dialerController.text.length].toLowerCase();
+print(SearchTerm[0]);
+      return contactName.contains(SearchTerm[0]);
+
     });
 
-    if(DialpadFilterdContacts.isNotEmpty)
-      {
+    secondchr.retainWhere((contact){
+      String contactName = contact.info!.displayName![dialerController.text.length].toLowerCase();
+      return contactName.contains(SearchTerm[1]);
+    });
 
-        FilterdContacts.addAll(DialpadFilterdContacts);
+    thirdchr.retainWhere((contact){
+      String contactName = contact.info!.displayName![dialerController.text.length].toLowerCase();
+      return contactName.contains(SearchTerm[2]);
 
-      } else {
-      SearchTerm =  SearchTerm.substring(0,SearchTerm.length - 3);
-      print("searchTerm Bug Remove = "+SearchTerm.toString());
-      SearchTerm = SearchTerm.toString() + SearchTermlist[Searchindex].toString();
-      print("searchTerm Fix ="+SearchTerm.toString());
-      Searchindex++;
-      Searchindex>=3?Searchindex=0:Searchindex;
-      DialpadSearch();
+    });
+    if(FilterdContacts.isEmpty) {
+      FilterdContacts.addAll(secondchr);
+      FilterdContacts.addAll(Firstchr);
+      FilterdContacts.addAll(thirdchr);
+    }else {
+      FilterdContacts.clear();
+      FilterdContacts.addAll(secondchr);
+      FilterdContacts.addAll(Firstchr);
+      FilterdContacts.addAll(thirdchr);
     }
+
     emit(SearchSuccessState());
     }
 
 }
 
-
-class _AZItem extends ISuspensionBean{
-
-  final String? title;
-  final String tag;
-  _AZItem({
-    required this.title,
-    required this.tag,
-});
-
-  @override
-  String getSuspensionTag() => tag;
-}
 

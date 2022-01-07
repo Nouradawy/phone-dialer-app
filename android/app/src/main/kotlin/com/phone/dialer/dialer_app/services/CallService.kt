@@ -20,29 +20,41 @@ var PhoneID : String? = null
 class CallService : InCallService() {
 
     val callListener = object : Call.Callback() {
-        override fun onStateChanged(call: Call?, state: Int) {
-            super.onStateChanged(call, state)
-            when (state) {
-                /** Device call state: No activity.  */
-                Call.STATE_RINGING-> {
-                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "disconnected", state).toMap())
-                }
-                /** Device call state: Off-hook. At least one call exists
-                 * that is dialing, active, or on hold, and no calls are ringing
-                 * or waiting. */
-                Call.STATE_DISCONNECTED -> {
-                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "disconnected", state).toMap())
-                }
-                /** Device call state: Ringing. A new call arrived and is
-                 * ringing or waiting. In the latter case, another call is
-                 * already active.  */
-                Call.STATE_DIALING -> {
-                    println("heyIt's ringing")
-                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "inbound", state).toMap())
-                }
-            }
-        }
-    }
+                        override fun onStateChanged(call: Call?, state: Int) {
+                            super.onStateChanged(call, state)
+                            when (state) {
+                                /** Device call state: No activity.  */
+                                /** Device call state: Off-hook. At least one call exists
+                                 * that is dialing, active, or on hold, and no calls are ringing
+                                 * or waiting. */
+                                Call.STATE_DISCONNECTED -> {
+                                    println("Iam disconnected")
+                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "disconnected", state).toMap())
+                                }
+                                /** Device call state: Ringing. A new call arrived and is
+                                 * ringing or waiting. In the latter case, another call is
+                                 * already active.  */
+                                Call.STATE_DIALING -> {
+                                    println("DialingState-MainMethod")
+                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "inbound", state).toMap())
+                                }
+
+                                Call.STATE_ACTIVE -> {
+                                    println("ActiveState-MainMethod")
+                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "inbound", state).toMap())
+                                }
+
+                                Call.STATE_CONNECTING -> {
+                                    println("ConnectingState-MainMethod")
+                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "inbound", state).toMap())
+                                }
+
+
+                            }
+                        }
+                    }
+
+
     override fun onCallAdded(call: Call) {
 
         super.onCallAdded(call)
@@ -78,12 +90,12 @@ fun String.removeTelPrefix() = this.replace("tel:", "")
  */
 fun String.parseCountryCode(): String = Uri.decode(this)
 
-class Callcallback(eventSink: EventChannel.EventSink?) {
+class Callcallback {
 
     companion object {
         fun PhoneRinging(){
-            println("it's ringing")
-            eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "disconnected", state = Call.STATE_RINGING).toMap())
+            println("it's ringing : " +PhoneID.toString())
+            eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID.toString(), "disconnected", state = Call.STATE_RINGING).toMap())
         }
     }
 }

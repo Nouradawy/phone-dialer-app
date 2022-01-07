@@ -16,17 +16,6 @@
            android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE">
        </service>
 
-<!--       <service-->
-<!--           android:name=".services.MyCallScreeningService"-->
-<!--           android:permission="android.permission.BIND_SCREENING_SERVICEE">-->
-
-<!--           <meta-data android:name="android.telecom.IN_CALL_SERVICE_UI" android:value="true"/>-->
-<!--           <meta-data android:name="android.telecom.IN_CALL_SERVICE_RINGING"-->
-<!--               android:value="true"/>-->
-<!--           <intent-filter>-->
-<!--               <action android:name="android.telecom.CallScreeningService"/>-->
-<!--           </intent-filter>-->
-<!--       </service>-->
 
        <service
            android:name=".services.CallService"
@@ -42,15 +31,6 @@
            </intent-filter>
        </service>
 
-<!--       <receiver-->
-<!--           android:name=".receivers.CallActionReceiver"-->
-<!--           android:enabled="true"-->
-<!--           android:exported="true">-->
-<!--           <intent-filter>-->
-<!--               <action android:name="com.phone.dialer.dialer_app.action.ACCEPT_CALL" />-->
-<!--               <action android:name="com.phone.dialer.dialer_app.action.DECLINE_CALL" />-->
-<!--           </intent-filter>-->
-<!--       </receiver>-->
 
 
 
@@ -90,6 +70,11 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.DIAL" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="FLUTTER_NOTIFICATION_CLICK" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
 

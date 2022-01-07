@@ -1,15 +1,20 @@
-import 'package:dialer_app/Modules/Phone/contacts_screen.dart';
+import 'package:dialer_app/Modules/Login&Register/Cubit/cubit.dart';
+import 'package:dialer_app/Modules/Login&Register/Cubit/states.dart';
+import 'package:dialer_app/Modules/Contacts/contacts_screen.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'Components/components.dart';
-import 'Modules/Contacts/phone_screen.dart';
+import 'Components/constants.dart';
+import 'Models/user_model.dart';
+import 'Modules/Phone/phone_screen.dart';
 import 'Layout/Cubit/cubit.dart';
 import 'Layout/Cubit/states.dart';
 import 'NativeBridge/native_bridge.dart';
 import 'NativeBridge/native_states.dart';
-import 'PhoneState/incall_screen.dart';
+import 'Layout/incall_screen.dart';
 
 class Home extends StatelessWidget {
 
@@ -41,9 +46,6 @@ class Home extends StatelessWidget {
             if(searchController.text.isNotEmpty || dialerController.text.isNotEmpty){
               AppCubit.get(context).isSearching = true;
             }
-
-
-
           },
           builder: (context, state) {
             var Cubit = AppCubit.get(context);
@@ -55,16 +57,18 @@ class Home extends StatelessWidget {
                   extendBodyBehindAppBar: true,
                   key: scaffoldkey,
                   appBar:MainAppBar(context, AppbarSize , searchController),
-
+                  drawer: AppDrawer(context),
+                  drawerDragStartBehavior: DragStartBehavior.start ,
                   floatingActionButton: Cubit.isShowen==false?FloatingActionButton(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                     onPressed: () {
                       Cubit.dialpadShow();
-                  },
+                    },
                     child:Image.asset("assets/Images/dialpad.png",scale:1.8),
                   ):null,
+
                   body: Stack(
                     alignment: AlignmentDirectional.bottomCenter,
                     children: [
@@ -85,13 +89,15 @@ class Home extends StatelessWidget {
 
                     ],
                   ),
-            ),
+                ),
               );
           },
         ),
       ),
     );
   }
+
+
 
 
 

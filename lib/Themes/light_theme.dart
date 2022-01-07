@@ -5,7 +5,9 @@ import 'package:hexcolor/hexcolor.dart';
 
 ThemeData LightThemeData() {
   return ThemeData(
+    primaryColor: Colors.blueGrey,
     appBarTheme: AppBarTheme(
+      iconTheme: IconThemeData(color: Colors.black),
       elevation: 0,
       backgroundColor: Colors.transparent,
       systemOverlayStyle: SystemUiOverlayStyle(

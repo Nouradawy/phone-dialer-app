@@ -33,20 +33,30 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
+  intl: ^0.17.0
   cupertino_icons: ^1.0.2
   contacts_service: ^0.6.3
   system_settings: ^2.0.0
-  bloc: ^7.1.0
-  flutter_bloc: ^7.1.0
+  bloc: ^7.2.1
+  flutter_bloc: ^7.3.3
   conditional_builder_null_safety: ^0.0.4
   hexcolor: ^2.0.5
-#  firebase_messaging: ^11.0.0
-  flutter_voip_kit: ^0.0.6
+  custom_timer: ^0.1.1
   permission_handler: ^8.3.0
   flutter_phone_direct_caller: ^2.1.0
-  indexed: ^0.0.6
+  call_log: ^3.2.2
+  workmanager: ^0.4.1
   azlistview: ^2.0.0-nullsafety.0
-
+  shared_preferences: ^2.0.11
+  dio_helper: ^1.1.6
+  fluttertoast: ^8.0.8
+  firebase_core: ^1.10.6
+  firebase_auth: ^3.3.4
+  cloud_firestore: ^3.1.5
+  focused_menu: ^1.0.5
+  image_picker: ^0.8.4+4
+  firebase_storage: ^10.2.4
+  firebase_messaging: ^11.2.4
 
 dev_dependencies:
   flutter_test:

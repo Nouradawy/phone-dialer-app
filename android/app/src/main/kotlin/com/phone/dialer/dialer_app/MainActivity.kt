@@ -18,7 +18,6 @@ import com.phone.dialer.dialer_app.activities.CallActivity
 import com.phone.dialer.dialer_app.helpers.CallManager
 import com.phone.dialer.dialer_app.helpers.CallManager.Companion.getState
 //import com.phone.dialer.dialer_app.services.Callcallback
-import com.phone.dialer.dialer_app.services.PhoneID
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -30,11 +29,11 @@ import io.flutter.plugin.common.StringCodec
 
 var eventSink : EventChannel.EventSink? = null
 class MainActivity : FlutterActivity() {
-    private val platform = "NativeBridge"
-    private  val EVEENT_CHANNEL = "PhoneStatsEvents"
+
+    private val platform = "NativeBridge"   //MethodChannel  for sending events from flutter to android.
+    private  val EVEENT_CHANNEL = "PhoneStatsEvents" //EventChannel for sending events from android to flutter.
     private lateinit var eventChannel : EventChannel
 //    val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-    private var number: String? = null
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)

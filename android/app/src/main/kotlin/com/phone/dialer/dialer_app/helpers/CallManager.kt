@@ -6,6 +6,7 @@ import android.telecom.InCallService
 import android.telecom.VideoProfile
 import android.os.Build
 import android.os.Looper
+import android.telecom.ConnectionService
 import androidx.annotation.RequiresApi
 
 // inspired by https://github.com/Chooloo/call_manage
@@ -55,6 +56,7 @@ class CallManager {
         }
 
 
+
         fun getCallerID():String {
             val handle = call?.details?.handle?.toString()
             var phoneNumber : String = Uri.decode(handle)
@@ -86,4 +88,10 @@ class CallManager {
 
     }
 
+}
+
+class PhoneAccount {
+    companion object{
+        var ConnectionService : ConnectionService? =null
+    }
 }

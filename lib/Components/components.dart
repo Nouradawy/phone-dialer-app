@@ -1,16 +1,27 @@
 
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
+import 'package:dialer_app/Layout/incall_screen.dart';
+import 'package:dialer_app/Models/user_model.dart';
+import 'package:dialer_app/Modules/Chat/chat_screen.dart';
+import 'package:dialer_app/Modules/Login&Register/Cubit/cubit.dart';
+import 'package:dialer_app/Modules/Login&Register/Cubit/states.dart';
+import 'package:dialer_app/Modules/profile/profile_page.dart';
 import 'package:dialer_app/NativeBridge/native_bridge.dart';
 import 'package:dialer_app/Themes/light_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:focused_menu/focused_menu.dart';
+import 'package:focused_menu/modals.dart';
 import 'package:hexcolor/hexcolor.dart';
 
 
 
 AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController Searchcontroller) {
   return AppBar(
-    automaticallyImplyLeading: false,
+    // automaticallyImplyLeading: false,
     title:Container(
       height: 28,
       width:MediaQuery.of(context).size.width*0.55,
@@ -18,52 +29,75 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
         borderRadius: BorderRadiusDirectional.circular(3),
         color:SearchBackgroundColor(),
       ),
-      child: TextField(
-        // style: Theme.of(context).textTheme.headline2,
-        controller: Searchcontroller,
-        textAlignVertical: TextAlignVertical.center,
-        onChanged: (value){
-          AppCubit.get(context).filterContacts(Searchcontroller);
-        },
-        decoration: InputDecoration(
-          hintText: "Search among ${AppCubit.get(context).Contacts.length} contact(s)",
-          // contentPadding: EdgeInsets.all(0),
-          // alignLabelWithHint: true,
-          // labelText:"Search",
-          hintStyle:Theme.of(context).textTheme.headline2,
-          // isCollapsed: true,
-          prefixIcon: Icon(Icons.search,color: SearchIconColor(),size: 25,),
-          border:InputBorder.none,
-          // fillColor: SearchBackgroundColor(),
-        ),
+      child: Stack(
+        children: [
+          Padding(
+            padding: EdgeInsets.only(left:MediaQuery.of(context).size.width*0.55*0.01),
+            child: Icon(Icons.search,color: SearchIconColor(),size: 25,),
+          ),
+          TextField(
+            style: Theme.of(context).textTheme.headline2,
+            controller: Searchcontroller,
+            textAlign:TextAlign.center,
+            textAlignVertical: TextAlignVertical.center,
+            onChanged: (value){
+              AppCubit.get(context).filterContacts(Searchcontroller);
+            },
+            decoration: InputDecoration(
+              hintText: "Search among ${AppCubit.get(context).Contacts.length} contact(s)",
+              // contentPadding: EdgeInsets.all(0),
+              // alignLabelWithHint: true,
+              // labelText:"Search",
+              hintStyle:Theme.of(context).textTheme.headline2,
+              // isCollapsed: true,
+              border:InputBorder.none,
+              // fillColor: SearchBackgroundColor(),
+            ),
+          ),
+        ],
       ),
     ),
     actions: [
       Padding(
         padding: const EdgeInsets.only(top:16.0,right:15),
-        child: Stack(
-          children: [
-            Container(
-              height: 25,
-              width: 60,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadiusDirectional.circular(3),
-                color:AppBarChatIconBackgroundColor(),
+        child: InkWell(
+          onTap:(){
+            Navigator.push(context,
+            MaterialPageRoute(builder: (BuildContext context) => ChatScreen()));
+          },
+          child: Stack(
+            children: [
+              Container(
+                height: 25,
+                width: 60,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadiusDirectional.circular(3),
+                  color:AppBarChatIconBackgroundColor(),
 
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top:4.0,left:5.5),
-              child: Image.asset("assets/Images/Chatting_Logo.png",scale:3.2),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left:28.0,top:4),
-              child: Text("Chat",style: Theme.of(context).textTheme.headline2!.copyWith(color:HexColor("#616161")),),
-            )
-          ],),
+              Padding(
+                padding: const EdgeInsets.only(top:4.0,left:5.5),
+                child: Image.asset("assets/Images/Chatting_Logo.png",scale:3.2),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left:28.0,top:4),
+                child: Text("Chat",style: Theme.of(context).textTheme.headline2!.copyWith(color:HexColor("#616161")),),
+              )
+            ],),
+        ),
       ),
     ],
-    leading: IconButton(onPressed: (){}, icon: Icon(Icons.more_vert,color:AppBarMoreIconColor()),),
+    // leading: FocusedMenuHolder(
+    //
+    //   menuItems: [
+    //     FocusedMenuItem(title: Text("this is a test :D"), onPressed: (){})
+    //   ],
+    //   onPressed: (){
+    // },
+    //   openWithTap: true,
+    //   blurBackgroundColor: Colors.blueGrey[900],
+    //   child: Icon(Icons.more_vert,color:AppBarMoreIconColor()),),
     toolbarHeight: AppbarSize,
     flexibleSpace: SafeArea(
       child: ClipPath(
@@ -103,6 +137,129 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
         Tab(text:"Phone"),
         Tab(text:"Contacts"),
       ],),
+  );
+}
+AppBar ChatAppBar(BuildContext context, double AppbarSize) {
+  return AppBar(
+    automaticallyImplyLeading: false,
+    title:Transform.translate(
+      offset:Offset(0, -4),
+      child: Row(
+        children: [
+          Image.asset("assets/Images/chatLogo.png",scale: 1.9,),
+          Text("Chats",style: TextStyle(
+            fontFamily: "Cairo",
+            fontWeight: FontWeight.w600,
+            color:HexColor("#404040"),
+            fontSize: 25,
+          ),),
+        ],
+      ),
+    ),
+    actions: [
+      Transform.translate(
+          offset: Offset(0, -4),
+          child: IconButton(onPressed: (){}, icon: Icon(Icons.notifications_none_rounded),color:HexColor("#23036A"),padding: EdgeInsets.all(1),))
+    ],
+    // leading: IconButton(onPressed: (){}, icon: Icon(Icons.more_vert,color:AppBarMoreIconColor()),),
+    toolbarHeight: AppbarSize,
+    flexibleSpace: SafeArea(
+      child: ClipPath(
+        child: Container(
+            color: AppBarBackgroundColor()
+        ),
+        clipper: MyCustomeClipper(),
+      ),
+    ),
+  );
+}
+AppBar ChatMessagesAppBar(BuildContext context, double AppbarSize , UserModel Contact) {
+  return AppBar(
+    automaticallyImplyLeading: false,
+    title:Transform.translate(
+      offset:Offset(0, -4),
+      child: ListTile(
+
+          leading:Container(
+            width: 55,
+              height: 50,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image:NetworkImage(Contact.image.toString()),
+                  fit:BoxFit.cover,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+
+          ),
+        title:Text(Contact.name.toString(),style: TextStyle(
+            fontFamily: "Cairo",
+            fontWeight: FontWeight.w600,
+            color:HexColor("#404040"),
+            fontSize: 15,
+          height: 1,
+          ),),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children:[
+            Text("Last Seen",style: TextStyle(height: 1.2),),
+            Text("30 Min ago",style: TextStyle(height: 1.2),),
+
+          ]
+        ),
+      ),
+    ),
+    actions: [
+      Transform.translate(
+        offset: Offset(18,-4),
+        child: Stack(
+          alignment: AlignmentDirectional.center,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                  color:Colors.black.withOpacity(0.73)
+              ),
+              width: 26,
+              height: 26,
+
+            ),
+            IconButton(onPressed: (){}, icon: Icon(Icons.phone),color:Colors.white,iconSize: 16,),
+          ],
+        ),
+      ),
+      Transform.translate(
+        offset: Offset(8,-4),
+        child: Stack(
+          alignment: AlignmentDirectional.center,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(5),
+                  color:Colors.black.withOpacity(0.73)
+              ),
+              width: 26,
+              height: 26,
+
+            ),
+            IconButton(onPressed: (){}, icon: Icon(Icons.search),color:Colors.white,iconSize: 16,),
+          ],
+        ),
+      ),
+      Transform.translate(
+          offset: Offset(0, -4),
+          child: IconButton(onPressed: (){}, icon: Icon(Icons.more_vert_rounded),color:HexColor("#23036A"),padding: EdgeInsets.all(1),)),
+    ],
+    // leading: IconButton(onPressed: (){}, icon: Icon(Icons.more_vert,color:AppBarMoreIconColor()),),
+    toolbarHeight: AppbarSize,
+    flexibleSpace: SafeArea(
+      child: ClipPath(
+        child: Container(
+            color: AppBarBackgroundColor()
+        ),
+        clipper: MyCustomeClipper(),
+      ),
+    ),
   );
 }
 Column Dialpad(BuildContext context, double AppbarSize , TextEditingController dialerController ) {
@@ -179,10 +336,8 @@ bool DualSIM = false;
             ),
             InkWell(
               onTap: (){
-                AppCubit.get(context).SearchTerm = AppCubit.get(context).SearchTerm!=null?AppCubit.get(context).SearchTerm.toString()+'abc':'abc';
-                AppCubit.get(context).SearchTermlist = ["a","b","c"];
-                print("SearchTerm Before searching = "+AppCubit.get(context).SearchTerm.toString());
-                AppCubit.get(context).DialpadSearch();
+                AppCubit.get(context).SearchTerm = ["a", "b", "c"];
+                AppCubit.get(context).DialpadSearch(dialerController);
                 NativeBridge.get(context)
                     .invokeNativeMethod("num2");
 
@@ -219,10 +374,8 @@ bool DualSIM = false;
                 ),
               ) ,
               onTap: (){
-                AppCubit.get(context).SearchTerm = AppCubit.get(context).SearchTerm!=null?AppCubit.get(context).SearchTerm.toString()+'def':'def';
-                AppCubit.get(context).SearchTermlist = ["d","e","f"];
-                print("SearchTerm Before searching = "+AppCubit.get(context).SearchTerm.toString());
-                AppCubit.get(context).DialpadSearch();
+                AppCubit.get(context).SearchTerm = ["d", "e", "f"];
+                AppCubit.get(context).DialpadSearch(dialerController);
                 NativeBridge.get(context)
                     .invokeNativeMethod("num3");
 
@@ -258,10 +411,8 @@ bool DualSIM = false;
           children: [
             InkWell(
               onTap: (){
-                AppCubit.get(context).SearchTerm = AppCubit.get(context).SearchTerm!=null?AppCubit.get(context).SearchTerm.toString()+'ghi':'ghi';
-                AppCubit.get(context).SearchTermlist = ["g","h","i"];
-                print("SearchTerm Before searching = "+AppCubit.get(context).SearchTerm.toString());
-                AppCubit.get(context).DialpadSearch();
+                AppCubit.get(context).SearchTerm = ["g", "h", "i"];
+                AppCubit.get(context).DialpadSearch(dialerController);
                 NativeBridge.get(context)
                     .invokeNativeMethod("num4");
 
@@ -291,10 +442,8 @@ bool DualSIM = false;
             ),
             InkWell(
               onTap: (){
-                AppCubit.get(context).SearchTerm = AppCubit.get(context).SearchTerm!=null?AppCubit.get(context).SearchTerm.toString()+'jkl':'jkl';
-                AppCubit.get(context).SearchTermlist = ["j","k","l"];
-                print("SearchTerm Before searching = "+AppCubit.get(context).SearchTerm.toString());
-                AppCubit.get(context).DialpadSearch();
+                AppCubit.get(context).SearchTerm = ["j", "k", "l"];
+                AppCubit.get(context).DialpadSearch(dialerController);
                 NativeBridge.get(context)
                     .invokeNativeMethod("num5");
 
@@ -324,10 +473,8 @@ bool DualSIM = false;
             ),
             InkWell(
               onTap: (){
-                AppCubit.get(context).SearchTerm = AppCubit.get(context).SearchTerm!=null?AppCubit.get(context).SearchTerm.toString()+'mno':'mno';
-                AppCubit.get(context).SearchTermlist = ["m","n","o"];
-                print("SearchTerm Before searching = "+AppCubit.get(context).SearchTerm.toString());
-                AppCubit.get(context).DialpadSearch();
+                AppCubit.get(context).SearchTerm = ["m", "n", "o"];
+                AppCubit.get(context).DialpadSearch(dialerController);
                 NativeBridge.get(context)
                     .invokeNativeMethod("num6");
 
@@ -361,10 +508,8 @@ bool DualSIM = false;
           children: [
             InkWell(
               onTap: (){
-                AppCubit.get(context).SearchTerm = AppCubit.get(context).SearchTerm!=null?AppCubit.get(context).SearchTerm.toString()+'pqrs':'pqrs';
-                AppCubit.get(context).SearchTermlist = ["p","q","o","s"];
-                print("SearchTerm Before searching = "+AppCubit.get(context).SearchTerm.toString());
-                AppCubit.get(context).DialpadSearch();
+                AppCubit.get(context).SearchTerm = ["p", "q", "r"];
+                AppCubit.get(context).DialpadSearch(dialerController);
                 NativeBridge.get(context)
                     .invokeNativeMethod("num7");
 
@@ -394,10 +539,8 @@ bool DualSIM = false;
             ),
             InkWell(
               onTap: (){
-                AppCubit.get(context).SearchTerm = AppCubit.get(context).SearchTerm!=null?AppCubit.get(context).SearchTerm.toString()+'tuv':'tuv';
-                AppCubit.get(context).SearchTermlist = ["t","u","v"];
-                print("SearchTerm Before searching = "+AppCubit.get(context).SearchTerm.toString());
-                AppCubit.get(context).DialpadSearch();
+                AppCubit.get(context).SearchTerm = ["t", "u", "v"];
+                AppCubit.get(context).DialpadSearch(dialerController);
                 NativeBridge.get(context)
                     .invokeNativeMethod("num8");
                 if(dialerController.text.isEmpty)
@@ -426,10 +569,8 @@ bool DualSIM = false;
             ),
             InkWell(
               onTap: (){
-                AppCubit.get(context).SearchTerm = AppCubit.get(context).SearchTerm!=null?AppCubit.get(context).SearchTerm.toString()+'wxyz':'wxyz';
-                AppCubit.get(context).SearchTermlist = ["w","X","y","z"];
-                print("SearchTerm Before searching = "+AppCubit.get(context).SearchTerm.toString());
-                AppCubit.get(context).DialpadSearch();
+                AppCubit.get(context).SearchTerm = ["w", "x", "y"];
+                AppCubit.get(context).DialpadSearch(dialerController);
                 NativeBridge.get(context)
                     .invokeNativeMethod("num9");
                 if(dialerController.text.isEmpty)
@@ -568,14 +709,12 @@ bool DualSIM = false;
             InkWell(
               onTap: (){
                 dialerController.text = dialerController.text.isNotEmpty ? dialerController.text.substring(0,dialerController.text.length-1) : dialerController.text;
-                AppCubit.get(context).SearchTerm = AppCubit.get(context).SearchTerm !=null ? AppCubit.get(context).SearchTerm.substring(0,AppCubit.get(context).SearchTerm.length-1) : AppCubit.get(context).SearchTerm;
                 if(dialerController.text.isEmpty){
                   AppCubit.get(context).ShowHide();
                 }
 
               },
               onLongPress: (){
-                AppCubit.get(context).SearchTerm="";
               },
               child: Container(
                 width:MediaQuery.of(context).size.width*0.08,
@@ -688,6 +827,10 @@ Row CallButton(BuildContext context, double AppbarSize , bool DualSIM , TextEdit
          InkWell(
            onTap: (){
              FlutterPhoneDirectCaller.callNumber(dialerController.text);
+             Navigator.pushAndRemoveUntil(context,
+               MaterialPageRoute(builder: (BuildContext context) => InCallScreen()),
+                   (Route<dynamic>route)=>false,);
+             NativeBridge.get(context).isRinging = false;
            },
            child: Container(
             width:55,
@@ -705,9 +848,262 @@ Row CallButton(BuildContext context, double AppbarSize , bool DualSIM , TextEdit
   }
 }
 
+Drawer AppDrawer(context) {
+  String UserState = "online";
+  return Drawer(
+    child: ListView.builder(
+            itemCount: 1,
+            itemBuilder: (context,index){
+              var loginCubit = LoginCubit.get(context);
+              return BlocConsumer<LoginCubit,LoginCubitStates>(
+                listener: (context,state){},
+                builder:(cotnext , state)=> Column(
+                  children: [
+                    Container(height: MediaQuery.of(context).size.height*0.20,
+                        color:Colors.amber,
+                        child:Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: MediaQuery.of(context).size.height*0.01,),
+                            Padding(
+                              padding: const EdgeInsets.only(left: 15.0,top: 3),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border:Border.all(width: 1.5)
+                                ),
+                                child: InkWell(
+                                  onTap: (){
+                                    Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=>ProfilePage(),));
+                                  },
+                                  child: CircleAvatar(
+                                    radius: 40,
+                                    backgroundImage: NetworkImage(loginCubit.CurrentUser[0].image.toString()),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(left:15.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(height: 5,),
+                                  Row(
+                                    children: [
+                                      Text(loginCubit.CurrentUser[0].name.toString()),
+                                      SizedBox(width: 5,),
+
+                                      FocusedMenuHolder(
+                                        menuOffset: 5,
+                                        menuItems: [
+                                          FocusedMenuItem(
+                                              title: Text("online"),
+                                              trailingIcon: Icon(Icons.circle ,size:12 , color: Colors.green,),
+                                              onPressed: (){
+                                                UserState = "online";
+                                              }),
+                                          FocusedMenuItem(
+                                              title: Text("Away"),
+                                              trailingIcon: Icon(Icons.circle ,size:12 , color: Colors.red,),
+                                              onPressed: (){
+                                                UserState = "Away";
+                                              }),
+                                        ],
+                                        onPressed: (){},
+                                        menuWidth: 80,
+                                        openWithTap: true,
+                                        child: Container(
+
+                                          decoration: BoxDecoration(
+                                            color:Colors.white,
+                                            borderRadius: BorderRadius.circular(4)
+                                          ),
+
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 0),
+                                            child: Transform.translate(
+                                              offset: Offset(5,0),
+                                              child: Row(
+                                                children: [
+                                                  Transform.translate(
+                                                      offset: Offset(0,1.5),
+                                                      child: CircleAvatar(radius: 5, backgroundColor: UserState == "online"?Colors.green:Colors.red,)),
+                                                  SizedBox(width:1),
+                                                  Text(UserState),
+                                                  Transform.translate(
+                                                      offset: Offset(0,1.5),
+                                                      child: Icon(Icons.arrow_drop_down ,)),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                    ],
+                                  ),
+                                  Text(loginCubit.CurrentUser[0].email.toString()),
+                                ],
+                              ),
+
+                            ),
+                          ],
+                        )
+                    ),
+                    Text("Display Settings"),
+                    ListTile(
+                      title:Text("Lang"),
+                      trailing: Text("Eng"),
+                    ),
+                    ListTile(
+                      title:Text("Theme"),
+                      trailing: Text("Light"),
+                    ),
+                    Text("System Settings"),
+                    ListTile(
+                      onTap: (){},
+                      leading: Icon(Icons.settings),
+                      title:Text("Settings"),
+                    ),
+                    ListTile(
+                      onTap: (){},
+                      leading: Icon(Icons.note_add),
+                      title:Text("MyNotes"),
+                    ),
+                  ],
+                ),
+              );
+
+            }
+    ),
+  );
+}
+
+PreferredSizeWidget defaultAppBar({
+  required BuildContext context,
+  String? title,
+  List<Widget>? actions,
+  IconData? LeadingIcon,
+})=>AppBar(
+  leading: IconButton(
+    onPressed: ()=>Navigator.pop(context),
+    icon:Icon(LeadingIcon),
+  ),
+  titleSpacing: 0.0,
+  title:Text(title.toString()),
+  actions: actions,
+);
+Widget defaultTextForm(
+    context, {
+      required TextEditingController controller,
+      required TextInputType keyBoardType,
+      required String text,
+      required Function() onTap,
+      Function(String?)? onChang,
+      bool IsPassword = false,
+      // bool ObsText = false
+      String? Function(String?)? validate,
+      IconData? preIcon,
+      IconData? SuffixIcon,
+      bool AutoFocus = false,
+      String? prefixText,
+      var Cubit,
+    }) {
+  final bool isactive = IsPassword;
+  isactive ? IsPassword = Cubit.isPassword : null;
+
+  return TextFormField(
+    controller: controller,
+    autofocus: AutoFocus,
+    obscureText: IsPassword,
+    keyboardType: keyBoardType,
+    validator: validate,
+    onTap: onTap,
+    onChanged: onChang,
+    decoration: InputDecoration(
+      prefixText: prefixText,
+      labelText: text,
+      prefixIcon: Icon(
+        preIcon,
+      ),
+      suffixIcon: isactive
+          ? IconButton(
+        onPressed: () {
+          Cubit.Passon();
+        },
+        icon: Icon(Cubit.suffixIcon),
+      )
+          : IconButton(
+        onPressed: () {},
+        icon: Icon(SuffixIcon),
+      ),
+      border: OutlineInputBorder(),
+    ),
+  );
 
 
+}
+Widget defaultButton({
+  double width = double.infinity,
+  Color background = Colors.blue,
+  required Function() function,
+  required String text,
+  bool isUpperCase = true,
+  double radius = 3.0,
+}) =>
+    Container(
+      width: width,
+      child: MaterialButton(
+        onPressed: function,
+        child: Text(
+          isUpperCase ? text.toUpperCase() : text,
+          style: const TextStyle(
+            color: Colors.white,
+          ),
+        ),
+      ),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(
+          radius,
+        ),
+      ),
+    );
 
+void showToast({
+  required String text,
+  required ToastStates state,})=>
+    Fluttertoast.showToast(
+        msg: text,
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 5,
+        backgroundColor: chooseToastColor(state),
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
+
+enum ToastStates {SUCCESS, ERROR, WARNING}
+
+Color chooseToastColor(ToastStates state)
+{
+  Color color;
+
+  switch(state)
+  {
+    case ToastStates.SUCCESS:
+      color = Colors.green;
+      break;
+    case ToastStates.WARNING:
+      color = Colors.yellow;
+      break;
+    case ToastStates.ERROR:
+      color = Colors.red;
+      break;
+  }
+  return color;
+}
 
 class MyCustomeClipper extends CustomClipper<Path>{
   @override

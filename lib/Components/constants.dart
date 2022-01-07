@@ -30,7 +30,7 @@ class MyBlocObserver extends BlocObserver {
   }
 }
 String phonenum = "Empty";
-
+String? token ;
 
 
 class BlendMask extends SingleChildRenderObjectWidget {
