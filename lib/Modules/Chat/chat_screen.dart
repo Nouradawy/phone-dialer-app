@@ -1,8 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:contacts_service/contacts_service.dart';
 import 'package:dialer_app/Components/components.dart';
+import 'package:dialer_app/Components/constants.dart';
+import 'package:dialer_app/Models/message_model.dart';
+import 'package:dialer_app/Models/user_model.dart';
+import 'package:dialer_app/Modules/Chat/Cubit/states.dart';
+import 'package:dialer_app/Modules/Login&Register/Cubit/cubit.dart';
+import 'package:dialer_app/Modules/Login&Register/Cubit/states.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hexcolor/hexcolor.dart';
 
+import 'Cubit/cubit.dart';
 import 'chat_contacts.dart';
 
 class ChatScreen extends StatelessWidget {
@@ -10,6 +20,8 @@ class ChatScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+
     double AppbarSize = MediaQuery
         .of(context)
         .size
@@ -22,165 +34,347 @@ class ChatScreen extends StatelessWidget {
         .of(context)
         .size
         .width - (ProfilePictureBackgroundWidth + 34);
+
     double MsgBoxHPadding = 6;
-    Text Msg = Text("ok i want you to focus on jhin and i will take  ",style: TextStyle(
-      fontFamily: "Cairo",
-      height: 1.2,
-      fontWeight: FontWeight.w600,
-    ));
-    return Scaffold(
-      appBar: ChatAppBar(context, AppbarSize),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 12.0),
-        child: Column(
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Stack(
-                  children: [
-                    Stack(
-                      alignment: AlignmentDirectional.topCenter,
-                      children: [
-                        Transform.translate(
-                          offset: Offset(0, ProfilePictureSize * 0.50),
-                          child: Container(
-                            decoration: BoxDecoration(
-                                color: HexColor("#E5E5E5").withOpacity(0.60),
-                                borderRadius: const BorderRadiusDirectional.only(
-                                  topStart: Radius.circular(6),
-                                  bottomStart: Radius.circular(6),
-                                  topEnd: Radius.zero,
-                                  bottomEnd: Radius.zero,)
-                            ),
+    // Text Msg = Text("i want you to focus on jhin and i will take  ",style: TextStyle(
+    //   fontFamily: "Cairo",
+    //   height: 1.2,
+    //   fontWeight: FontWeight.w600,
+    // ));
+    bool? FirstLoop;
+    return BlocProvider.value(
+      value:LoginCubit()..GetChatContacts(),
+      child: BlocConsumer<LoginCubit,LoginCubitStates>(
+        listener: (context ,state){
 
-                            width: ProfilePictureBackgroundWidth,
-                            height: ProfilePictureBackgroundHight,),
-                        ),
-                        Column(
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(width: 2,
-                                      color: HexColor("#57E3A0"))
-                              ),
-                              child: CircleAvatar(
-                                radius: ProfilePictureSize,
-                                backgroundImage: NetworkImage(
-                                    "https://www.dmarge.com/cdn-cgi/image/width=768,quality=85,fit=scale-down,format=auto/https://www.dmarge.com/wp-content/uploads/2021/01/dwayne-the-rock-.jpg"),
-                              ),
-                            ),
-                            SizedBox(height: 5,),
-                            Text("Nour Eldin", style: TextStyle(
-                              fontFamily: "Quicksand",
-                              fontSize: UserNameFontSize,
-                            ),),
-                            // Text("Mohamed",style: TextStyle(
-                            //   fontFamily: "Quicksand",
-                            //   fontSize: UserNameFontSize,
-                            // ),),
-                          ],
-                        ),
-                      ],
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(
-                          top: 17.0, left: ProfilePictureBackgroundWidth - 10),
-                      child: Column(
-                        children: [
-                          Container(
-                            alignment: AlignmentDirectional.topCenter,
-                            width: 2,
-                            height: 25,
-                            color: HexColor("#707070"),
-                          ),
-                          SizedBox(height: 30,),
-                          Container(
-                            width: 20,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(6),
-                              color: HexColor("#5545AA").withOpacity(0.30),
-                            ),
+        },
+        builder:(context ,state) {
 
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+          final userModel = FirebaseFirestore.instance.collection("Users").withConverter<UserModel>(
+              fromFirestore:(snapshots , _)=> UserModel.fromJson(snapshots.data()),
+              toFirestore: (UserModel , _) =>UserModel.toMap()
+          );
+          return Scaffold(
+            floatingActionButton: FloatingActionButton.extended(
+
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 18.0),
-                  child: Container(
+                onPressed: () {
+                  Navigator.push(context,
+                    MaterialPageRoute(builder:(BuildContext context) => ChatContacts()),
+                  );
+                },
+                label:
+                Row(children: [
+                  Icon(Icons.add),
+                  Text("New Chat"),
+                ],)
+            ),
+            appBar: ChatAppBar(context, AppbarSize),
+            body: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 12.0),
+              child: StreamBuilder<QuerySnapshot<UserModel>>(
+                stream: userModel.snapshots(),
+                builder:(context , UserModelsnapshot)
+                {
+                  if (UserModelsnapshot.hasError) {
+                    return Center(
+                      child: Text(UserModelsnapshot.error.toString()),
+                    );
+                  }
 
-                    child: Transform.translate(
-                      offset: Offset(-10, 0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 3.0),
-                            child: Text("Last seen", style: TextStyle(
-                                fontFamily: "Cairo",
-                                fontSize: 8,
-                                height: 1
-                            ),),
-                          ),
-                          Row(
+                  if (!UserModelsnapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final Userdata = UserModelsnapshot.requireData;
+                  return ListView.separated(
+                    itemCount: Userdata.size,
+                    separatorBuilder: (context,state)=>SizedBox(height: 2,),
+                    itemBuilder:(context , index) {
+                      //ToDo: add list filtering
+
+                      final messagesRef = FirebaseFirestore.instance.collection("Users").doc(token).collection("chats").doc(Userdata.docs[index].data().uId.toString()).collection("messages").withConverter<MessageModel>(
+                          fromFirestore: (snapshots, _) => MessageModel.fromJson(snapshots.data()),
+                          toFirestore: (model, _) => ChatAppCubit.get(context).model!.toMap());
+
+                      final NewNot =FirebaseFirestore.instance.collection("Users").doc(token).collection("chats").doc(Userdata.docs[index].data().uId).snapshots().re;
+
+                      if(Userdata.docs[index].data().uId != token ) {
+
+                        FirstLoop==true?LoginCubit.get(context).NewMessageDetection(Userdata,index):null;
+                        FirstLoop =true;
+                        if(LoginCubit.get(context).NewMessage == true) {
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.only(left: 3.0),
-                                child: Text("30 Min ago", style: TextStyle(
-                                    fontFamily: "Cairo",
-                                    fontSize: 10,
-                                    height: 1.5
-                                ),),
+                              Stack(
+                                children: [
+                                  Stack(
+                                    alignment: AlignmentDirectional.topCenter,
+                                    children: [
+                                      Transform.translate(
+                                        offset: Offset(
+                                            0, ProfilePictureSize * 0.50),
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                              color: HexColor("#E5E5E5")
+                                                  .withOpacity(0.60),
+                                              borderRadius:
+                                                  const BorderRadiusDirectional
+                                                      .only(
+                                                topStart: Radius.circular(6),
+                                                bottomStart: Radius.circular(6),
+                                                topEnd: Radius.zero,
+                                                bottomEnd: Radius.zero,
+                                              )),
+                                          width: ProfilePictureBackgroundWidth,
+                                          height: ProfilePictureBackgroundHight,
+                                        ),
+                                      ),
+
+                                      //Consum
+                                      Column(
+                                        children: [
+                                          Container(
+                                            decoration: BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                    width: 2,
+                                                    color:
+                                                        HexColor("#57E3A0"))),
+                                            child: CircleAvatar(
+                                              radius: ProfilePictureSize,
+                                              backgroundImage: NetworkImage(
+                                                  Userdata.docs[index]
+                                                      .data()
+                                                      .image
+                                                      .toString()),
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            height: 5,
+                                          ),
+                                          Text(
+                                            Userdata.docs[index]
+                                                .data()
+                                                .name
+                                                .toString(),
+                                            style: TextStyle(
+                                              fontFamily: "Quicksand",
+                                              fontSize: UserNameFontSize,
+                                            ),
+                                          ),
+                                          // Text("Mohamed",style: TextStyle(
+                                          //   fontFamily: "Quicksand",
+                                          //   fontSize: UserNameFontSize,
+                                          // ),),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(
+                                        top: 17.0,
+                                        left:
+                                            ProfilePictureBackgroundWidth - 10),
+                                    child: Column(
+                                      children: [
+                                        Container(
+                                          alignment:
+                                              AlignmentDirectional.topCenter,
+                                          width: 2,
+                                          height: 25,
+                                          color: HexColor("#707070"),
+                                        ),
+                                        const SizedBox(
+                                          height: 30,
+                                        ),
+                                        Container(
+                                          width: 20,
+                                          height: 7,
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                            color: HexColor("#5545AA")
+                                                .withOpacity(0.30),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
-                              SizedBox(width: 115,),
                               Padding(
-                                padding: const EdgeInsets.only(left: 3.0),
-                                child: Text("Wednesday at 11:28", style: TextStyle(
-                                    fontFamily: "Cairo",
-                                    fontSize: 10,
-                                    height: 1.5
-                                ),),
+                                padding: const EdgeInsets.only(top: 18.0),
+                                child: Container(
+                                  child: Transform.translate(
+                                    offset: Offset(-10, 0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Padding(
+                                          padding: EdgeInsets.only(left: 3.0),
+                                          child: Text(
+                                            "Last seen",
+                                            style: TextStyle(
+                                                fontFamily: "Cairo",
+                                                fontSize: 8,
+                                                height: 1),
+                                          ),
+                                        ),
+                                        Row(
+                                          children: const [
+                                            Padding(
+                                              padding:
+                                                  EdgeInsets.only(left: 3.0),
+                                              child: Text(
+                                                "30 Min ago",
+                                                style: TextStyle(
+                                                    fontFamily: "Cairo",
+                                                    fontSize: 10,
+                                                    height: 1.5),
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              width: 115,
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  EdgeInsets.only(left: 3.0),
+                                              child: Text(
+                                                "Wednesday at 11:28",
+                                                style: TextStyle(
+                                                    fontFamily: "Cairo",
+                                                    fontSize: 10,
+                                                    height: 1.5),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Container(
+                                          width: 255,
+                                          alignment:
+                                              AlignmentDirectional.centerEnd,
+                                          child: Container(
+                                            width: 70,
+                                            height: 1,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                        BlocProvider(
+                                          create: (context) => ChatAppCubit(),
+                                          child: BlocConsumer<ChatAppCubit, ChatAppCubitStates>(
+                                            listener: (context, state) {},
+                                            builder: (context, state) {
+                                              FirstLoop = false;
+                                              print(Userdata.docs[index].data().uId.toString());
+
+
+                                              return StreamBuilder<QuerySnapshot<MessageModel>>(
+                                                stream: messagesRef.snapshots(),
+                                                builder: (context, snapshot) {
+                                                  if (snapshot.hasError) {
+                                                    return Center(child: Text(snapshot.error.toString()),
+                                                    );
+                                                  }
+
+                                                  if (!snapshot.hasData) {
+                                                    return const Center(
+                                                        child:
+                                                            CircularProgressIndicator());
+                                                  }
+                                                  final data = snapshot.requireData;
+                                                  return Container(
+                                                    color: HexColor("#E1F4FF")
+                                                        .withOpacity(0.52),
+                                                    width: MsgBoxWidth,
+                                                    height:
+                                                        ProfilePictureBackgroundHight -
+                                                            26.5,
+                                                    child: Padding(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              vertical:
+                                                                  MsgBoxHPadding,
+                                                              horizontal: 13),
+                                                      child: ConstrainedBox(
+                                                        constraints:
+                                                            BoxConstraints(
+                                                          maxHeight: 40,
+                                                        ),
+                                                        child: Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            data.docs[0].data().Seen == false && data.docs[0].data().text!.isNotEmpty && data.docs[0].data().receiverId == token? Text(
+                                                                    data.docs[0].data().text.toString(),
+                                                                    style:
+                                                                        const TextStyle(fontFamily: "Cairo",
+                                                                          height: 1.1,
+                                                                          fontWeight: FontWeight.w600,)) : Container(),
+                                                            data.docs[1].data().Seen == false && data.docs[1].data().text!.isNotEmpty && data.docs[1].data().receiverId == token
+                                                                ? Text(
+                                                                    data.docs[1].data().text.toString(),
+                                                                    style:
+                                                                        const TextStyle(
+                                                                      fontFamily:
+                                                                          "Cairo",
+                                                                      height:
+                                                                          1.1,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w600,
+                                                                    ))
+                                                                : Container(),
+                                                            data.docs[2].data().Seen == false && data.docs[2].data().text!.isNotEmpty && data.docs[2].data().receiverId == token ? Text(
+                                                                    data.docs[2]
+                                                                        .data()
+                                                                        .text
+                                                                        .toString(),
+                                                                    style:
+                                                                        const TextStyle(
+                                                                      fontFamily:
+                                                                          "Cairo",
+                                                                      height:
+                                                                          1.1,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w600,
+                                                                    ))
+                                                                : Container()
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                               ),
                             ],
-                          ),
-                          Container(
-                            width: 255,
-                            alignment: AlignmentDirectional.centerEnd,
-                            child: Container(
-                              width: 70,
-                              height: 1,
-                              color: Colors.black,
-                            ),
-                          ),
-                          Container(
-                            color: HexColor("#E1F4FF").withOpacity(0.52),
-                            width: MsgBoxWidth,
-                            height: ProfilePictureBackgroundHight - 26.5,
+                          );
+                        } else return Container();}
+                      else return Container();
 
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                  vertical: MsgBoxHPadding, horizontal: 13),
-                              child: Msg
-                            ),
-                          ),
-                        ],),
-                    ),
-                  ),
-                ),
-              ],
+                    },
+                  );
+                },
+              ),
+
             ),
-            TextButton(onPressed: (){
-              Navigator.push(context,
-                  MaterialPageRoute(builder:(BuildContext context) => ChatContacts()),
-                     );
-            }, child: Text("Chat Contacts"))
-          ],
-        ),
+          );
+        },
       ),
     );
   }

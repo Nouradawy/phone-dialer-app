@@ -22,7 +22,7 @@ class LoginCubit extends Cubit<LoginCubitStates>
   static LoginCubit get(context) => BlocProvider.of(context);
   bool isPassword = true;
   IconData? suffixIcon = Icons.visibility;
-  List<UserModel> Contacts =[];
+  List<UserModel> ChatContacts =[];
   List<UserModel> CurrentUser = [];
 
   void Passon(){
@@ -75,6 +75,8 @@ class LoginCubit extends Cubit<LoginCubitStates>
         cover:"https://image.freepik.com/free-photo/positive-dark-skinned-young-woman-man-bump-fists-agree-be-one-team-look-happily-each-other-celebrates-completed-task-wear-pink-green-clothes-pose-indoor-have-successful-deal_273609-42756.jpg",
         image:"https://as1.ftcdn.net/v2/jpg/02/68/62/04/1000_F_268620420_raIDjo1HJvtratuDz5z338yZ9QUcr7lZ.jpg",
         isEmailVerified: false,
+        IsOnline: true,
+        LastSeen: Timestamp.now(),
         // tokens:"tokens",
 
       );
@@ -102,7 +104,7 @@ class LoginCubit extends Cubit<LoginCubitStates>
       value.docs.forEach((element)
       {
         if(element.data()['uId'] != token) {
-          Contacts.add(UserModel.fromJson(element.data()));
+          ChatContacts.add(UserModel.fromJson(element.data()));
         } else {
           CurrentUser.clear();
           CurrentUser.add(UserModel.fromJson(element.data()));
@@ -225,4 +227,25 @@ class LoginCubit extends Cubit<LoginCubitStates>
       emit(SocialUpdateUserErrorState(error.toString()));
     });
   }
+  bool?NewMessage ;
+   Future<bool?> NewMessageDetection (Userdata , index) async{
+     await FirebaseFirestore.instance.collection("Users").doc(token).collection("chats").doc(Userdata.docs[index].data().uId).get().then((element){element.data()?.forEach((key, value) {
+      if(key == "NewMessage")
+      {
+        if(value ==true)
+          {
+            NewMessage = true;
+          } else {
+          NewMessage =false;
+        }
+      }
+    });
+
+    });
+     print("value here :" + NewMessage.toString());
+     print("Index value : " +index.toString());
+     // emit(NewMessageRecived());
+     return NewMessage;
+  }
+
 }

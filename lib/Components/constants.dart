@@ -1,13 +1,40 @@
 import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dialer_app/Models/user_model.dart';
+import 'package:dialer_app/Modules/Chat/Cubit/cubit.dart';
+import 'package:dialer_app/Modules/Chat/Cubit/states.dart';
+import 'package:dialer_app/Modules/Login&Register/Cubit/states.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class MyBlocObserver extends BlocObserver {
+
+  void updateUserState({
+    required bool? isOnline,
+    required Timestamp? date,
+  }){
+
+
+    FirebaseFirestore.instance.collection("Users").doc(token).update({
+      "IsOnline":  isOnline,
+      "LastSeen": date,
+    }).catchError((onError)
+    {
+      print("Update User State Error :"  +onError.toString());
+    }
+    );
+  }
   @override
   void onCreate(BlocBase bloc) {
     super.onCreate(bloc);
+    if(bloc.state is ChatAppCubitInitialState)
+      {
+       updateUserState(isOnline: true,
+       date:Timestamp.now(),
+       );
+      }
     print('onCreate -- ${bloc.runtimeType}');
   }
 
@@ -26,6 +53,12 @@ class MyBlocObserver extends BlocObserver {
   @override
   void onClose(BlocBase bloc) {
     super.onClose(bloc);
+    if(bloc.state is ChatAppCubitInitialState)
+    {
+      updateUserState(isOnline: false,
+        date:Timestamp.now(),
+      );
+    }
     print('onClose -- ${bloc.runtimeType}');
   }
 }
