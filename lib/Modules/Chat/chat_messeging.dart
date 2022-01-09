@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dialer_app/Components/components.dart';
 import 'package:dialer_app/Components/constants.dart';
+import 'package:dialer_app/Models/message_model.dart';
 import 'package:dialer_app/Models/user_model.dart';
 import 'package:dialer_app/Modules/Chat/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Chat/Cubit/states.dart';
@@ -13,19 +15,32 @@ class ContactChatingScreen extends StatelessWidget {
   UserModel  Contact;
   ContactChatingScreen({required this.Contact});
 
-var MsgBox = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     double AppbarSize = MediaQuery
         .of(context)
         .size
         .height * 0.11;
-    return BlocProvider(
-      create: (context)=>ChatAppCubit(),
+    return BlocProvider.value(
+      value:ChatAppCubit()..MessageStateUpdater,
       child: BlocConsumer<ChatAppCubit,ChatAppCubitStates>(
-        listener:(context,states){},
+        listener:(context,states){
+          if(ChatAppCubit.get(context).MsgBox.text.isNotEmpty)
+            {
+              ChatAppCubit.get(context).MessageStateUpdater(
+                receiverId: Contact.uId.toString(),
+                DocID:ChatAppCubit.get(context).messages[ChatAppCubit.get(context).messages.length].DocID.toString(),
+              );
+            }
+        },
         builder:(context,states) {
-          ChatAppCubit.get(context).GetMessages(receiverId: Contact.uId.toString());
+          // ChatAppCubit.get(context).GetMessages(receiverId: Contact.uId.toString());
+          final messagesRef = FirebaseFirestore.instance.collection("Users").doc(token).collection("chats").doc(Contact.uId.toString()).collection("messages").withConverter<MessageModel>(
+              fromFirestore:(snapshots , _)=> MessageModel.fromJson(snapshots.data()),
+              toFirestore: (model , _) => ChatAppCubit.get(context).model!.toMap());
+
+
           return Scaffold(
           appBar:ChatMessagesAppBar(context,AppbarSize,Contact),
           body: Column(
@@ -34,18 +49,38 @@ var MsgBox = TextEditingController();
             children: [
 
               Expanded(
-                child: ListView.separated(
-                  itemCount:ChatAppCubit.get(context).messages.length,
-                    separatorBuilder: (context,state)=>SizedBox(height: 2,),
-                    itemBuilder:(context,index) {
-                    String UserMsg = ChatAppCubit.get(context).messages[index].text;
-                    var message = ChatAppCubit.get(context).messages[index];
-                    if(token == message.senderId) {
-                          return UserMsgBubbleChat(context , UserMsg);
-                        } else {
-                      return ContactMsgBubbleChat(context , UserMsg);
+                child: StreamBuilder<QuerySnapshot<MessageModel>>(
+                  stream:messagesRef.orderBy("dateTime").snapshots(),
+                  builder:(context , snapshot) {
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Text(snapshot.error.toString()),
+                      );
                     }
-                      }),
+
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    final data = snapshot.requireData;
+
+                    return ListView.separated(
+                    itemCount:data.size,
+                      separatorBuilder: (context,state)=>SizedBox(height: 2,),
+                      itemBuilder:(context,index) {
+                        ChatAppCubit.get(context).MessageStateUpdater(
+                          receiverId: Contact.uId.toString(),
+                          DocID:data.docs[index].data().DocID.toString(),
+                        );
+                      String? UserMsg = data.docs[index].data().text;
+                      var message = data.docs[index].data();
+                      if(token == message.senderId) {
+                            return SentBubbleChat(context , UserMsg == null?"":UserMsg);
+                          } else {
+                        return RecivedBubbleChat(context , UserMsg == null?"":UserMsg);
+                      }
+                        });
+                  },
+                ),
               ),
 
               Padding(
@@ -67,8 +102,11 @@ var MsgBox = TextEditingController();
                     children: [
                       Expanded(
                         child: TextFormField(
-                          controller: MsgBox,
+                          controller: ChatAppCubit.get(context).MsgBox,
                           keyboardType:TextInputType.text,
+                          onChanged: (value){
+                            ChatAppCubit.get(context).UserWrittingDetection(receiverId:Contact.uId.toString() );
+                          },
                           decoration: InputDecoration(
                             border: InputBorder.none,
                             contentPadding:EdgeInsets.symmetric(horizontal: 20),
@@ -90,7 +128,8 @@ var MsgBox = TextEditingController();
                                 ChatAppCubit.get(context).sendMessage(
                                     receiverId: Contact.uId!,
                                     dateTime: DateTime.now().toString(),
-                                    text: MsgBox.text);
+                                    text: ChatAppCubit.get(context).MsgBox.text
+                                );
                               }, icon: Transform.rotate(
                                   angle:-95,
                                   child: Icon(Icons.send_rounded,color: Colors.white,)),),
@@ -108,7 +147,7 @@ var MsgBox = TextEditingController();
     );
   }
 
-  Row ContactMsgBubbleChat(BuildContext context , String UserMsg ) {
+  Row RecivedBubbleChat(BuildContext context , String UserMsg ) {
     return Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
@@ -131,8 +170,10 @@ var MsgBox = TextEditingController();
                       children: [
                         ConstrainedBox(
                           constraints: BoxConstraints(
-                              minHeight: 40,
-                              maxWidth: MediaQuery.of(context).size.width-40),
+                            minHeight: 40,
+                            maxWidth: MediaQuery.of(context).size.width-40,
+                            minWidth:65,
+                          ),
                           child: Container(
                             child:Padding(
                               padding: const EdgeInsets.only(top:1.0,right: 25,left:5),
@@ -172,7 +213,7 @@ var MsgBox = TextEditingController();
         );
   }
 
-  Align UserMsgBubbleChat(BuildContext context , String UserMsg) {
+  Align SentBubbleChat(BuildContext context , String UserMsg) {
     return Align(
       alignment: Alignment.centerLeft,
       child: Padding(
@@ -192,7 +233,10 @@ var MsgBox = TextEditingController();
                 ConstrainedBox(
                   constraints: BoxConstraints(
                       minHeight: 40,
-                      maxWidth: MediaQuery.of(context).size.width-40),
+                      maxWidth: MediaQuery.of(context).size.width-40,
+                      minWidth:65,
+                  ),
+
                   child: Container(
                     child:Padding(
                       padding: const EdgeInsets.only(top:1.0,right: 8,left:15),

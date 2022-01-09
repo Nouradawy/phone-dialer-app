@@ -55,3 +55,4 @@ class SocialProfileImagePickeedErrorState extends LoginCubitStates {}
 class SocialUploadImagePickedSuccessState extends LoginCubitStates {}
 
 class SocialUploadImageErrorState extends LoginCubitStates {}
+class NewMessageRecived extends LoginCubitStates {}

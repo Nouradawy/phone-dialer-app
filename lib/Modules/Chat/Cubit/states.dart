@@ -5,3 +5,6 @@ class SendMessageSuccessState extends ChatAppCubitStates{}
 class SendMessageErrorState extends ChatAppCubitStates{}
 class GetMessageSuccessState extends ChatAppCubitStates{}
 class GetMessageErrorState extends ChatAppCubitStates{}
+class MessageStateUpdatedSuccess extends ChatAppCubitStates{}
+class MessageStateUpdatedError extends ChatAppCubitStates{}
+class NewMessageRecived extends ChatAppCubitStates{}

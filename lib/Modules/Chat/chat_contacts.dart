@@ -26,7 +26,7 @@ class ChatContacts extends StatelessWidget {
         .size
         .width - (ProfilePictureBackgroundWidth + 34);
     double MsgBoxHPadding = 6;
-    Text Msg = Text("ok i want you to focus on jhin and i will take  ",style: TextStyle(
+    Text Msg = Text("you to focus on jhin and i will take  ",style: TextStyle(
       fontFamily: "Cairo",
       height: 1.2,
       fontWeight: FontWeight.w600,
@@ -38,9 +38,9 @@ class ChatContacts extends StatelessWidget {
         child: BlocConsumer<LoginCubit,LoginCubitStates>(
           listener: (context,state){},
           builder:(context,state)=> ListView.builder(
-            itemCount: LoginCubit.get(context).Contacts.length,
+            itemCount: LoginCubit.get(context).ChatContacts.length,
             itemBuilder: (BuildContext context, int index) {
-              UserModel contact = LoginCubit.get(context).Contacts[index];
+              UserModel contact = LoginCubit.get(context).ChatContacts[index];
              return Padding(
                padding: const EdgeInsets.only(top:8.0),
                child: ListTile(
@@ -59,10 +59,10 @@ class ChatContacts extends StatelessWidget {
                     child: CircleAvatar(
                       radius: ProfilePictureSize,
                       backgroundImage: NetworkImage(
-                          LoginCubit.get(context).Contacts[index].image.toString()),
+                          LoginCubit.get(context).ChatContacts[index].image.toString()),
                     ),
                   ),
-                  title:Text(LoginCubit.get(context).Contacts[index].name.toString()),
+                  title:Text(LoginCubit.get(context).ChatContacts[index].name.toString()),
                 ),
              );
             },

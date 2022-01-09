@@ -2,6 +2,7 @@
 import 'package:call_log/call_log.dart';
 
 import 'package:bloc/bloc.dart';
+import 'package:dialer_app/Modules/Chat/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Login&Register/Cubit/cubit.dart';
 import 'package:dialer_app/Themes/light_theme.dart';
 import 'package:firebase_core/firebase_core.dart';
