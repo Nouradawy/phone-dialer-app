@@ -2,15 +2,15 @@ import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:call_log/call_log.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:contacts_service/contacts_service.dart';
-import 'package:custom_timer/custom_timer.dart';
+import 'package:dialer_app/Components/constants.dart';
 import 'package:dialer_app/Layout/Cubit/states.dart';
-import 'package:dialer_app/Models/phone_log_model.dart';
-import 'package:dialer_app/NativeBridge/native_bridge.dart';
+import 'package:dialer_app/Models/user_model.dart';
+import 'package:dialer_app/Network/Local/cache_helper.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../Modules/Contacts/appcontacts.dart';
 
@@ -36,7 +36,8 @@ bool isSearching = false;
 bool contactsLoaded = false;
 bool isShowen = false;
 
-
+  List<UserModel> ChatContacts =[];
+  List<UserModel> CurrentUser = [];
 
 Future<void> PermissionHandle() async {
   var status = await Permission.contacts.status;
@@ -50,6 +51,36 @@ Future<void> PermissionHandle() async {
   }
 
 }
+
+  void ThemeSwitcher()
+  {
+
+    ThemeSwitch = !ThemeSwitch;
+    print("ThemeNow : $ThemeSwitch" );
+    CacheHelper.saveData(key: "ThemeSwitch", value: ThemeSwitch);
+    emit(ThemeUpdateState());
+  }
+
+  void GetChatContacts()async{
+    emit(GetChatContactsLoadingState());
+    await FirebaseFirestore.instance.collection("Users").get().then((value){
+      value.docs.forEach((element)
+      {
+        if(element.data()['uId'] != token) {
+          ChatContacts.add(UserModel.fromJson(element.data()));
+        } else {
+          CurrentUser.clear();
+          CurrentUser.add(UserModel.fromJson(element.data()));
+        }
+      }
+
+      );
+      emit(GetChatContactsSuccessState());
+    }).catchError((error){
+      print("GetChatContacts error : "+error.toString());
+      emit(GetChatContactsErrorState(error));
+    });
+  }
 
 void GetCallerID(PhoneNumberQuery,bool? InCall) {
   SearchableCallerIDList.clear();
@@ -70,11 +101,7 @@ void GetCallerID(PhoneNumberQuery,bool? InCall) {
    }).toList():[];
 InCall ==true?emit(CallerIDSuccess()):null;
 }
-  CustomTimerController CallTimerController = CustomTimerController();
-void StartTimer(){
-  CallTimerController.start();
-  emit(TimerStarted());
-}
+
 
   Future<void> GetPhoneLog() async {
     (await CallLog.query()).map((element) {
@@ -90,6 +117,7 @@ void StartTimer(){
             "SIMname": element.simDisplayName,
       });
     }).toList();
+
     // PhoneCallLogs.map((element) {
     //   GetCallerID(element["PhoneNumber"]);
     //   element["ContactName"] = CallerID.isNotEmpty?CallerID[0]["CallerID"].toString():"UNKNOWN";

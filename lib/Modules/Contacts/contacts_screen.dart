@@ -16,90 +16,84 @@ import 'package:hexcolor/hexcolor.dart';
 class ContactsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context ) {
+
     var Cubit = AppCubit.get(context);
     double AppbarSize = MediaQuery.of(context).size.height*Cubit.AppbarSize;
     List<Color> FavColors =[
-      HexColor("#515150"),
-      HexColor("#FF4B76"),
-      HexColor("#2C087A"),
-      HexColor("#C6C972"),
-      HexColor("#515150"),
-      HexColor("#FF4B76"),
-      HexColor("#2C087A"),
-      HexColor("#C6C972"),
-      HexColor("#515150"),
-      HexColor("#FF4B76"),
-      HexColor("#2C087A"),
-      HexColor("#C6C972"),
+            HexColor("#515150"),
+            HexColor("#FF4B76"),
+            HexColor("#2C087A"),
+            HexColor("#C6C972"),
+            HexColor("#515150"),
+            HexColor("#FF4B76"),
+            HexColor("#2C087A"),
+            HexColor("#C6C972"),
+            HexColor("#515150"),
+            HexColor("#FF4B76"),
+            HexColor("#2C087A"),
+            HexColor("#C6C972"),
 
     ];
-    return BlocProvider.value(
-      value:AppCubit(),
-      child: BlocConsumer<AppCubit,AppStates>(
-          listener:(context,state){},
-          builder:(context,state)
-          {
-            return Padding(
-              padding: EdgeInsets.only(top:AppbarSize*1.40),
-              child: Container(
-                  height: MediaQuery.of(context).size.height,
-                  child: AzListView(
-                      indexBarMargin:EdgeInsets.only(top:45),
-                    indexBarOptions: IndexBarOptions(
 
-                    ),
-                      data:Cubit.Contacts,
-                      itemCount: Cubit.isSearching == true?Cubit.FilterdContacts.length:Cubit.Contacts.length,
-                      itemBuilder:(context , index)
-                      {
-                        AppContact contact = Cubit.isSearching == true?Cubit.FilterdContacts[index]:Cubit.Contacts[index];
-                        return Column(
-                          children: [
-                            index==0?FavoritesContactsGroups(AppbarSize, Cubit, FavColors):Container(),
-                            index==0?Text("Contacts"):Container(),
-                            ListTile(
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 0),
-                              onTap: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (BuildContext context) =>
-                                        ContactDetails(
-                                          contact,
-                                          onContactDelete: (AppContact _contact) {
-                                            Cubit.GetContacts();
-                                            Navigator.of(context).pop();
-                                          },
-                                          onContactUpdate: (AppContact _contact) {
-                                            Cubit.GetContacts();
-                                          },
-                                        )
-                                ));
-                              },
-                              title: Text(
-                                contact.info!.displayName.toString(), style: Theme
+          return Padding(
+            padding: EdgeInsets.only(top:AppbarSize*1.40),
+            child: Container(
+                height: MediaQuery.of(context).size.height,
+                child: AzListView(
+                    indexBarMargin:EdgeInsets.only(top:45),
+                  indexBarOptions: IndexBarOptions(
+
+                  ),
+                    data:Cubit.Contacts,
+                    itemCount: Cubit.isSearching == true?Cubit.FilterdContacts.length:Cubit.Contacts.length,
+                    itemBuilder:(context , index)
+                    {
+                      AppContact contact = Cubit.isSearching == true?Cubit.FilterdContacts[index]:Cubit.Contacts[index];
+                      return Column(
+                        children: [
+                          index==0?FavoritesContactsGroups(AppbarSize, Cubit, FavColors):Container(),
+                          index==0?Text("Contacts"):Container(),
+                          ListTile(
+                            contentPadding: EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 0),
+                            onTap: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (BuildContext context) =>
+                                      ContactDetails(
+                                        contact,
+                                        onContactDelete: (AppContact _contact) {
+                                          Cubit.GetContacts();
+                                          Navigator.of(context).pop();
+                                        },
+                                        onContactUpdate: (AppContact _contact) {
+                                          Cubit.GetContacts();
+                                        },
+                                      )
+                              ));
+                            },
+                            title: Text(
+                              contact.info!.displayName.toString(), style: Theme
+                                .of(context)
+                                .textTheme
+                                .bodyText1,),
+                            subtitle: Text(
+                              contact.info!.phones!.isNotEmpty ? contact.info!
+                                  .phones!
+                                  .elementAt(0).value.toString() : '',
+                              style: Theme
                                   .of(context)
                                   .textTheme
-                                  .bodyText1,),
-                              subtitle: Text(
-                                contact.info!.phones!.isNotEmpty ? contact.info!
-                                    .phones!
-                                    .elementAt(0).value.toString() : '',
-                                style: Theme
-                                    .of(context)
-                                    .textTheme
-                                    .bodyText2,),
-                              leading: ContactAvatar(contact, 45),
-                              trailing: ContactsTagsNotes(context),
-                            ),
-                          ],
-                        );
-                      }
-                  )
+                                  .bodyText2,),
+                            leading: ContactAvatar(contact, 45),
+                            trailing: ContactsTagsNotes(context),
+                          ),
+                        ],
+                      );
+                    }
+                )
 
-              ),
-            );}
-      ),
-    );
+            ),
+          );
   }
 
 

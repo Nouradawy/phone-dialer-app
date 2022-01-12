@@ -1,5 +1,4 @@
 
-import 'package:custom_timer/custom_timer.dart';
 import 'package:dialer_app/Components/constants.dart';
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Layout/Cubit/states.dart';
@@ -8,6 +7,7 @@ import 'package:dialer_app/NativeBridge/native_states.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hexcolor/hexcolor.dart';
+import 'package:stop_watch_timer/stop_watch_timer.dart';
 
 import '../home.dart';
 
@@ -24,15 +24,18 @@ class InCallScreen extends StatelessWidget {
             Cubit.isRinging = true;
           }
           if(state is PhoneStateActive ){
-            AppCubit.get(context).CallTimerController.start();
+
+           _StopWatchTimer.onExecute.add(StopWatchExecute.start);
             // AppCubit.get(context).GetCallerID(Cubit.PhoneNumberQuery,true);
           }
           if(state is PhoneStateDisconnected)
             {
+              _StopWatchTimer.onExecute.add(StopWatchExecute.reset);
+
               Navigator.pushAndRemoveUntil(context,
                 MaterialPageRoute(builder: (BuildContext context) => Home()),
                     (Route<dynamic>route)=>false,);
-              AppCubit.get(context).CallTimerController.reset();
+
             }
           // if(state is PhoneStateRinging ){
           //   AppCubit.get(context).CallTimerController.start();
@@ -96,12 +99,26 @@ class InCallScreen extends StatelessWidget {
                       CallStatesText(),
                       CallerID(context),
                       CallerPhoneNumber(context)
-                    ],
+                    ]
                   ),
                 ],
               ),
 
-              Cubit.isRinging == false? CallDurationTimer() : Text(""),
+              StreamBuilder<int>(
+                stream: _StopWatchTimer.rawTime,
+                builder: (context,snap) {
+                  final value =snap.data;
+                  bool? Hours;
+                  bool? Minutes;
+                  if (StopWatchTimer.getRawHours(value!) <= 1)
+                    {
+                      Hours = false;
+                    } else Hours=true;
+                  var displayTime = StopWatchTimer.getDisplayTime(value,hours:Hours,minute: true,milliSecond: false);
+                  return Cubit.isRinging == false?Text(displayTime):Text("");
+                },
+              ),
+              // Cubit.isRinging == false?  StopWatchTimer.getDisplayTime(value): Text(""),
               // MediaQuery:Above Quick Replay Adjust for Diff. Screens
               SizedBox(
                 height: MediaQuery.of(context).size.height * 0.03,
@@ -143,6 +160,21 @@ class InCallScreen extends StatelessWidget {
           );
         });
   }
+
+
+
+ final  StopWatchTimer _StopWatchTimer = StopWatchTimer(
+   mode: StopWatchMode.countUp,
+   presetMillisecond: StopWatchTimer.getMilliSecFromMinute(0), // millisecond => minute.
+   // onChange: (value) => ),
+   // onChangeRawSecond: (value) => print('onChangeRawSecond $value'),
+   // onChangeRawMinute: (value) => print('onChangeRawMinute $value'),
+ );
+  final _scrollController = ScrollController();
+
+
+
+
 
   Stack InCallMessages() {
     return Stack(
@@ -285,8 +317,7 @@ class InCallScreen extends StatelessWidget {
                       InkWell(
                         // customBorder: CircleBorder(),
                         onTap: () {
-                          NativeBridge.get(context)
-                              .invokeNativeMethod("RejectCall");
+                          NativeBridge.get(context).invokeNativeMethod("RejectCall",null);
 
                         },
                         child: CircleAvatar(
@@ -303,8 +334,7 @@ class InCallScreen extends StatelessWidget {
                         onTap: () {
                           NativeBridge.get(context).isRinging = false;
 
-                          NativeBridge.get(context)
-                              .invokeNativeMethod("AcceptCall");
+                          NativeBridge.get(context).invokeNativeMethod("AcceptCall",null);
                         },
                         child: CircleAvatar(
                           backgroundColor: HexColor("#2AD181"),
@@ -328,13 +358,18 @@ class InCallScreen extends StatelessWidget {
                 children: [
                   Column(
                     children: [
-                      IconButton(onPressed: (){}, icon: Icon(Icons.note_add),iconSize: 28,color: HexColor("#E4E4E4"),),
+                      IconButton(onPressed: (){
+                        //TODO: implement in call NOTES
+
+                      }, icon: Icon(Icons.note_add),iconSize: 28,color: HexColor("#E4E4E4"),),
                       Text("Notes",style: TextStyle(height: 0.6),),
                     ],
                   ),
                   Column(
                     children: [
-                      IconButton(onPressed: (){}, icon: Icon(Icons.keyboard_voice,),iconSize: 28,color: HexColor("#E4E4E4"),),
+                      IconButton(onPressed: (){
+                        //TODO: implement in call Recording
+                      }, icon: Icon(Icons.keyboard_voice,),iconSize: 28,color: HexColor("#E4E4E4"),),
                       Text("Record",style: TextStyle(height: 0.6),),
                     ],
                   ),
@@ -359,7 +394,7 @@ class InCallScreen extends StatelessWidget {
                             radius: 31,
                             child: IconButton(onPressed: (){
                               NativeBridge.get(context)
-                                  .invokeNativeMethod("SpeakerToggle");
+                                  .invokeNativeMethod("SpeakerToggle",null);
                             }, icon: Icon(Icons.volume_up),iconSize: 37,color: HexColor("#E4E4E4"),)),
                       ),
                       Text("Speaker",),
@@ -377,7 +412,7 @@ class InCallScreen extends StatelessWidget {
                             radius: 31,
                             child: IconButton(onPressed: (){
                               NativeBridge.get(context)
-                                  .invokeNativeMethod("MicToggle");
+                                  .invokeNativeMethod("MicToggle",null);
 
                             }, icon: Icon(Icons.volume_mute),iconSize: 37,color: HexColor("#E4E4E4"),)),
                       ),
@@ -396,7 +431,7 @@ class InCallScreen extends StatelessWidget {
                             radius: 31,
                             child: IconButton(onPressed: (){
                               NativeBridge.get(context)
-                                  .invokeNativeMethod("HoldToggle");
+                                  .invokeNativeMethod("HoldToggle",null);
                             }, icon: Icon(Icons.pause),iconSize: 37,color: HexColor("#E4E4E4"),)),
                       ),
                       Text("Hold",),
@@ -418,10 +453,15 @@ class InCallScreen extends StatelessWidget {
                         shape: BoxShape.circle,
                         border: Border.all(width:1,color:HexColor("#FFFFFF"),),
                       ) ,
-                      child: CircleAvatar(
-                        backgroundColor: HexColor("#464646"),
-                        radius: 31,
-                        child: Image.asset("assets/Images/dialpad.png",scale: 1.4,color: HexColor("#EEEEEE"),),
+                      child: InkWell(
+                        onTap: (){
+                          //TODO: Add dialpad to the call
+                        },
+                        child: CircleAvatar(
+                          backgroundColor: HexColor("#464646"),
+                          radius: 31,
+                          child: Image.asset("assets/Images/dialpad.png",scale: 1.4,color: HexColor("#EEEEEE"),),
+                        ),
                       ),
                     ),
                     Text("Keypad",),
@@ -434,10 +474,15 @@ class InCallScreen extends StatelessWidget {
                         shape: BoxShape.circle,
                         border: Border.all(width:1,color:HexColor("#FFFFFF"),),
                       ) ,
-                      child: CircleAvatar(
-                        backgroundColor: HexColor("#464646"),
-                          radius: 31,
-                          child: IconButton(onPressed: (){}, icon: Icon(Icons.person_add),iconSize: 37,color: HexColor("#E4E4E4"),)),
+                      child: InkWell(
+                        onTap: (){
+                          //TODO: Setup Confrence calls
+                        },
+                        child: CircleAvatar(
+                          backgroundColor: HexColor("#464646"),
+                            radius: 31,
+                            child: IconButton(onPressed: (){}, icon: Icon(Icons.person_add),iconSize: 37,color: HexColor("#E4E4E4"),)),
+                      ),
                     ),
                     Text("Add",),
                   ],
@@ -447,10 +492,7 @@ class InCallScreen extends StatelessWidget {
                     InkWell(
                       onTap:(){
                         NativeBridge.get(context)
-                            .invokeNativeMethod("RejectCall");
-                        // Navigator.pushAndRemoveUntil(context,
-                        //   MaterialPageRoute(builder: (BuildContext context) => Home()),
-                        //       (Route<dynamic>route)=>false,);
+                            .invokeNativeMethod("RejectCall",null);
                       },
                       child: CircleAvatar(
                           backgroundColor: HexColor("#FC5757"),
@@ -471,47 +513,7 @@ class InCallScreen extends StatelessWidget {
   }
 }
 
-class CallDurationTimer extends StatefulWidget {
-  const CallDurationTimer({
-    Key? key,
-  }) : super(key: key);
 
-  @override
-  State<CallDurationTimer> createState() => _CallDurationTimerState();
-}
-
-class _CallDurationTimerState extends State<CallDurationTimer> {
-  @override
-  Widget build(BuildContext context) {
-    return CustomTimer(
-      controller: AppCubit.get(context).CallTimerController,
-      begin:Duration(days:0),
-      end: Duration(days:24),
-      builder: (remaining){
-        if(remaining.hours ==0) {
-            return Text(
-              "${remaining.hours}:${remaining.minutes}:${remaining.seconds}",
-              style: TextStyle(
-                  fontFamily: "cairo",
-                  fontWeight: FontWeight.w500,
-                  fontSize: 15,
-                  color: HexColor("#FFFFFF").withOpacity(0.70)),
-            );
-          }
-        else {
-          return Text(
-            "${remaining.minutes}:${remaining.seconds}",
-            style: TextStyle(
-                fontFamily: "cairo",
-                fontWeight: FontWeight.w500,
-                fontSize: 15,
-                color: HexColor("#FFFFFF").withOpacity(0.70)),
-          );
-        }
-        },
-    );
-  }
-}
 
 
 

@@ -22,7 +22,7 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-        create:(BuildContext context)=>LoginCubit(),
+        create:(context)=>LoginCubit(),
         child:BlocConsumer<LoginCubit , LoginCubitStates>(
           listener:(context , state) {
             if(state is DialerLoginSuccessState){
@@ -33,9 +33,7 @@ class LoginScreen extends StatelessWidget {
             if(state is DialerLoginSuccessState)
             {
               Navigator.pushAndRemoveUntil(context,
-                  MaterialPageRoute(builder:(BuildContext context) => BlocProvider.value(
-                      value:LoginCubit()..GetChatContacts(),
-                      child: Home())),
+                  MaterialPageRoute(builder:(BuildContext context) => Home()),
                       (Route<dynamic>route) => false);
             }
 

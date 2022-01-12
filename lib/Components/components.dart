@@ -1,5 +1,6 @@
 
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
+import 'package:dialer_app/Layout/Cubit/states.dart';
 import 'package:dialer_app/Layout/incall_screen.dart';
 import 'package:dialer_app/Models/user_model.dart';
 import 'package:dialer_app/Modules/Chat/chat_screen.dart';
@@ -16,6 +17,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:focused_menu/focused_menu.dart';
 import 'package:focused_menu/modals.dart';
 import 'package:hexcolor/hexcolor.dart';
+
+import 'constants.dart';
 
 
 
@@ -849,15 +852,13 @@ Row CallButton(BuildContext context, double AppbarSize , bool DualSIM , TextEdit
 }
 
 Drawer AppDrawer(context) {
-  String UserState = "online";
+
   return Drawer(
-    child: ListView.builder(
-            itemCount: 1,
-            itemBuilder: (context,index){
-              var loginCubit = LoginCubit.get(context);
-              return BlocConsumer<LoginCubit,LoginCubitStates>(
-                listener: (context,state){},
-                builder:(cotnext , state)=> Column(
+    child: Builder(
+            builder: (index){
+              var Cubit = AppCubit.get(context);
+              String UserState = "online";
+              return  Column(
                   children: [
                     Container(height: MediaQuery.of(context).size.height*0.20,
                         color:Colors.amber,
@@ -873,12 +874,15 @@ Drawer AppDrawer(context) {
                                     border:Border.all(width: 1.5)
                                 ),
                                 child: InkWell(
+                                  onLongPress: (){
+                                    signOut(context);
+                                  },
                                   onTap: (){
                                     Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=>ProfilePage(),));
                                   },
                                   child: CircleAvatar(
                                     radius: 40,
-                                    backgroundImage: NetworkImage(loginCubit.CurrentUser[0].image.toString()),
+                                    backgroundImage: NetworkImage(Cubit.CurrentUser[0].image.toString()),
                                   ),
                                 ),
                               ),
@@ -891,7 +895,7 @@ Drawer AppDrawer(context) {
                                   SizedBox(height: 5,),
                                   Row(
                                     children: [
-                                      Text(loginCubit.CurrentUser[0].name.toString()),
+                                      Text(Cubit.CurrentUser[0].name.toString()),
                                       SizedBox(width: 5,),
 
                                       FocusedMenuHolder(
@@ -943,7 +947,7 @@ Drawer AppDrawer(context) {
 
                                     ],
                                   ),
-                                  Text(loginCubit.CurrentUser[0].email.toString()),
+                                  Text(Cubit.CurrentUser[0].email.toString()),
                                 ],
                               ),
 
@@ -957,8 +961,11 @@ Drawer AppDrawer(context) {
                       trailing: Text("Eng"),
                     ),
                     ListTile(
+                      onTap: (){
+                        Cubit.ThemeSwitcher();
+                      },
                       title:Text("Theme"),
-                      trailing: Text("Light"),
+                      trailing: Text(ThemeSwitch?"Light":"Dark"),
                     ),
                     Text("System Settings"),
                     ListTile(
@@ -972,8 +979,7 @@ Drawer AppDrawer(context) {
                       title:Text("MyNotes"),
                     ),
                   ],
-                ),
-              );
+                );
 
             }
     ),
