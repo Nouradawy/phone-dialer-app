@@ -32,13 +32,6 @@ class DialerSuccessUserCreationState extends LoginCubitStates{
 }
 class DialerErrorUserCreationState extends LoginCubitStates{}
 
-class GetChatContactsLoadingState extends LoginCubitStates{}
-class GetChatContactsSuccessState extends LoginCubitStates{}
-class GetChatContactsErrorState extends LoginCubitStates{
-  final String error;
-  GetChatContactsErrorState(this.error);
-}
-
 class SocialUpdateUserLoadingState extends LoginCubitStates{}
 
 class SocialUpdateUserSuccessState extends LoginCubitStates{}
@@ -55,4 +48,5 @@ class SocialProfileImagePickeedErrorState extends LoginCubitStates {}
 class SocialUploadImagePickedSuccessState extends LoginCubitStates {}
 
 class SocialUploadImageErrorState extends LoginCubitStates {}
+
 class NewMessageRecived extends LoginCubitStates {}

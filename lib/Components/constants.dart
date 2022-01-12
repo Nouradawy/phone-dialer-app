@@ -4,6 +4,9 @@ import 'package:dialer_app/Models/user_model.dart';
 import 'package:dialer_app/Modules/Chat/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Chat/Cubit/states.dart';
 import 'package:dialer_app/Modules/Login&Register/Cubit/states.dart';
+import 'package:dialer_app/Modules/Login&Register/login_screen.dart';
+import 'package:dialer_app/Network/Local/cache_helper.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -62,9 +65,24 @@ class MyBlocObserver extends BlocObserver {
     print('onClose -- ${bloc.runtimeType}');
   }
 }
+
+void signOut(context) {
+  CacheHelper.deleteData(key: 'token').then(
+        (value) {
+      if (value) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+              builder: (BuildContext context) => LoginScreen()),
+              (Route<dynamic> route) => false,
+        );
+      }
+    },
+  );
+}
 String phonenum = "Empty";
 String? token ;
-
+bool ThemeSwitch =true;
 
 class BlendMask extends SingleChildRenderObjectWidget {
   final BlendMode blendMode;

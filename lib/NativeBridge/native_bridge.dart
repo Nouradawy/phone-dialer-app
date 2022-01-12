@@ -3,7 +3,9 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
+import 'package:dialer_app/Layout/Cubit/states.dart';
 import 'package:dialer_app/NativeBridge/native_states.dart';
+import 'package:dialer_app/Network/Local/cache_helper.dart';
 import 'package:dialer_app/PhoneState/phone_events_module.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,26 +20,55 @@ class NativeBridge extends Cubit<NativeStates> {
   bool? isRinging = true;
 
 
+
+
   NativePhoneEvent? nativePhoneEvent;
   static const EventChannel phonestateEventsChannel = EventChannel("PhoneStatsEvents");
   late StreamSubscription _nativeEvents;
 
+//   Future<void> invokeNativeMethod(String methodName , [dynamic arguments]) async{
+//   String? result;
+//   try{
+//     // final String? reply = await MethodNameChanger.send(methodName);
+//     if(arguments == null){
+//       result = await platform.invokeMethod(methodName);
+//       emit(NativeBridgeInvokeSuccess());
+//     } else {
+//       result = await platform.invokeMethod(methodName , arguments);
+//     }
+//
+//     emit(NativeBridgeInvokeSuccess());
+//   } on PlatformException catch (error){
+//     print("Faild to run NativeMethod , error : " + error.message.toString());
+//   }
+//   emit(NativeBridgeInvokeFaild());
+// }
   Future<void> invokeNativeMethod(String methodName , [dynamic arguments]) async{
   String? result;
-  try{
+
     // final String? reply = await MethodNameChanger.send(methodName);
     if(arguments == null){
-      result = await platform.invokeMethod(methodName);
-      emit(NativeBridgeInvokeSuccess());
+        result = await platform.invokeMethod(methodName).then((value)
+            {
+              print("this came from Mainnnn");
+              emit(NativeBridgeInvokeSuccess());
+            }).catchError((error){
+          print("this came from Mainnnn");
+          print("Faild to run NativeMethod , error : " + error.message.toString());
+          emit(NativeBridgeInvokeFaild());
+        });
+
     } else {
-      result = await platform.invokeMethod(methodName , arguments);
+      result = await platform.invokeMethod(methodName , arguments).then((value) {
+        print("this came from Else");
+        emit(NativeBridgeInvokeSuccess());
+      }).catchError((error){
+        print("this came from Else");
+        print("Faild to run NativeMethod , error : " + error.message.toString());
+        emit(NativeBridgeInvokeFaild());
+      });
     }
 
-    emit(NativeBridgeInvokeSuccess());
-  } on PlatformException catch (error){
-    print("Faild to run NativeMethod , error : " + error.message.toString());
-  }
-  emit(NativeBridgeInvokeFaild());
 }
 
 void UpdateCallerID(){

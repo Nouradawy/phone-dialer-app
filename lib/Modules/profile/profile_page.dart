@@ -1,5 +1,8 @@
 
 import 'package:dialer_app/Components/components.dart';
+import 'package:dialer_app/Layout/Cubit/cubit.dart';
+import 'package:dialer_app/Layout/Cubit/states.dart';
+import 'package:dialer_app/Modules/Chat/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Login&Register/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Login&Register/Cubit/states.dart';
 import 'package:flutter/material.dart';
@@ -13,11 +16,11 @@ class ProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
 
     return BlocProvider.value(
-      value:LoginCubit()..GetChatContacts(),
-      child: BlocConsumer<LoginCubit,LoginCubitStates>(
+      value:AppCubit()..GetChatContacts(),
+      child: BlocConsumer<AppCubit,AppStates>(
         listener: (context , state) {},
         builder:(context , index) {
-          var Cubit = LoginCubit.get(context);
+          var Cubit = AppCubit.get(context);
           return Builder(
             builder: (index) {
               return Scaffold(
@@ -128,7 +131,7 @@ class ProfilePage extends StatelessWidget {
                         Expanded(child: OutlinedButton(onPressed: (){}, child: Text("Add Photos"))),
                         OutlinedButton(onPressed: (){
                           Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=>BlocProvider.value(
-                              value:LoginCubit()..GetChatContacts(),
+                              value:AppCubit()..GetChatContacts(),
                               child: EditProfileScreen())));
                         }, child: Icon(Icons.edit,size:16.0)),
                       ],

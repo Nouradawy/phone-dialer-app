@@ -1,5 +1,6 @@
 
 import 'package:dialer_app/Components/components.dart';
+import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Login&Register/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Login&Register/Cubit/states.dart';
 import 'package:flutter/material.dart';
@@ -22,8 +23,8 @@ class EditProfileScreen extends StatelessWidget {
       listener: (contaxt,state){
         if(state is! SocialUpdateUserLoadingState)
         {
-          NameController.text = Cubit.CurrentUser[0].name!;
-          BioController.text =  Cubit.CurrentUser[0].bio!;
+          NameController.text = AppCubit.get(context).CurrentUser[0].name!;
+          BioController.text =  AppCubit.get(context).CurrentUser[0].bio!;
 
         }
       },
@@ -61,7 +62,7 @@ class EditProfileScreen extends StatelessWidget {
                         child: Card(
                             clipBehavior: Clip.antiAliasWithSaveLayer,
                             elevation: 7,
-                            child:Image(image: Cubit.CoverImage == null ? NetworkImage(Cubit.CurrentUser[0].cover.toString()) : ImageSwap(Cubit.CoverImage),
+                            child:Image(image: Cubit.CoverImage == null ? NetworkImage(AppCubit.get(context).CurrentUser[0].cover.toString()) : ImageSwap(Cubit.CoverImage),
                               fit: BoxFit.cover,
                               height: 170,
                               width: double.infinity,
@@ -90,7 +91,7 @@ class EditProfileScreen extends StatelessWidget {
                         padding: const EdgeInsets.all(3.0),
                         child: CircleAvatar(
                           radius: 60,
-                          backgroundImage: Cubit.profileImage == null ? NetworkImage(Cubit.CurrentUser[0].image.toString()) : ImageSwap(Cubit.profileImage),
+                          backgroundImage: Cubit.profileImage == null ? NetworkImage(AppCubit.get(context).CurrentUser[0].image.toString()) : ImageSwap(Cubit.profileImage),
                         ),
                       ),
                     ),

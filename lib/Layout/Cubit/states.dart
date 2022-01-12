@@ -17,5 +17,13 @@ class dailerInputSuccessstate extends AppStates{}
 class PhoneloglistSuccess extends AppStates{}
 class CallerIDSuccess extends AppStates{}
 class TimerStarted extends AppStates{}
+class ThemeUpdateState extends AppStates {}
+
+class GetChatContactsLoadingState extends AppStates{}
+class GetChatContactsSuccessState extends AppStates{}
+class GetChatContactsErrorState extends AppStates{
+  final String error;
+  GetChatContactsErrorState(this.error);
+}
 
 

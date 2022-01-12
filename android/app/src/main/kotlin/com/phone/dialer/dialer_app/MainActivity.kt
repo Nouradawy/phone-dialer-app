@@ -47,88 +47,89 @@ class MainActivity : FlutterActivity() {
             val states = call.method
             if (states.equals("num1"))  {
                 CallManager.keypad('1')
-                result.success("Done")
+                result.success("num1")
                 result.error("unavilable", "faild to Reject", null)
             }
             if (states.equals("num2")) {
                 CallManager.keypad('2')
-                result.success("Done")
+                result.success("num2")
                 result.error("unavilable", "faild to Reject", null)
             }
             if (states.equals("num3"))  {
                 CallManager.keypad('3')
-                result.success("Done")
+                result.success("num3")
                 result.error("unavilable", "faild to Reject", null)
             }
             if (states.equals("num4"))  {
                 CallManager.keypad('4')
-                result.success("Done")
+                result.success("num4")
                 result.error("unavilable", "faild to Reject", null)
             }
             if (states.equals("num5"))  {
                 CallManager.keypad('5')
-                result.success("Done")
+                result.success("num5")
                 result.error("unavilable", "faild to Reject", null)
             }
             if (states.equals("num6"))  {
                 CallManager.keypad('6')
-                result.success("Done")
+                result.success("num6")
                 result.error("unavilable", "faild to Reject", null)
             }
             if (states.equals("num7"))  {
                 CallManager.keypad('7')
-                result.success("Done")
+                result.success("num7")
                 result.error("unavilable", "faild to Reject", null)
             }
             if (states.equals("num8"))  {
                 CallManager.keypad('8')
-                result.success("Done")
+                result.success("num8")
                 result.error("unavilable", "faild to Reject", null)
             }
             if (states.equals("num9"))  {
                 CallManager.keypad('9')
-                result.success("Done")
+                result.success("num9")
                 result.error("unavilable", "faild to Reject", null)
+
             }
             if (states.equals("num0"))  {
                 CallManager.keypad('0')
-                result.success("Done")
+                result.success("num0")
                 result.error("unavilable", "faild to Reject", null)
             }
             if (states.equals("num*"))  {
                 CallManager.keypad('*')
-                result.success("Done")
+                result.success("num*")
                 result.error("unavilable", "faild to Reject", null)
             }
             if (states.equals("num#"))  {
                 CallManager.keypad('#')
-                result.success("Done")
+                result.success("num#")
                 result.error("unavilable", "faild to Reject", null)
             }
             if (states.equals("RejectCall"))  {
-                    CallManager.reject()
-                    result.success("Done")
+                CallManager.reject()
+                    result.success("RejectCallMethodSuccess")
                     result.error("unavilable", "faild to Reject", null)
                     }
 
             if (states.equals("AcceptCall")) {
-                    CallManager.accept()
-                    result.success("Done")
+                CallManager.accept()
+                    result.success("AcceptCallMethodSuccess")
                     result.error("unavilable", "faild to Reject", null)
                 }
             if (states.equals("MicToggle")) {
-                    CallActivity.toggleMicrophone()
-                    result.success("Done")
+                CallActivity.toggleMicrophone()
+                    result.success("MICtoggle")
                     result.error("unavilable", "faild to Reject", null)
                 }
             if (states.equals("SpeakerToggle")){
-                    CallActivity.toggleSpeaker()
-                    result.success("Done")
+                CallActivity.toggleSpeaker()
+                    result.success("SpeakerToggle")
                     result.error("unavilable", "faild to Reject", null)
                 }
             if (states.equals("HoldToggle")) {
-                    CallActivity.toggleHold()
-                    result.success("Done")
+                CallActivity.toggleHold()
+                    result.success("CallOnHold")
                     result.error("unavilable", "faild to Reject", null)
                 }
                 else  result.notImplemented()

@@ -1,4 +1,5 @@
 import 'package:dialer_app/Components/components.dart';
+import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Models/user_model.dart';
 import 'package:dialer_app/Modules/Chat/chat_messeging.dart';
 import 'package:dialer_app/Modules/Login&Register/Cubit/cubit.dart';
@@ -34,13 +35,13 @@ class ChatContacts extends StatelessWidget {
     return Scaffold(
       appBar: ChatAppBar(context, AppbarSize),
       body: BlocProvider.value(
-        value:LoginCubit()..GetChatContacts(),
+        value:AppCubit()..GetChatContacts(),
         child: BlocConsumer<LoginCubit,LoginCubitStates>(
           listener: (context,state){},
           builder:(context,state)=> ListView.builder(
-            itemCount: LoginCubit.get(context).ChatContacts.length,
+            itemCount: AppCubit.get(context).ChatContacts.length,
             itemBuilder: (BuildContext context, int index) {
-              UserModel contact = LoginCubit.get(context).ChatContacts[index];
+              UserModel contact = AppCubit.get(context).ChatContacts[index];
              return Padding(
                padding: const EdgeInsets.only(top:8.0),
                child: ListTile(
@@ -59,10 +60,10 @@ class ChatContacts extends StatelessWidget {
                     child: CircleAvatar(
                       radius: ProfilePictureSize,
                       backgroundImage: NetworkImage(
-                          LoginCubit.get(context).ChatContacts[index].image.toString()),
+                          AppCubit.get(context).ChatContacts[index].image.toString()),
                     ),
                   ),
-                  title:Text(LoginCubit.get(context).ChatContacts[index].name.toString()),
+                  title:Text(AppCubit.get(context).ChatContacts[index].name.toString()),
                 ),
              );
             },

@@ -2,6 +2,7 @@
 import 'package:call_log/call_log.dart';
 
 import 'package:bloc/bloc.dart';
+import 'package:dialer_app/Layout/Cubit/states.dart';
 import 'package:dialer_app/Modules/Chat/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Login&Register/Cubit/cubit.dart';
 import 'package:dialer_app/Themes/light_theme.dart';
@@ -16,10 +17,14 @@ import 'package:workmanager/workmanager.dart';
 import 'Components/components.dart';
 import 'Components/constants.dart';
 import 'Layout/Cubit/cubit.dart';
+import 'Layout/incall_screen.dart';
 import 'Modules/Login&Register/login_screen.dart';
 import 'NativeBridge/native_bridge.dart';
+import 'NativeBridge/native_states.dart';
 import 'Network/Local/cache_helper.dart';
 import 'Network/Remote/dio_helper.dart';
+import 'Themes/dark_theme.dart';
+import 'home.dart';
 
 void callbackDispatcher() {
   Workmanager().executeTask((dynamic task, dynamic inputData) async {
@@ -64,6 +69,7 @@ void main() async {
   print(NotificationToken);
 
 
+
   // foreground fcm
   FirebaseMessaging.onMessage.listen(( RemoteMessage message)
   {
@@ -88,37 +94,67 @@ void main() async {
 
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
-  Bloc.observer = MyBlocObserver();
+
   DioHelper.dio;
   await CacheHelper.init();
   token = CacheHelper.getData(key: 'token');
+  // ThemeSwitch = CacheHelper.getData(key: 'ThemeSwitch')==null?ThemeSwitch:CacheHelper.getData(key: 'ThemeSwitch');
   print("AuthorizationToken: "+token.toString());
+  Widget Homescreen = Home();
 
+  if(token != null)
+  {
+    Homescreen = Home();
+  } else {
+    Homescreen = LoginScreen();
+  }
 
-  runApp(MyApp());
+  BlocOverrides.runZoned(
+        () =>runApp(MyApp(
+      // themeSwitch :ThemeSwitch,
+      homeScreen:Homescreen,
+    )),
+    blocObserver: MyBlocObserver(),
+  );
 
 }
 
 class MyApp extends StatelessWidget {
+  // final bool themeSwitch;
+  final Widget homeScreen;
 
 
+  const MyApp({
+    // required this.themeSwitch,
+    required this.homeScreen,
+  });
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+
         BlocProvider(
-            create: (context)=>NativeBridge()..invokeNativeMethod..phonestateEvents(),),
+          create: (context)=>NativeBridge()..invokeNativeMethod..phonestateEvents(),
+        ),
+
         BlocProvider(
-            create: (context)=>AppCubit()),
+            create: (context)=> AppCubit()),
+
       ],
-    child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        debugShowMaterialGrid: false,
-        theme: LightThemeData(),
-        themeMode: ThemeMode.light,
-        home: LoginScreen(),
-    ));
+    child:BlocBuilder<AppCubit,AppStates>(
+      builder:(context,state)=> MaterialApp(
+                  debugShowCheckedModeBanner: false,
+                  debugShowMaterialGrid: false,
+                  theme: LightThemeData(),
+                  darkTheme: DarkThemeData(),
+                  themeMode: ThemeSwitch?ThemeMode.light:ThemeMode.dark,
+                  home: homeScreen,
+              ),
+    ),
+
+
+    );
 
   }
 }

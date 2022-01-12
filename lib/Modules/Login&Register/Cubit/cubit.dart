@@ -22,8 +22,7 @@ class LoginCubit extends Cubit<LoginCubitStates>
   static LoginCubit get(context) => BlocProvider.of(context);
   bool isPassword = true;
   IconData? suffixIcon = Icons.visibility;
-  List<UserModel> ChatContacts =[];
-  List<UserModel> CurrentUser = [];
+
 
   void Passon(){
     isPassword =! isPassword;
@@ -58,6 +57,8 @@ class LoginCubit extends Cubit<LoginCubitStates>
       'tokens': FieldValue.arrayUnion([DeviceToken]),
     });
   }
+
+
   void RegisterUser({String? name , String? email , String? phone , String? password , String? uId}) {
     Textstate = "Pushing your Data to our servers";
     emit(DialerLoadingRegisterUserState(Textstate));
@@ -98,26 +99,7 @@ class LoginCubit extends Cubit<LoginCubitStates>
     });
   }
 
-  void GetChatContacts()async{
-    emit(GetChatContactsLoadingState());
-    await FirebaseFirestore.instance.collection("Users").get().then((value){
-      value.docs.forEach((element)
-      {
-        if(element.data()['uId'] != token) {
-          ChatContacts.add(UserModel.fromJson(element.data()));
-        } else {
-          CurrentUser.clear();
-          CurrentUser.add(UserModel.fromJson(element.data()));
-        }
-      }
 
-      );
-      emit(GetChatContactsSuccessState());
-    }).catchError((error){
-      print("GetChatContacts error : "+error.toString());
-      emit(GetChatContactsErrorState(error));
-    });
-  }
 
   File? profileImage;
   File? CoverImage;
@@ -213,39 +195,74 @@ class LoginCubit extends Cubit<LoginCubitStates>
       cover:CoverImageURL.toString(),
 
     );
-    print(CurrentUser[0].image.toString());
-    CurrentUser[0].image = ProfileImageURL;
-    CurrentUser[0].cover = CoverImageURL;
+    //TODO:Fix Profile Updater impleminting it with new Cubit or useing streambuilder
+    // print(CurrentUser[0].image.toString());
+    // CurrentUser[0].image = ProfileImageURL;
+    // CurrentUser[0].cover = CoverImageURL;
 
     FirebaseFirestore.instance.collection("Users").doc(token).update(model.toMap()).then(
             (value) {
 
           emit(SocialUpdateUserSuccessState());
         }).catchError((error){
-      print("Error on uodate : " + error.toString());
+      print("Error on update : " + error.toString());
 
       emit(SocialUpdateUserErrorState(error.toString()));
     });
   }
-  bool?NewMessage ;
-   Future<bool?> NewMessageDetection (Userdata , index) async{
-     await FirebaseFirestore.instance.collection("Users").doc(token).collection("chats").doc(Userdata.docs[index].data().uId).get().then((element){element.data()?.forEach((key, value) {
-      if(key == "NewMessage")
-      {
-        if(value ==true)
-          {
-            NewMessage = true;
-          } else {
-          NewMessage =false;
+  // bool?NewMessage ;
+  //  Future<bool?> NewMessageDetection (Userdata , index) async{
+  //    await FirebaseFirestore.instance.collection("Users").doc(token).collection("chats").doc(Userdata.docs[index].data().uId).get().then((element){element.data()?.forEach((key, value) {
+  //     if(key == "NewMessage")
+  //     {
+  //       if(value ==true)
+  //         {
+  //           NewMessage = true;
+  //         } else {
+  //         NewMessage =false;
+  //       }
+  //     }
+  //   });
+  //
+  //   });
+  //    print("value here :" + NewMessage.toString());
+  //    print("Index value : " +index.toString());
+  //    // emit(NewMessageRecived());
+  //    return NewMessage;
+  // }
+  int ListSize=0;
+  Future<void> ListCount() async {
+    ListSize =  0;
+    await FirebaseFirestore.instance.collection("Users").get().then((value)  {
+
+      value.docs.forEach((element)
+      async {
+        if (element.data()['uId'] != token) {
+          bool? NewMessageCount;
+          await FirebaseFirestore.instance.collection("Users").doc(token).collection("chats").doc(element
+              .data()
+          ['uId']
+              .toString()).collection("messages").get().then((value) {
+            for (var element in value.docs) {
+              if (element.data()['Seen'] == false) {
+                NewMessageCount = true;
+              } else {
+                NewMessageCount == true? NewMessageCount=true:NewMessageCount=false;
+              }
+            }
+          });
+
+          NewMessageCount == true ? ListSize++ : null;
+
         }
-      }
+        print("item count : " + ListSize.toString());
+
+      });
     });
 
-    });
-     print("value here :" + NewMessage.toString());
-     print("Index value : " +index.toString());
-     // emit(NewMessageRecived());
-     return NewMessage;
   }
 
+void ListListner(){
+  emit(NewMessageRecived());
+}
 }

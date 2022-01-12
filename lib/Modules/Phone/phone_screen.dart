@@ -19,13 +19,9 @@ class PhoneScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     var Cubit = AppCubit.get(context);
     return SafeArea(
-      child: BlocProvider.value(
+      child:BlocProvider.value(
         value:AppCubit.get(context)..GetPhoneLog(),
-        child: BlocConsumer<AppCubit,AppStates>(
-            listener:(context,state){},
-            builder:(context,state)
-            {
-              return ListView.builder(
+        child: ListView.builder(
                 itemCount:  Cubit.isSearching == true?Cubit.FilterdContacts.length:AppCubit.get(context).PhoneCallLogs.length,
                 itemBuilder: (context, index) {
                   AppContact contact = Cubit.isSearching == true?Cubit.FilterdContacts[index]:Cubit.Contacts[index];
@@ -75,55 +71,7 @@ class PhoneScreen extends StatelessWidget {
 
                           ],),
                         ),
-                        // trailing: ConstrainedBox(
-                        //   constraints: BoxConstraints(
-                        //     maxWidth: MediaQuery.of(context).size.width*0.40,
-                        //   ),
-                        //   child: Row(
-                        //     children: [
-                        //       Column(
-                        //         crossAxisAlignment: CrossAxisAlignment.start,
-                        //         // mainAxisSize: MainAxisSize.min,
-                        //         children: [
-                        //           Stack(
-                        //             children: [
-                        //               Padding(
-                        //                 padding: const EdgeInsets.only(top:8.0),
-                        //                 child: Container(
-                        //                     alignment: AlignmentDirectional.topCenter,
-                        //                     width:80,
-                        //                     height: 45,
-                        //                     decoration: BoxDecoration(
-                        //                       borderRadius: BorderRadius.circular(4),
-                        //                       color:HexColor("#F5F5F5"),
-                        //                     ),
-                        //                     child:Padding(
-                        //                       padding: const EdgeInsets.only(top:2.0),
-                        //                       child: Text("Work colleague",style: Theme.of(context).textTheme.caption,),
-                        //                     )),
-                        //               ),
-                        //               Container(
-                        //                   alignment: AlignmentDirectional.center,
-                        //                   width:26,
-                        //                   height: 14,
-                        //                   decoration: BoxDecoration(
-                        //                       borderRadius: BorderRadius.circular(6),
-                        //                       gradient: LinearGradient(
-                        //                         colors: [HexColor("#615A5A"),HexColor("#A227CE")],
-                        //                       )
-                        //                   ),
-                        //                   child:Padding(
-                        //                     padding: const EdgeInsets.only(bottom: 0.0),
-                        //                     child: Text("Hint",style:Theme.of(context).textTheme.button),
-                        //                   )),
-                        //             ],
-                        //           ),
-                        //
-                        //         ],
-                        //       ),
-                        //     ],
-                        //   ),
-                        // ),
+
                       ): ListTile(
                         contentPadding: EdgeInsets.symmetric(
                             horizontal: 10, vertical: 0),
@@ -161,10 +109,9 @@ class PhoneScreen extends StatelessWidget {
                     ],
                   );
                 },
-              );}
-        ),
-      ),
-    );
+              ),
+      )
+      );
   }
 }
 
