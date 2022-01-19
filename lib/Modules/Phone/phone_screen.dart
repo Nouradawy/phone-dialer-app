@@ -1,300 +1,331 @@
 
-import 'dart:typed_data';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:contacts_service/contacts_service.dart';
+import 'package:call_log/call_log.dart';
 import 'package:dialer_app/Components/contacts_components.dart';
-import 'package:dialer_app/Layout/Cubit/cubit.dart';
-import 'package:dialer_app/Layout/Cubit/states.dart';
 import 'package:dialer_app/Models/phone_log_model.dart';
+import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
 import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
 import 'package:dialer_app/Modules/Contacts/contacts_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:intl/intl.dart';
 
+
 class PhoneScreen extends StatelessWidget {
+  PhoneLogger c1 = new PhoneLogger();
+  late Future<Iterable<CallLogEntry>> logs;
+
   @override
   Widget build(BuildContext context) {
-    var Cubit = AppCubit.get(context);
+    logs = c1.getCallLogs();
     return SafeArea(
-      child:BlocProvider.value(
-        value:AppCubit.get(context)..GetPhoneLog(),
-        child: ListView.builder(
-                itemCount:  Cubit.isSearching == true?Cubit.FilterdContacts.length:AppCubit.get(context).PhoneCallLogs.length,
-                itemBuilder: (context, index) {
-                  AppContact contact = Cubit.isSearching == true?Cubit.FilterdContacts[index]:Cubit.Contacts[index];
-                  var phonelog = AppCubit.get(context).PhoneCallLogs[index];
-                  return Column(
-                    children: [
-                      index==0 && Cubit.isSearching!=true?Padding(
-                        padding: const EdgeInsets.only(left:30.0),
-                        child: Row(children: const [
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 5.0),
-                            child: Text("All"),
+      child: PhoneContactsCubit.get(context).isSearching!=true?FutureBuilder<Iterable<CallLogEntry>>(
+        future: logs,
+        builder:(context,snapshot) {
+          if(snapshot.connectionState == ConnectionState.done ) {
+            final entries = snapshot.requireData;
+          return ListView.builder(
+            itemCount:entries.length,
+            itemBuilder: (context, index) {
+              c1.LogAvatarColors();
+              return Column(
+                children: [
+                  index == 0 ?Padding(
+                          padding: const EdgeInsets.only(left: 30.0),
+                          child: Row(
+                            children: const [
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 5.0),
+                                child: Text("All"),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 5.0),
+                                child: Text("Missed"),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 5.0),
+                                child: Text("InBound"),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 5.0),
+                                child: Text("OutBound"),
+                              ),
+                            ],
                           ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 5.0),
-                            child: Text("Missed"),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 5.0),
-                            child: Text("InBound"),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 5.0),
-                            child: Text("OutBound"),
-                          ),
-                        ],),
-                      ):Container(),
-                      Cubit.isSearching != true?ListTile(
-                        contentPadding: EdgeInsets.symmetric(horizontal: 5,vertical: 0),
-                        onTap: () {},
-                        title: Text(phonelog["ContactName"].toString(),style: Theme.of(context).textTheme.bodyText1,),
-                        subtitle: Text(phonelog["PhoneNumber"].toString(),
-                          style: Theme.of(context).textTheme.bodyText2,),
-                        leading: LoggertAvatar( 45 , phonelog["ContactName"].toString() , contact),
-                        trailing: Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                            ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxWidth: 150,
-                                ),
-                                child: calculateDifference(phonelog["Date"])),
-                            Text( "${phonelog["PhoneState"]}"+DurationFormat(phonelog["Duration"])),
+                        ):Container(),
 
-                          ],),
-                        ),
-
-                      ): ListTile(
-                        contentPadding: EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 0),
-                        onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (BuildContext context) =>
-                                  ContactDetails(
-                                    contact,
-                                    onContactDelete: (AppContact _contact) {
-                                      Cubit.GetContacts();
-                                      Navigator.of(context).pop();
-                                    },
-                                    onContactUpdate: (AppContact _contact) {
-                                      Cubit.GetContacts();
-                                    },
-                                  )
-                          ));
-                        },
-                        title: Text(
-                          contact.info!.displayName.toString(), style: Theme
-                            .of(context)
-                            .textTheme
-                            .bodyText1,),
-                        subtitle: Text(
-                          contact.info!.phones!.isNotEmpty ? contact.info!
-                              .phones!
-                              .elementAt(0).value.toString() : '',
-                          style: Theme
-                              .of(context)
-                              .textTheme
-                              .bodyText2,),
-                        leading: ContactAvatar(contact, 45),
-                        trailing: ContactsTagsNotes(context),
-                      ),
-                    ],
-                  );
-                },
-              ),
+                  PhoneLogList(entries, index, context),
+                ],
+              );
+            },
+          );
+        } else {
+            return Center(child: CircularProgressIndicator());
+          }
+      },
+      ):ListView.builder(
+        itemCount:   PhoneContactsCubit.get(context).FilterdContacts.length,
+        itemBuilder: (context, index) {
+          AppContact contact = PhoneContactsCubit.get(context).FilterdContacts[index];
+          return Column(
+            children: [
+              SearchingList(context, contact),
+            ],
+          );
+        },
       )
+
+
       );
   }
-}
 
-// class ContactDetails extends StatefulWidget {
-//   ContactDetails(this.contact, {required this.onContactUpdate, required this.onContactDelete});
-//
-//   final AppContact contact;
-//   final Function(AppContact) onContactUpdate;
-//   final Function(AppContact) onContactDelete;
-//   @override
-//   _ContactDetailsState createState() => _ContactDetailsState();
-// }
-//
-// class _ContactDetailsState extends State<ContactDetails> {
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     List<String> actions = <String>[
-//       'Edit',
-//       'Delete'
-//     ];
-//
-//     showDeleteConfirmation() {
-//       Widget cancelButton = FlatButton(
-//         child: Text('Cancel'),
-//         onPressed: () {
-//           Navigator.of(context).pop();
-//         },
-//       );
-//       Widget deleteButton = FlatButton(
-//         color: Colors.red,
-//         child: Text('Delete'),
-//         onPressed: () async {
-//           await ContactsService.deleteContact(widget.contact.info!);
-//           widget.onContactDelete(widget.contact);
-//           Navigator.of(context).pop();
-//         },
-//       );
-//       AlertDialog alert= AlertDialog(
-//         title: Text('Delete contact?'),
-//         content: Text('Are you sure you want to delete this contact?'),
-//         actions: <Widget>[
-//           cancelButton,
-//           deleteButton
-//         ],
-//       );
-//
-//       showDialog(
-//           context: context,
-//           builder: (BuildContext context) {
-//             return alert;
-//           }
-//       );
-//
-//     }
-//
-//     onAction(String action) async {
-//       switch(action) {
-//         case 'Edit':
-//           try {
-//             Contact updatedContact = await ContactsService.openExistingContact(widget.contact.info!);
-//             setState(() {
-//               widget.contact.info = updatedContact;
-//             });
-//             widget.onContactUpdate(widget.contact);
-//           } on FormOperationException catch (e) {
-//             switch(e.errorCode) {
-//               case FormOperationErrorCode.FORM_OPERATION_CANCELED:
-//               case FormOperationErrorCode.FORM_COULD_NOT_BE_OPEN:
-//               case FormOperationErrorCode.FORM_OPERATION_UNKNOWN_ERROR:
-//                 print(e.toString());
-//             }
-//           }
-//           break;
-//         case 'Delete':
-//           showDeleteConfirmation();
-//           break;
-//       }
-//       print(action);
-//     }
-//
-//     return Scaffold(
-//       body: SafeArea(
-//         child: Column(
-//           children: <Widget>[
-//             Container(
-//               height: 180,
-//               decoration: BoxDecoration(color: Colors.grey[300]),
-//               child: Stack(
-//                 alignment: Alignment.topCenter,
-//                 children: <Widget>[
-//                   // Center(child: ContactAvatar(widget.contact, 100)),
-//                   Align(
-//                     child: Padding(
-//                       padding: const EdgeInsets.all(8.0),
-//                       child: IconButton(
-//                         icon: Icon(Icons.arrow_back),
-//                         onPressed: () {
-//                           Navigator.of(context).pop();
-//                         },
-//                       ),
-//                     ),
-//                     alignment: Alignment.topLeft,
-//                   ),
-//                   Align(
-//                     alignment: Alignment.topRight,
-//                     child: Padding(
-//                       padding: const EdgeInsets.all(8.0),
-//                       child: PopupMenuButton(
-//                         onSelected: onAction,
-//                         itemBuilder: (BuildContext context) {
-//                           return actions.map((String action) {
-//                             return PopupMenuItem(
-//                               value: action,
-//                               child: Text(action),
-//                             );
-//                           }).toList();
-//                         },
-//                       ),
-//                     ),
-//                   )
-//                 ],
-//               ),
-//             ),
-//             Expanded(
-//               child: ListView(shrinkWrap: true, children: <Widget>[
-//                 ListTile(
-//                   title: Text("Name"),
-//                   trailing: Text(widget.contact.info!.givenName ?? ""),
-//                 ),
-//                 ListTile(
-//                   title: Text("Family name"),
-//                   trailing: Text(widget.contact.info!.familyName ?? ""),
-//                 ),
-//                 Column(
-//                   children: <Widget>[
-//                     ListTile(title: Text("Phones")),
-//                     Column(
-//                       children: widget.contact.info!.phones!
-//                           .map(
-//                             (i) => Padding(
-//                           padding:
-//                           const EdgeInsets.symmetric(horizontal: 16.0),
-//                           child: ListTile(
-//                             title: Text(i.label ?? ""),
-//                             trailing: Text(i.value ?? ""),
-//                           ),
-//                         ),
-//                       )
-//                           .toList(),
-//                     )
-//                   ],
-//                 )
-//               ]),
-//             )
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
+  ListTile PhoneLogList(Iterable<CallLogEntry> entries, int index, BuildContext context) {
+    return ListTile(
+                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                    onTap: () {},
+                    title: Transform.translate(
+                      offset: Offset(-5,0),
+                      child: Text(
+                        c1.GetCallerID(entries.elementAt(index), PhoneContactsCubit.get(context).Contacts).toString(),
+                        style: Theme.of(context).textTheme.bodyText1,
+                      ),
+                    ),
+                    subtitle: Transform.translate(
+                      offset:Offset(-5,0),
+                      child: Text(
+                        entries.elementAt(index).number.toString(),
+                        style: Theme.of(context).textTheme.bodyText2,
+                      ),
+                    ),
+                    leading: LoggertAvatar(55, entries.elementAt(index).name.toString(), entries.elementAt(index).callType, c1.AvatarColor),
+                    trailing: Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: MediaQuery.of(context).size.width*0.40,
+                              ),
+                              child:Stack(
+                                children: [
+                                  Container(
+                                    width: MediaQuery.of(context).size.width*0.40,
+                                    height: 12,
+                                    decoration: BoxDecoration(
+                                      color:HexColor("#8F00B9"),
+                                      borderRadius: BorderRadius.circular(3)
+                                    ),
+                                  ),
+                                  Transform.translate(
+                                    offset: Offset(5,2),
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width*0.17,
+                                      height: 30,
+                                      decoration: BoxDecoration(
+                                        color:HexColor("#BFE5F9"),
+                                        borderRadius: BorderRadius.only(
+                                          bottomLeft: Radius.circular(4),
+                                        )
+                                      ),
+                                    ),
+                                  ),
+                                  Transform.translate(
+                                    offset: Offset(MediaQuery.of(context).size.width*0.17+4,2),
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width*0.205,
+                                      height: 55,
+                                      decoration: BoxDecoration(
+                                        color:HexColor("#F2E7FE"),
+                                        borderRadius: BorderRadius.only(
+                                          bottomLeft: Radius.circular(4),
+                                        )
+                                      ),
+                                    ),
+                                  ),
+                                  calculateDifference(c1.GetDate(entries.elementAt(index))),
+                                  Transform.translate(
+                                      offset: Offset(MediaQuery.of(context).size.width*0.25,30),
+                                      child: Text("${c1.GetPhoneType(entries.elementAt(index))}" + entries.elementAt(index).duration.toString())),
+                                ],
+                              )),
 
-class LoggertAvatar extends StatelessWidget {
-  LoggertAvatar( this.size , this.PhoneLogName , this.contact);
-  final String PhoneLogName;
-  final double size;
-  final AppContact contact;
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-            shape: BoxShape.circle, gradient: getColorGradient(contact.color)),
-        child:buildCircleAvatar(PhoneLogName[0]));
+                        ],
+                      ),
+                    ),
+                  );
+  }
+
+  ListTile SearchingList(BuildContext context, AppContact contact) {
+    return ListTile(
+                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (BuildContext context) => ContactDetails(
+                                contact,
+                                onContactDelete: (AppContact _contact) {
+                                  PhoneContactsCubit.get(context).GetRawContacts();
+                                  Navigator.of(context).pop();
+                                },
+                                onContactUpdate: (AppContact _contact) {
+                                  PhoneContactsCubit.get(context).GetRawContacts();
+                                },
+                              )));
+                    },
+                    title: Text(
+                      contact.info!.displayName.toString(),
+                      style: Theme.of(context).textTheme.bodyText1,
+                    ),
+                    subtitle: Text(
+                      contact.info!.phones!.isNotEmpty ? contact.info!.phones!.elementAt(0).value.toString() : '',
+                      style: Theme.of(context).textTheme.bodyText2,
+                    ),
+                    leading: ContactAvatar(contact, 45),
+                    trailing: ContactsTagsNotes(context),
+                  );
   }
 }
-CircleAvatar buildCircleAvatar(String? initials) {
-    return CircleAvatar(child: Text(initials.toString(),
-        style: TextStyle(color: Colors.white)),
+
+
+class LoggertAvatar extends StatelessWidget {
+  LoggertAvatar( this.size , this.PhoneLog , this.callType ,  this.AvatarColor);
+  final CallType? callType;
+  final String PhoneLog;
+  final double size;
+
+  final Color? AvatarColor;
+  @override
+  Widget build(BuildContext context) {
+    if(callType == CallType.outgoing) {
+      return Stack(
+        children: [
+          Container(width: size, height: size, decoration: BoxDecoration(shape: BoxShape.circle, gradient: getColorGradient(AvatarColor)), child: buildCircleAvatar(PhoneLog[0],AvatarColor)),
+          Transform.translate(
+              offset: Offset(15, 22),
+              child: Icon(
+                Icons.east,
+                size: 30,
+                color: HexColor("#2BDBFF").withOpacity(0.81),
+              )),
+          Transform.translate(
+              offset: Offset(15, 35),
+              child: Text(
+                "calls",
+                style: TextStyle(fontFamily: "OpenSans", fontStyle: FontStyle.italic, color: Colors.white, fontWeight: FontWeight.w100, fontSize: 10),
+              )),
+        ],
+      );
+    }
+    if(callType == CallType.missed) {
+      return Stack(
+        children: [
+          Container(width: size, height: size, decoration: BoxDecoration(shape: BoxShape.circle, gradient: getColorGradient(AvatarColor)), child: buildCircleAvatar(PhoneLog[0],AvatarColor )),
+          Transform.translate(
+              offset: Offset(15, 22),
+              child: Icon(
+                Icons.west,
+                size: 30,
+                color: HexColor("#E90800").withOpacity(0.81),
+              )),
+          Transform.translate(
+              offset: Offset(25, 35),
+              child: Text(
+                "calls",
+                style: TextStyle(fontFamily: "OpenSans", fontStyle: FontStyle.italic, color: Colors.white, fontWeight: FontWeight.w100, fontSize: 10),
+              )),
+        ],
+      );
+    }
+    if(callType == CallType.incoming){
+      return Stack(
+        children: [
+          Container(width: size, height: size, decoration: BoxDecoration(shape: BoxShape.circle, gradient: getColorGradient(AvatarColor)), child: buildCircleAvatar(PhoneLog[0],AvatarColor )),
+          Transform.translate(
+              offset: Offset(15, 22),
+              child: Icon(
+                Icons.west,
+                size: 30,
+                color: HexColor("#2BDBFF").withOpacity(0.81),
+              )),
+          Transform.translate(
+              offset: Offset(25, 35),
+              child: Text(
+                "calls",
+                style: TextStyle(fontFamily: "OpenSans", fontStyle: FontStyle.italic, color: Colors.white, fontWeight: FontWeight.w100, fontSize: 10),
+              )),
+        ],
+      );
+    }
+    if(callType == CallType.blocked){
+      return Stack(
+        children: [
+          Container(width: size, height: size, decoration: BoxDecoration(shape: BoxShape.circle, gradient: getColorGradient(AvatarColor)), child: buildCircleAvatar(PhoneLog[0], AvatarColor)),
+          Transform.translate(
+              offset: Offset(12, 12),
+              child: Icon(
+                Icons.block,
+                size: 30,
+                color: HexColor("#E90800").withOpacity(0.81),
+              )),
+          Transform.translate(
+              offset: Offset(17, 38),
+              child: Text(
+                "Blocked",
+                style: TextStyle(fontFamily: "OpenSans", fontStyle: FontStyle.italic, color: Colors.white, fontWeight: FontWeight.w100, fontSize: 8),
+              )),
+        ],
+      );
+    }
+    if(callType == CallType.rejected){
+      return Stack(
+        children: [
+          Container(width: size, height: size, decoration: BoxDecoration(shape: BoxShape.circle, gradient: getColorGradient(AvatarColor)), child: buildCircleAvatar(PhoneLog[0],AvatarColor )),
+          Transform.translate(
+              offset: Offset(4, 9),
+              child: Icon(
+                Icons.phone_disabled,
+                size: 15,
+                color: HexColor("#E90800").withOpacity(0.81),
+              )),
+          Transform.translate(
+              offset: Offset(7, 38),
+              child: Text(
+                "Declined",
+                style: TextStyle(fontFamily: "OpenSans", fontStyle: FontStyle.italic, color: Colors.white, fontWeight: FontWeight.w300, fontSize: 11),
+              )),
+        ],
+      );
+    }
+    else{
+      return Stack(
+        children: [
+          Container(width: size, height: size, decoration: BoxDecoration(shape: BoxShape.circle, gradient: getColorGradient(AvatarColor)), child: buildCircleAvatar(PhoneLog[0],AvatarColor )),
+        ],
+      );
+    }
+  }
+}
+CircleAvatar buildCircleAvatar(String? initials , AvatarColor) {
+    return CircleAvatar(child:
+    Stack(
+      children: [
+        ClipPath(
+            clipper: SemiCircleClipper(),
+            child: CircleAvatar(radius: 55,backgroundColor: HexColor("#032A37").withOpacity(0.35),)),
+        Center(child: Icon(Icons.person ,size: 30, color: AvatarColor == Colors.yellow || AvatarColor == Colors.orange?HexColor("#8D4A4A"):HexColor("#D1D1D1"),)),
+        Transform.translate(
+          offset: Offset(36,15),
+          child: Text(initials.toString().toUpperCase(),
+              style: TextStyle(color: Colors.white)),
+        ),
+      ],
+    ),
       backgroundColor: Colors.transparent,
     );
   }
+
+
 
 LinearGradient getColorGradient(Color? color) {
   var baseColor = color as dynamic;
@@ -314,7 +345,8 @@ Row calculateDifference(DateTime date) {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Text("TODAY"),
-          Text(DateFormat.d().add_MMM().format(DateTime(date.year, date.month, date.day)).toString()),
+          SizedBox(width: 20,),
+          Text(DateFormat.jm().format(DateTime(date.year, date.month, date.day)).toString()),
         ],
       );
     }
@@ -324,6 +356,7 @@ Row calculateDifference(DateTime date) {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Text("YESTERDAY"),
+        SizedBox(width: 20,),
         Text(DateFormat.jm().format(DateTime(date.year, date.month, date.day)).toString()),
       ],
     );
@@ -337,7 +370,9 @@ Row calculateDifference(DateTime date) {
           padding: const EdgeInsets.only(right: 8.0),
           child: Text(DateFormat.d().add_MMM().format(DateTime(date.year, date.month, date.day)).toString(),style: TextStyle(color: Colors.white),),
         ),
+
       ),
+      SizedBox(width: 20,),
       Text(DateFormat.jm().format(DateTime(date.year, date.month, date.day)).toString()),
 
     ],
@@ -361,4 +396,19 @@ String DurationFormat(Duration){
   }
   return Duration.toString();
 
+}
+
+class SemiCircleClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size){
+    Path path =Path();
+    path.moveTo(55, 0);
+    path.lineTo(55,55);
+    path.lineTo(0,55);
+    // path.lineTo(0, 0);
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) =>false;
 }

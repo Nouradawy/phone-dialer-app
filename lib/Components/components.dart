@@ -1,11 +1,11 @@
 
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
-import 'package:dialer_app/Layout/Cubit/states.dart';
 import 'package:dialer_app/Layout/incall_screen.dart';
 import 'package:dialer_app/Models/user_model.dart';
 import 'package:dialer_app/Modules/Chat/chat_screen.dart';
-import 'package:dialer_app/Modules/Login&Register/Cubit/cubit.dart';
-import 'package:dialer_app/Modules/Login&Register/Cubit/states.dart';
+import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
+import 'package:dialer_app/Modules/profile/Profile%20Cubit/profile_cubit.dart';
+import 'package:dialer_app/Modules/profile/Profile%20Cubit/profile_states.dart';
 import 'package:dialer_app/Modules/profile/profile_page.dart';
 import 'package:dialer_app/NativeBridge/native_bridge.dart';
 import 'package:dialer_app/Themes/light_theme.dart';
@@ -17,12 +17,13 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:focused_menu/focused_menu.dart';
 import 'package:focused_menu/modals.dart';
 import 'package:hexcolor/hexcolor.dart';
-
+import 'package:ndialog/ndialog.dart';
+import '../home-editcolor.dart';
+import '../home.dart';
 import 'constants.dart';
 
 
-
-AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController Searchcontroller) {
+AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController Searchcontroller ) {
   return AppBar(
     // automaticallyImplyLeading: false,
     title:Container(
@@ -44,10 +45,10 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
             textAlign:TextAlign.center,
             textAlignVertical: TextAlignVertical.center,
             onChanged: (value){
-              AppCubit.get(context).filterContacts(Searchcontroller);
+              PhoneContactsCubit.get(context).SearchContacts(Searchcontroller);
             },
             decoration: InputDecoration(
-              hintText: "Search among ${AppCubit.get(context).Contacts.length} contact(s)",
+              hintText: "Search among ${PhoneContactsCubit.get(context).Contacts.length} contact(s)",
               // contentPadding: EdgeInsets.all(0),
               // alignLabelWithHint: true,
               // labelText:"Search",
@@ -85,29 +86,19 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
               ),
               Padding(
                 padding: const EdgeInsets.only(left:28.0,top:4),
-                child: Text("Chat",style: Theme.of(context).textTheme.headline2!.copyWith(color:HexColor("#616161")),),
+                child: Text("Chat",style: Theme.of(context).textTheme.headline2!.copyWith(color:AppBarChatTextColor()),),
               )
             ],),
         ),
       ),
     ],
-    // leading: FocusedMenuHolder(
-    //
-    //   menuItems: [
-    //     FocusedMenuItem(title: Text("this is a test :D"), onPressed: (){})
-    //   ],
-    //   onPressed: (){
-    // },
-    //   openWithTap: true,
-    //   blurBackgroundColor: Colors.blueGrey[900],
-    //   child: Icon(Icons.more_vert,color:AppBarMoreIconColor()),),
     toolbarHeight: AppbarSize,
     flexibleSpace: SafeArea(
       child: ClipPath(
         child: Stack(
             children: [
               Container(
-                  color: AppBarBackgroundColor()
+                  color: AppBarBackgroundColor(context)
               ),
               Padding(
                 padding:EdgeInsets.only(top:AppbarSize-13,left:12),
@@ -116,9 +107,12 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
                     height: 36,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      color:AppBarEditIconColor(),
+                      color:AppBarEditIconBackGroundColor(),
                     ),
-                    child: IconButton(onPressed: (){}, icon:Icon(Icons.create_outlined),iconSize: 20)),
+                    child: IconButton(onPressed: (){
+                      AppCubit.get(context).EditorIsActive = true;
+                      Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=>HomeScreenEdite()));
+                    }, icon:Icon(Icons.create_outlined , color: AppBarEditIconColor(),),iconSize: 20 ,)),
               ),
             ]
         ),
@@ -142,6 +136,152 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
       ],),
   );
 }
+AppBar MainAppBarEditor(BuildContext context, double AppbarSize,TextEditingController Searchcontroller ) {
+  return AppBar(
+    // automaticallyImplyLeading: false,
+    title:Container(
+      height: 28,
+      width:MediaQuery.of(context).size.width*0.55,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadiusDirectional.circular(3),
+        color:SearchBackgroundColor(),
+      ),
+      child: Stack(
+        children: [
+          Padding(
+            padding: EdgeInsets.only(left:MediaQuery.of(context).size.width*0.55*0.01),
+            child: Icon(Icons.search,color: SearchIconColor(),size: 25,),
+          ),
+          TextField(
+            style: Theme.of(context).textTheme.headline2,
+            controller: Searchcontroller,
+            textAlign:TextAlign.center,
+            textAlignVertical: TextAlignVertical.center,
+            onChanged: (value){
+              PhoneContactsCubit.get(context).SearchContacts(Searchcontroller);
+            },
+            decoration: InputDecoration(
+              hintText: "Search among ${PhoneContactsCubit.get(context).Contacts.length} contact(s)",
+              // contentPadding: EdgeInsets.all(0),
+              // alignLabelWithHint: true,
+              // labelText:"Search",
+              hintStyle:Theme.of(context).textTheme.headline2,
+              // isCollapsed: true,
+              border:InputBorder.none,
+              // fillColor: SearchBackgroundColor(),
+            ),
+          ),
+        ],
+      ),
+    ),
+    actions: [
+      Padding(
+        padding: const EdgeInsets.only(top:16.0,right:15),
+        child: InkWell(
+          onTap:(){
+            Navigator.push(context,
+            MaterialPageRoute(builder: (BuildContext context) => ChatScreen()));
+          },
+          child: Stack(
+            children: [
+              Container(
+                height: 25,
+                width: 60,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadiusDirectional.circular(3),
+                  color:AppBarChatIconBackgroundColor(),
+
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top:4.0,left:5.5),
+                child: Image.asset("assets/Images/Chatting_Logo.png",scale:3.2),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left:28.0,top:4),
+                child: Text("Chat",style: Theme.of(context).textTheme.headline2!.copyWith(color:AppBarChatTextColor()),),
+              ),
+
+            ],
+          ),
+        ),
+      ),
+    ],
+    toolbarHeight: AppbarSize,
+    flexibleSpace: SafeArea(
+      child: InkWell(
+        onTap: (){
+          NDialog(
+            content:AppCubit.get(context).HomePageBackgroundColorPicker(),
+            dialogStyle: DialogStyle(),
+          ).show(context);
+        },
+        child: ClipPath(
+          child: Stack(
+              children: [
+                Container(
+                    color: AppBarBackgroundColor(context)
+                ),
+                Padding(
+                  padding:EdgeInsets.only(top:AppbarSize-13,left:12),
+                  child:Container(
+                      width: 35,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color:AppBarEditIconBackGroundColor(),
+                      ),
+                      child: IconButton(onPressed: (){
+                        Navigator.push(context,MaterialPageRoute(builder: (
+                            BuildContext context)=>Home()));
+                        AppCubit.get(context).EditorIsActive = false;
+                      }, icon:Icon(Icons.create_outlined , color: AppBarEditIconColor(),),iconSize: 20 ,)),
+                ),
+                Transform.translate(
+                  offset: Offset(MediaQuery.of(context).size.width-50,AppbarSize-15),
+                  child: Container(
+                    width: 25,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(width: 3,color:Colors.white),
+                    ),
+                    child: IconButton(icon:Icon(Icons.circle , color:AppCubit.get(context).CustomHomePageBackgroundColor),onPressed: ()  {
+
+                       NDialog(
+                          content:AppCubit.get(context).HomePageBackgroundColorPicker(),
+                        dialogStyle: DialogStyle(),
+                          ).show(context);
+
+                    },),
+                  ),
+                ),
+              ]
+          ),
+          clipper: MyCustomeClipper(),
+        ),
+      ),
+    ),
+    bottom: TabBar(
+      // padding: EdgeInsets.only(left:30,right:30),
+      isScrollable: true,
+      indicatorPadding: EdgeInsets.only(bottom: 25),
+      labelPadding: EdgeInsets.only(bottom: 18,left:45,right:45),
+      indicatorColor: TabBarindicatorColor(),
+      labelColor: TabBarlabelColor(),
+      unselectedLabelColor: TabBarUnselectedlabelColor(),
+      indicatorSize: TabBarIndicatorSize.label,
+
+      labelStyle:Theme.of(context).textTheme.headline1,
+      tabs: const [
+        Tab(text:"Phone"),
+        Tab(text:"Contacts"),
+      ],),
+  );
+}
+
+
+
+
 AppBar ChatAppBar(BuildContext context, double AppbarSize) {
   return AppBar(
     automaticallyImplyLeading: false,
@@ -169,7 +309,7 @@ AppBar ChatAppBar(BuildContext context, double AppbarSize) {
     flexibleSpace: SafeArea(
       child: ClipPath(
         child: Container(
-            color: AppBarBackgroundColor()
+            color: AppBarBackgroundColor(context)
         ),
         clipper: MyCustomeClipper(),
       ),
@@ -258,7 +398,7 @@ AppBar ChatMessagesAppBar(BuildContext context, double AppbarSize , UserModel Co
     flexibleSpace: SafeArea(
       child: ClipPath(
         child: Container(
-            color: AppBarBackgroundColor()
+            color: AppBarBackgroundColor(context)
         ),
         clipper: MyCustomeClipper(),
       ),
@@ -339,8 +479,8 @@ bool DualSIM = false;
             ),
             InkWell(
               onTap: (){
-                AppCubit.get(context).SearchTerm = ["a", "b", "c"];
-                AppCubit.get(context).DialpadSearch(dialerController);
+                PhoneContactsCubit.get(context).SearchTerm = ["a", "b", "c"];
+                PhoneContactsCubit.get(context).DialpadSearch(dialerController , );
                 NativeBridge.get(context)
                     .invokeNativeMethod("num2");
 
@@ -377,8 +517,8 @@ bool DualSIM = false;
                 ),
               ) ,
               onTap: (){
-                AppCubit.get(context).SearchTerm = ["d", "e", "f"];
-                AppCubit.get(context).DialpadSearch(dialerController);
+                PhoneContactsCubit.get(context).SearchTerm = ["d", "e", "f"];
+                PhoneContactsCubit.get(context).DialpadSearch(dialerController,);
                 NativeBridge.get(context)
                     .invokeNativeMethod("num3");
 
@@ -414,8 +554,8 @@ bool DualSIM = false;
           children: [
             InkWell(
               onTap: (){
-                AppCubit.get(context).SearchTerm = ["g", "h", "i"];
-                AppCubit.get(context).DialpadSearch(dialerController);
+                PhoneContactsCubit.get(context).SearchTerm = ["g", "h", "i"];
+                PhoneContactsCubit.get(context).DialpadSearch(dialerController,);
                 NativeBridge.get(context)
                     .invokeNativeMethod("num4");
 
@@ -445,8 +585,8 @@ bool DualSIM = false;
             ),
             InkWell(
               onTap: (){
-                AppCubit.get(context).SearchTerm = ["j", "k", "l"];
-                AppCubit.get(context).DialpadSearch(dialerController);
+                PhoneContactsCubit.get(context).SearchTerm = ["j", "k", "l"];
+                PhoneContactsCubit.get(context).DialpadSearch(dialerController,);
                 NativeBridge.get(context)
                     .invokeNativeMethod("num5");
 
@@ -476,8 +616,8 @@ bool DualSIM = false;
             ),
             InkWell(
               onTap: (){
-                AppCubit.get(context).SearchTerm = ["m", "n", "o"];
-                AppCubit.get(context).DialpadSearch(dialerController);
+                PhoneContactsCubit.get(context).SearchTerm = ["m", "n", "o"];
+                PhoneContactsCubit.get(context).DialpadSearch(dialerController,);
                 NativeBridge.get(context)
                     .invokeNativeMethod("num6");
 
@@ -511,8 +651,8 @@ bool DualSIM = false;
           children: [
             InkWell(
               onTap: (){
-                AppCubit.get(context).SearchTerm = ["p", "q", "r"];
-                AppCubit.get(context).DialpadSearch(dialerController);
+                PhoneContactsCubit.get(context).SearchTerm = ["p", "q", "r"];
+                PhoneContactsCubit.get(context).DialpadSearch(dialerController,);
                 NativeBridge.get(context)
                     .invokeNativeMethod("num7");
 
@@ -542,8 +682,8 @@ bool DualSIM = false;
             ),
             InkWell(
               onTap: (){
-                AppCubit.get(context).SearchTerm = ["t", "u", "v"];
-                AppCubit.get(context).DialpadSearch(dialerController);
+                PhoneContactsCubit.get(context).SearchTerm = ["t", "u", "v"];
+                PhoneContactsCubit.get(context).DialpadSearch(dialerController,);
                 NativeBridge.get(context)
                     .invokeNativeMethod("num8");
                 if(dialerController.text.isEmpty)
@@ -572,8 +712,8 @@ bool DualSIM = false;
             ),
             InkWell(
               onTap: (){
-                AppCubit.get(context).SearchTerm = ["w", "x", "y"];
-                AppCubit.get(context).DialpadSearch(dialerController);
+                PhoneContactsCubit.get(context).SearchTerm = ["w", "x", "y"];
+                PhoneContactsCubit.get(context).DialpadSearch(dialerController);
                 NativeBridge.get(context)
                     .invokeNativeMethod("num9");
                 if(dialerController.text.isEmpty)
@@ -851,135 +991,138 @@ Row CallButton(BuildContext context, double AppbarSize , bool DualSIM , TextEdit
   }
 }
 
-Drawer AppDrawer(context) {
+Drawer AppDrawer(BuildContext context , AppbarSize) {
 
   return Drawer(
     child: Builder(
             builder: (index){
-              var Cubit = AppCubit.get(context);
+              var Cubit = ProfileCubit.get(context);
               String UserState = "online";
-              return  Column(
-                  children: [
-                    Container(height: MediaQuery.of(context).size.height*0.20,
-                        color:Colors.amber,
-                        child:Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(height: MediaQuery.of(context).size.height*0.01,),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 15.0,top: 3),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border:Border.all(width: 1.5)
-                                ),
-                                child: InkWell(
-                                  onLongPress: (){
-                                    signOut(context);
-                                  },
-                                  onTap: (){
-                                    Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=>ProfilePage(),));
-                                  },
-                                  child: CircleAvatar(
-                                    radius: 40,
-                                    backgroundImage: NetworkImage(Cubit.CurrentUser[0].image.toString()),
+              return  Padding(
+                padding:EdgeInsets.only(top:AppbarSize-12),
+                child: Column(
+                    children: [
+                      Container(height: MediaQuery.of(context).size.height*0.20,
+                          color:Colors.amber,
+                          child:Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(height: MediaQuery.of(context).size.height*0.01,),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 15.0,top: 3),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border:Border.all(width: 1.5)
+                                  ),
+                                  child: InkWell(
+                                    onLongPress: (){
+                                      signOut(context);
+                                    },
+                                    onTap: (){
+                                      Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=>ProfilePage(),));
+                                    },
+                                    child: CircleAvatar(
+                                      radius: 40,
+                                      backgroundImage: NetworkImage(Cubit.CurrentUser[0].image.toString()),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.only(left:15.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(height: 5,),
-                                  Row(
-                                    children: [
-                                      Text(Cubit.CurrentUser[0].name.toString()),
-                                      SizedBox(width: 5,),
+                              Padding(
+                                padding: EdgeInsets.only(left:15.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(height: 5,),
+                                    Row(
+                                      children: [
+                                        Text(Cubit.CurrentUser[0].name.toString()),
+                                        SizedBox(width: 5,),
 
-                                      FocusedMenuHolder(
-                                        menuOffset: 5,
-                                        menuItems: [
-                                          FocusedMenuItem(
-                                              title: Text("online"),
-                                              trailingIcon: Icon(Icons.circle ,size:12 , color: Colors.green,),
-                                              onPressed: (){
-                                                UserState = "online";
-                                              }),
-                                          FocusedMenuItem(
-                                              title: Text("Away"),
-                                              trailingIcon: Icon(Icons.circle ,size:12 , color: Colors.red,),
-                                              onPressed: (){
-                                                UserState = "Away";
-                                              }),
-                                        ],
-                                        onPressed: (){},
-                                        menuWidth: 80,
-                                        openWithTap: true,
-                                        child: Container(
+                                        FocusedMenuHolder(
+                                          menuOffset: 5,
+                                          menuItems: [
+                                            FocusedMenuItem(
+                                                title: Text("online"),
+                                                trailingIcon: Icon(Icons.circle ,size:12 , color: Colors.green,),
+                                                onPressed: (){
+                                                  UserState = "online";
+                                                }),
+                                            FocusedMenuItem(
+                                                title: Text("Away"),
+                                                trailingIcon: Icon(Icons.circle ,size:12 , color: Colors.red,),
+                                                onPressed: (){
+                                                  UserState = "Away";
+                                                }),
+                                          ],
+                                          onPressed: (){},
+                                          menuWidth: 80,
+                                          openWithTap: true,
+                                          child: Container(
 
-                                          decoration: BoxDecoration(
-                                            color:Colors.white,
-                                            borderRadius: BorderRadius.circular(4)
-                                          ),
+                                            decoration: BoxDecoration(
+                                              color:Colors.white,
+                                              borderRadius: BorderRadius.circular(4)
+                                            ),
 
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 0),
-                                            child: Transform.translate(
-                                              offset: Offset(5,0),
-                                              child: Row(
-                                                children: [
-                                                  Transform.translate(
-                                                      offset: Offset(0,1.5),
-                                                      child: CircleAvatar(radius: 5, backgroundColor: UserState == "online"?Colors.green:Colors.red,)),
-                                                  SizedBox(width:1),
-                                                  Text(UserState),
-                                                  Transform.translate(
-                                                      offset: Offset(0,1.5),
-                                                      child: Icon(Icons.arrow_drop_down ,)),
-                                                ],
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 0),
+                                              child: Transform.translate(
+                                                offset: Offset(5,0),
+                                                child: Row(
+                                                  children: [
+                                                    Transform.translate(
+                                                        offset: Offset(0,1.5),
+                                                        child: CircleAvatar(radius: 5, backgroundColor: UserState == "online"?Colors.green:Colors.red,)),
+                                                    SizedBox(width:1),
+                                                    Text(UserState),
+                                                    Transform.translate(
+                                                        offset: Offset(0,1.5),
+                                                        child: Icon(Icons.arrow_drop_down ,)),
+                                                  ],
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
 
-                                    ],
-                                  ),
-                                  Text(Cubit.CurrentUser[0].email.toString()),
-                                ],
+                                      ],
+                                    ),
+                                    Text(Cubit.CurrentUser[0].email.toString()),
+                                  ],
+                                ),
+
                               ),
-
-                            ),
-                          ],
-                        )
-                    ),
-                    Text("Display Settings"),
-                    ListTile(
-                      title:Text("Lang"),
-                      trailing: Text("Eng"),
-                    ),
-                    ListTile(
-                      onTap: (){
-                        Cubit.ThemeSwitcher();
-                      },
-                      title:Text("Theme"),
-                      trailing: Text(ThemeSwitch?"Light":"Dark"),
-                    ),
-                    Text("System Settings"),
-                    ListTile(
-                      onTap: (){},
-                      leading: Icon(Icons.settings),
-                      title:Text("Settings"),
-                    ),
-                    ListTile(
-                      onTap: (){},
-                      leading: Icon(Icons.note_add),
-                      title:Text("MyNotes"),
-                    ),
-                  ],
-                );
+                            ],
+                          )
+                      ),
+                      Text("Display Settings"),
+                      ListTile(
+                        title:Text("Lang"),
+                        trailing: Text("Eng"),
+                      ),
+                      ListTile(
+                        onTap: (){
+                          AppCubit.get(context).ThemeSwitcher();
+                        },
+                        title:Text("Theme"),
+                        trailing: Text(ThemeSwitch?"Light":"Dark"),
+                      ),
+                      Text("System Settings"),
+                      ListTile(
+                        onTap: (){},
+                        leading: Icon(Icons.settings),
+                        title:Text("Settings"),
+                      ),
+                      ListTile(
+                        onTap: (){},
+                        leading: Icon(Icons.note_add),
+                        title:Text("MyNotes"),
+                      ),
+                    ],
+                  ),
+              );
 
             }
     ),

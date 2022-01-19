@@ -4,6 +4,7 @@ import 'package:dialer_app/Models/user_model.dart';
 import 'package:dialer_app/Modules/Chat/chat_messeging.dart';
 import 'package:dialer_app/Modules/Login&Register/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Login&Register/Cubit/states.dart';
+import 'package:dialer_app/Modules/profile/Profile%20Cubit/profile_cubit.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -35,13 +36,11 @@ class ChatContacts extends StatelessWidget {
     return Scaffold(
       appBar: ChatAppBar(context, AppbarSize),
       body: BlocProvider.value(
-        value:AppCubit()..GetChatContacts(),
-        child: BlocConsumer<LoginCubit,LoginCubitStates>(
-          listener: (context,state){},
-          builder:(context,state)=> ListView.builder(
-            itemCount: AppCubit.get(context).ChatContacts.length,
+        value:ProfileCubit.get(context),
+        child:ListView.builder(
+            itemCount: ProfileCubit.get(context).ChatContacts.length,
             itemBuilder: (BuildContext context, int index) {
-              UserModel contact = AppCubit.get(context).ChatContacts[index];
+              UserModel contact = ProfileCubit.get(context).ChatContacts[index];
              return Padding(
                padding: const EdgeInsets.only(top:8.0),
                child: ListTile(
@@ -60,15 +59,14 @@ class ChatContacts extends StatelessWidget {
                     child: CircleAvatar(
                       radius: ProfilePictureSize,
                       backgroundImage: NetworkImage(
-                          AppCubit.get(context).ChatContacts[index].image.toString()),
+                          ProfileCubit.get(context).ChatContacts[index].image.toString()),
                     ),
                   ),
-                  title:Text(AppCubit.get(context).ChatContacts[index].name.toString()),
+                  title:Text(ProfileCubit.get(context).ChatContacts[index].name.toString()),
                 ),
              );
             },
           ),
-        ),
       ),
     );
   }

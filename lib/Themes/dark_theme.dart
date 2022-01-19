@@ -7,9 +7,11 @@ ThemeData DarkThemeData() {
   return ThemeData(
     primaryColor: Colors.blueGrey,
     appBarTheme: AppBarTheme(
-      iconTheme: IconThemeData(color: Colors.yellow),
+      iconTheme: IconThemeData(
+          color: HexColor("#959595"),
+      ),
       elevation: 0,
-      backgroundColor: Colors.grey,
+      backgroundColor: Colors.transparent,
       systemOverlayStyle: SystemUiOverlayStyle(
         statusBarColor: HexColor("#FAFAFA"),
         statusBarIconBrightness: Brightness.dark,
@@ -20,7 +22,7 @@ ThemeData DarkThemeData() {
     ),
     primarySwatch: Colors.blue,
     floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor:HexColor("#FFD8E4"),
+      backgroundColor:HexColor("#AA00FF"),
     ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       type: BottomNavigationBarType.fixed,
@@ -36,7 +38,7 @@ ThemeData DarkThemeData() {
       headline2: TextStyle(
         fontFamily: "OpenSans",
         fontSize: 12,
-        color: HexColor("#A1A1A1"),
+        color: HexColor("#CCCCCC"),
       ),
       headline3: TextStyle(
           fontFamily: "Quicksand",
