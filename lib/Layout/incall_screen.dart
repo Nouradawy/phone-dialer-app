@@ -2,6 +2,8 @@
 import 'package:dialer_app/Components/constants.dart';
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Layout/Cubit/states.dart';
+import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
+import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_states.dart';
 import 'package:dialer_app/NativeBridge/native_bridge.dart';
 import 'package:dialer_app/NativeBridge/native_states.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +12,7 @@ import 'package:hexcolor/hexcolor.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
 
 import '../home.dart';
+import '../main.dart';
 
 
 class InCallScreen extends StatelessWidget {
@@ -18,147 +21,167 @@ class InCallScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     var Cubit = NativeBridge.get(context);
 
-    return BlocConsumer<NativeBridge, NativeStates>(
-        listener: (context, state) {
-          if(state is PhoneStateRinging || state is PhoneStateDisconnected){
-            Cubit.isRinging = true;
-          }
-          if(state is PhoneStateActive ){
-
-           _StopWatchTimer.onExecute.add(StopWatchExecute.start);
-            // AppCubit.get(context).GetCallerID(Cubit.PhoneNumberQuery,true);
-          }
-          if(state is PhoneStateDisconnected)
-            {
-              _StopWatchTimer.onExecute.add(StopWatchExecute.reset);
-
-              Navigator.pushAndRemoveUntil(context,
-                MaterialPageRoute(builder: (BuildContext context) => Home()),
-                    (Route<dynamic>route)=>false,);
-
+    return BlocProvider.value(
+      value:NativeBridge.get(context)..GetCallerID(PhoneContactsCubit.get(context).Contacts),
+      child: BlocConsumer<NativeBridge, NativeStates>(
+          listener: (context, state) {
+            if(state is PhoneStateRinging || state is PhoneStateDisconnected){
+              Cubit.isRinging = true;
             }
-          // if(state is PhoneStateRinging ){
-          //   AppCubit.get(context).CallTimerController.start();
-          // }
-        },
-        builder: (context, state) {
-          AppCubit.get(context).GetCallerID(Cubit.PhoneNumberQuery,true);
-          // AppCubit.get(context).GetCallerID();
-          return Scaffold(
-            backgroundColor: HexColor("#2C087A"),
-            body: Column(children: [
-              Stack(
-                children: [
-                  ///Background image Container
-                  Container(
-                    height: 280,
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage(
-                            "assets/Images/blue purple wave.png"),
-                        fit: BoxFit.cover,
+            if(state is PhoneStateActive ){
+
+             _StopWatchTimer.onExecute.add(StopWatchExecute.start);
+             Cubit.isStopWatchStart = true;
+              // AppCubit.get(context).GetCallerID(Cubit.PhoneNumberQuery,true);
+            }
+            if(state is PhoneStateDisconnected)
+              {
+                _StopWatchTimer.onExecute.add(StopWatchExecute.reset);
+                Cubit.isStopWatchStart =false;
+                Navigator.pop(context);
+
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (BuildContext context) => Home(),)
+                );
+                //TODO:ADD Logiect to set the Route to true
+              }
+            // if(state is PhoneStateRinging ){
+            //   AppCubit.get(context).CallTimerController.start();
+            // }
+          },
+          builder: (context, state) {
+            // NativeBridge.get(context).GetCallerID();
+            // AppCubit.get(context).GetCallerID();
+            return Scaffold(
+              backgroundColor: HexColor("#2C087A"),
+              body: Column(children: [
+                Stack(
+                  children: [
+                    ///Background image Container
+                    Container(
+                      height: 280,
+                      width: double.infinity,
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage(
+                              "assets/Images/blue purple wave.png"),
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
-                  ),
-                  Column(
-                    children: [
-                      /* 1st spacer */
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.09,
-                      ),
+                    Column(
+                      children: [
+                        /* 1st spacer */
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.09,
+                        ),
 
-                      Stack(
-                          alignment: AlignmentDirectional.center,
-                          children: [
-                            Container(
-                              child: BlendMask(
-                                blendMode: BlendMode.lighten,
-                                child: CircleAvatar(
-                                  backgroundColor: HexColor("#545454"),
-                                  radius: 60,
+                        Stack(
+                            alignment: AlignmentDirectional.center,
+                            children: [
+                              Container(
+                                child: BlendMask(
+                                  blendMode: BlendMode.lighten,
+                                  child: CircleAvatar(
+                                    backgroundColor: HexColor("#545454"),
+                                    radius: 60,
+                                  ),
+                                ),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    width: 2,
+                                    color:
+                                        HexColor("#F8F8F8").withOpacity(0.69),
+                                  ),
                                 ),
                               ),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  width: 2,
-                                  color:
-                                      HexColor("#F8F8F8").withOpacity(0.69),
-                                ),
+                              Icon(
+                                Icons.person,
+                                color: HexColor("#D1D1D1"),
+                                size: 100,
                               ),
-                            ),
-                            Icon(
-                              Icons.person,
-                              color: HexColor("#D1D1D1"),
-                              size: 100,
-                            ),
-                            OnlineStates(),
-                          ]),
-                      const SizedBox(height: 8),
-                      CallStatesText(),
-                      CallerID(context),
-                      CallerPhoneNumber(context)
-                    ]
-                  ),
-                ],
-              ),
+                              OnlineStates(),
+                            ]),
+                        const SizedBox(height: 8),
+                        CallStatesText(),
+                        CallerID(context),
+                        CallerPhoneNumber(context)
+                      ]
+                    ),
+                  ],
+                ),
+//TODO: DialwerCountDown
+                Builder(
 
-              StreamBuilder<int>(
-                stream: _StopWatchTimer.rawTime,
-                builder: (context,snap) {
-                  final value =snap.data;
-                  bool? Hours;
-                  bool? Minutes;
-                  if (StopWatchTimer.getRawHours(value!) <= 1)
-                    {
-                      Hours = false;
-                    } else Hours=true;
-                  var displayTime = StopWatchTimer.getDisplayTime(value,hours:Hours,minute: true,milliSecond: false);
-                  return Cubit.isRinging == false?Text(displayTime):Text("");
-                },
-              ),
-              // Cubit.isRinging == false?  StopWatchTimer.getDisplayTime(value): Text(""),
-              // MediaQuery:Above Quick Replay Adjust for Diff. Screens
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.03,
-              ),
-              InCallMessages(),
-              SizedBox(
-                /*MediaQuery:Above answer and decline buttons Adjust for Diff. Screens*/
+                  builder: (context) {
+                    return StreamBuilder<int>(
+                      stream: _StopWatchTimer.rawTime,
+                      builder: (context,snap) {
 
-                height: Cubit.isRinging == true?MediaQuery.of(context).size.height * 0.20:MediaQuery.of(context).size.height * 0.01,
-              ),
-              InCallButtons(context, Cubit.isRinging),
-              SizedBox(
-                /*MediaQuery:Above answer and decline buttons Adjust for Diff. Screens*/
 
-                height: Cubit.isRinging == true?MediaQuery.of(context).size.height * 0.08:MediaQuery.of(context).size.height * 0.04,
-              ),
 
-              /*MediaQuery:Above Swipe to send message Adjust for Diff. Screens*/
-              SizedBox(height: MediaQuery.of(context).size.height*0.04,),
-              TextButton(
-                onPressed: (){
-                  Cubit.UpdateCallerID();
-                },
-                child: Text(
-                  "Swipe up to Send message",
-                  style: TextStyle(
-                    color: HexColor("#B1B1B1").withOpacity(0.70),
-                    fontFamily: "Cairo",
-                    fontSize: 12,
+                        if(NativeBridge.get(context).isStopWatchStart == true)
+                          {
+                            final value =snap.data;
+                            bool? Hours;
+                            bool? Minutes;
+
+                            if (StopWatchTimer.getRawHours(value!) <= 1)
+                            {
+                              Hours = false;
+                            } else Hours=true;
+                            var displayTime = StopWatchTimer.getDisplayTime(value,hours:Hours,minute: true, milliSecond: false);
+                            return Cubit.isRinging == false?Text(displayTime):Text("");
+                          } else return Text("");
+
+
+                      },
+                    );
+                  }
+                ),
+                // Cubit.isRinging == false?  StopWatchTimer.getDisplayTime(value): Text(""),
+                // MediaQuery:Above Quick Replay Adjust for Diff. Screens
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.03,
+                ),
+                InCallMessages(),
+                SizedBox(
+                  /*MediaQuery:Above answer and decline buttons Adjust for Diff. Screens*/
+
+                  height: Cubit.isRinging == true?MediaQuery.of(context).size.height * 0.20:MediaQuery.of(context).size.height * 0.01,
+                ),
+                InCallButtons(context, Cubit.isRinging),
+                SizedBox(
+                  /*MediaQuery:Above answer and decline buttons Adjust for Diff. Screens*/
+
+                  height: Cubit.isRinging == true?MediaQuery.of(context).size.height * 0.08:MediaQuery.of(context).size.height * 0.04,
+                ),
+
+                /*MediaQuery:Above Swipe to send message Adjust for Diff. Screens*/
+                SizedBox(height: MediaQuery.of(context).size.height*0.04,),
+                TextButton(
+                  onPressed: (){
+                    // Cubit.UpdateCallerID();
+                  },
+                  child: Text(
+                    "Swipe up to Send message",
+                    style: TextStyle(
+                      color: HexColor("#B1B1B1").withOpacity(0.70),
+                      fontFamily: "Cairo",
+                      fontSize: 12,
+                    ),
                   ),
                 ),
-              ),
-              SizedBox(height: 7),
-              Container(
-                  width: 120,
-                  height: 1,
-                  color: HexColor("#B4B4B4").withOpacity(0.49)),
-            ]),
-          );
-        });
+                SizedBox(height: 7),
+                Container(
+                    width: 120,
+                    height: 1,
+                    color: HexColor("#B4B4B4").withOpacity(0.49)),
+              ]),
+            );
+          }),
+    );
   }
 
 
@@ -170,7 +193,6 @@ class InCallScreen extends StatelessWidget {
    // onChangeRawSecond: (value) => print('onChangeRawSecond $value'),
    // onChangeRawMinute: (value) => print('onChangeRawMinute $value'),
  );
-  final _scrollController = ScrollController();
 
 
 
@@ -236,7 +258,7 @@ class InCallScreen extends StatelessWidget {
                             padding: const EdgeInsets.only(top: 4.0),
                             child: BlendMask(
                               blendMode: BlendMode.difference,
-                              child: Text(AppCubit.get(context).CallerID.isNotEmpty?AppCubit.get(context).CallerID[0]["CallerID"].toString():"",
+                              child: Text(NativeBridge.get(context).CallerID.isNotEmpty?NativeBridge.get(context).CallerID[0]["CallerID"].toString():"",
                                   style: TextStyle(
                                     fontFamily: "ZenKurenaido-Regular",
                                     color: HexColor("#F5F5F5"),

@@ -1,0 +1,182 @@
+import 'dart:ui';
+
+import 'package:bloc/bloc.dart';
+import 'package:call_log/call_log.dart';
+import 'package:contacts_service/contacts_service.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../appcontacts.dart';
+import 'contacts_states.dart';
+
+class PhoneContactsCubit extends Cubit<PhoneContactStates>{
+  PhoneContactsCubit() : super(ContactsInitialState());
+  static PhoneContactsCubit get(context) => BlocProvider.of(context);
+
+  List<AppContact> Contacts = [];
+  List<AppContact> FavoratesContacts = [];
+  List PhoneCallLogs =[];
+  List SearchableCallerIDList = [];
+  List CallerID = [];
+  Future<void> GetRawContacts() async {
+    emit(RawContactsLoadingState());
+    List colors = [
+      Colors.green,
+      Colors.indigo,
+      Colors.yellow,
+      Colors.orange
+    ];
+    int colorIndex = 0;
+
+    List<AppContact> _contacts = (await ContactsService.getContacts(withThumbnails: false).catchError((error){
+      print("Contacts Error : " + error.toString());
+    })).map((contact) {
+      Color baseColor = colors[colorIndex];
+      colorIndex++;
+      if (colorIndex == colors.length) {
+        colorIndex = 0;
+      }
+      return AppContact(info: contact, color: baseColor , tag:contact.displayName![0].toUpperCase());
+    }).toList();
+
+    Contacts =_contacts;
+    emit(RawContactsSuccessState());
+  }
+
+  void GetCallerID(PhoneNumberQuery) {
+
+    SearchableCallerIDList.clear();
+    Contacts.map((element){
+      SearchableCallerIDList.add({
+        "CallerID" : element.info?.displayName.toString(),
+        "PhoneNumber" :
+        element.info?.phones?.map((e) {
+          return e.value?.replaceAll(' ', '');
+        }),
+
+      });
+    }).toList();
+
+    CallerID = PhoneNumberQuery !=null ?
+    SearchableCallerIDList.where((element) {
+      String SearchIN = element["PhoneNumber"].toString();
+      return SearchIN.contains(PhoneNumberQuery.toString());
+    }).toList():[];
+
+  }
+
+  // Future<void> GetPhoneLog()  async{
+  //     (await CallLog.get())
+  //         .map((element) {
+  //       element.name == null ? GetCallerID(element.number) : null;
+  //       return PhoneCallLogs.add({
+  //         "PhoneNumber": element.number,
+  //         "ContactName": element.name != null
+  //             ? element.name
+  //             : CallerID.isNotEmpty
+  //             ? CallerID[0]["CallerID"].toString()
+  //             : "UNKNOWN",
+  //         "PhoneState": element.callType.toString().replaceAll("CallType.", ""),
+  //         "Duration": element.duration,
+  //         "Date": DateTime.fromMillisecondsSinceEpoch(element.timestamp!),
+  //         "AccountID": element.phoneAccountId,
+  //         "SIMname": element.simDisplayName,
+  //       });
+  //     }).toList();
+  //
+  //   emit(PhoneLogsExtractionSuccessful());
+  // }
+
+
+  bool? isSearching;
+
+
+  List<AppContact> FilterdContacts = [];
+  List<AppContact> DialpadFilterdContacts = [];
+  Iterable<CallLogEntry> PhoneLog = <CallLogEntry>[];
+
+  List<String> SearchTerm =[];
+  List<AppContact> Firstchr = [];
+  List<AppContact> secondchr = [];
+  List<AppContact> thirdchr = [];
+
+
+//This Function Used to SearchAndFilter Contacts Based on there Name [Used at the top searchBar]
+
+  void SearchContacts(TextEditingController SearchController){
+    FilterdContacts.clear();
+    FilterdContacts.addAll(Contacts);
+    FilterdContacts.retainWhere((contact){
+      String searchTerm = SearchController.text.toLowerCase();
+      String contactName = contact.info!.displayName!.toLowerCase();
+      return contactName.contains(searchTerm);
+    });
+    emit(SearchContactsFinished());
+  }
+
+
+  Future DialpadSearch (TextEditingController dialerController ) async{
+
+    // if(dialerController.text[0].toString() == "2") {
+    //   SearchTerm = ["a", "b", "c"];
+    // }
+    // if(dialerController.text[dialerController.text.length] == "3") {
+    //   SearchTerm = ["d", "e", "f"];
+    // }
+    // if(dialerController.text[dialerController.text.length] == "4") {
+    //   SearchTerm = ["g", "h", "i"];
+    // }
+    // if(dialerController.text[dialerController.text.length] == "5") {
+    //   SearchTerm = ["j", "k", "l"];
+    // }
+    // if(dialerController.text[dialerController.text.length] == "6")
+    //   SearchTerm = ["m","n","o"];
+    // if(dialerController.text[dialerController.text.length] == "7")
+    //   SearchTerm = ["p","q","r"];
+    // if(dialerController.text[dialerController.text.length] == "8")
+    //   SearchTerm = ["t","u","v"];
+    // if(dialerController.text[dialerController.text.length] == "9")
+    //   SearchTerm = ["w","x","y"];
+
+    dialerController.text.isEmpty ?FilterdContacts.clear():null;
+    Firstchr.clear();
+    secondchr.clear();
+    thirdchr.clear();
+    FilterdContacts.isEmpty?Firstchr.addAll(Contacts):Firstchr.addAll(FilterdContacts);
+    FilterdContacts.isEmpty?secondchr.addAll(Contacts):secondchr.addAll(FilterdContacts);
+    FilterdContacts.isEmpty?thirdchr.addAll(Contacts):thirdchr.addAll(FilterdContacts);
+
+    Firstchr.retainWhere((contact){
+      String contactName = contact.info!.displayName![dialerController.text.length].toLowerCase();
+      print(SearchTerm[0]);
+      return contactName.contains(SearchTerm[0]);
+
+    });
+
+    secondchr.retainWhere((contact){
+      String contactName = contact.info!.displayName![dialerController.text.length].toLowerCase();
+      return contactName.contains(SearchTerm[1]);
+    });
+
+    thirdchr.retainWhere((contact){
+      String contactName = contact.info!.displayName![dialerController.text.length].toLowerCase();
+      return contactName.contains(SearchTerm[2]);
+
+    });
+    if(FilterdContacts.isEmpty) {
+      FilterdContacts.addAll(secondchr);
+      FilterdContacts.addAll(Firstchr);
+      FilterdContacts.addAll(thirdchr);
+    }else {
+      FilterdContacts.clear();
+      FilterdContacts.addAll(secondchr);
+      FilterdContacts.addAll(Firstchr);
+      FilterdContacts.addAll(thirdchr);
+    }
+
+    emit(dialPadSearchSuccessState());
+  }
+
+
+}
+

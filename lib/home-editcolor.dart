@@ -1,7 +1,6 @@
 import 'package:dialer_app/Components/constants.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_states.dart';
 import 'package:dialer_app/Modules/Contacts/contacts_screen.dart';
-
 import 'package:dialer_app/NativeBridge/native_bridge.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
@@ -11,7 +10,6 @@ import 'package:hexcolor/hexcolor.dart';
 import 'Components/components.dart';
 import 'Layout/incall_screen.dart';
 import 'Modules/Contacts/Contacts Cubit/contacts_cubit.dart';
-
 import 'Modules/Phone/phone_screen.dart';
 import 'Layout/Cubit/cubit.dart';
 import 'Layout/Cubit/states.dart';
@@ -19,7 +17,8 @@ import 'NativeBridge/native_states.dart';
 import 'Themes/light_theme.dart';
 
 
-class Home extends StatelessWidget {
+class HomeScreenEdite extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     var Cubit = AppCubit.get(context);
@@ -46,12 +45,13 @@ class Home extends StatelessWidget {
             }),
       ],
     child: BlocBuilder<AppCubit,AppStates>(
-      builder:(context,state)=> DefaultTabController(
+      builder:(context,state) {
+        return DefaultTabController(
                 length: 2,
                 child: Scaffold(
                   backgroundColor: HomePageBackgroundColor(),
                   extendBodyBehindAppBar: true,
-                  appBar:MainAppBar(context, AppbarSize , AppCubit.get(context).searchController),
+                  appBar:MainAppBarEditor(context, AppbarSize , AppCubit.get(context).searchController),
                   drawer: AppDrawer(context, AppbarSize),
                   drawerDragStartBehavior: DragStartBehavior.start ,
                   floatingActionButton: Cubit.isShowen==false?FloatingActionButton(
@@ -64,8 +64,7 @@ class Home extends StatelessWidget {
                     child:Image.asset("assets/Images/dialpad.png",scale:1.8 , color: HexColor("#EEEEEE"),),
                   ):null,
                   body: BlocBuilder<PhoneContactsCubit,PhoneContactStates>(
-                    builder:(context,state) {
-                      return Stack(
+                    builder:(context,state)=>Stack(
                         alignment: AlignmentDirectional.bottomCenter,
                         children: [
                           TabBarView(
@@ -85,12 +84,12 @@ class Home extends StatelessWidget {
                               child: Cubit.isShowen?Dialpad(context, AppbarSize , AppCubit.get(context).dialerController):null),
 
                         ],
-                      );
-                    },
+                      ),
                   ),
                 ),
-              ),
-    ),
+              );
+      },
+    )
 
 
         );

@@ -163,6 +163,36 @@ void UserWrittingDetection({
   );
 }
 
+  int ListSize=0;
+  Future<void> ListCount() async {
+    ListSize =  0;
+    await FirebaseFirestore.instance.collection("Users").get().then((value)  {
 
+      value.docs.forEach((element)
+      async {
+        if (element.data()['uId'] != token) {
+          bool? NewMessageCount;
+          await FirebaseFirestore.instance.collection("Users").doc(token).collection("chats").doc(element
+              .data()
+          ['uId']
+              .toString()).collection("messages").get().then((value) {
+            for (var element in value.docs) {
+              if (element.data()['Seen'] == false) {
+                NewMessageCount = true;
+              } else {
+                NewMessageCount == true? NewMessageCount=true:NewMessageCount=false;
+              }
+            }
+          });
+
+          NewMessageCount == true ? ListSize++ : null;
+
+        }
+        print("item count : " + ListSize.toString());
+        emit(NewMessageRecivedState());
+      });
+    });
+
+  }
 
 }

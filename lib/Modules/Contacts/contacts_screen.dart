@@ -6,6 +6,8 @@ import 'package:contacts_service/contacts_service.dart';
 import 'package:dialer_app/Components/contacts_components.dart';
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Layout/Cubit/states.dart';
+import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
+import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_states.dart';
 import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -17,83 +19,85 @@ class ContactsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context ) {
 
-    var Cubit = AppCubit.get(context);
-    double AppbarSize = MediaQuery.of(context).size.height*Cubit.AppbarSize;
-    List<Color> FavColors =[
-            HexColor("#515150"),
-            HexColor("#FF4B76"),
-            HexColor("#2C087A"),
-            HexColor("#C6C972"),
-            HexColor("#515150"),
-            HexColor("#FF4B76"),
-            HexColor("#2C087A"),
-            HexColor("#C6C972"),
-            HexColor("#515150"),
-            HexColor("#FF4B76"),
-            HexColor("#2C087A"),
-            HexColor("#C6C972"),
+        var Cubit = PhoneContactsCubit.get(context);
+        double AppbarSize = MediaQuery.of(context).size.height*AppCubit.get(context).AppbarSize;
+        List<Color> FavColors =[
+          HexColor("#515150"),
+          HexColor("#FF4B76"),
+          HexColor("#2C087A"),
+          HexColor("#C6C972"),
+          HexColor("#515150"),
+          HexColor("#FF4B76"),
+          HexColor("#2C087A"),
+          HexColor("#C6C972"),
+          HexColor("#515150"),
+          HexColor("#FF4B76"),
+          HexColor("#2C087A"),
+          HexColor("#C6C972"),
 
-    ];
-
-          return Padding(
+        ];
+        return Padding(
             padding: EdgeInsets.only(top:AppbarSize*1.40),
             child: Container(
                 height: MediaQuery.of(context).size.height,
                 child: AzListView(
                     indexBarMargin:EdgeInsets.only(top:45),
-                  indexBarOptions: IndexBarOptions(
+                    indexBarOptions: IndexBarOptions(
+                      ),
 
-                  ),
                     data:Cubit.Contacts,
-                    itemCount: Cubit.isSearching == true?Cubit.FilterdContacts.length:Cubit.Contacts.length,
+                    itemCount:  Cubit.isSearching==true ?Cubit.FilterdContacts.length:Cubit.Contacts.length,
                     itemBuilder:(context , index)
-                    {
-                      AppContact contact = Cubit.isSearching == true?Cubit.FilterdContacts[index]:Cubit.Contacts[index];
-                      return Column(
-                        children: [
-                          index==0?FavoritesContactsGroups(AppbarSize, Cubit, FavColors):Container(),
-                          index==0?Text("Contacts"):Container(),
-                          ListTile(
-                            contentPadding: EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 0),
-                            onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (BuildContext context) =>
-                                      ContactDetails(
-                                        contact,
-                                        onContactDelete: (AppContact _contact) {
-                                          Cubit.GetContacts();
-                                          Navigator.of(context).pop();
-                                        },
-                                        onContactUpdate: (AppContact _contact) {
-                                          Cubit.GetContacts();
-                                        },
-                                      )
-                              ));
-                            },
-                            title: Text(
-                              contact.info!.displayName.toString(), style: Theme
-                                .of(context)
-                                .textTheme
-                                .bodyText1,),
-                            subtitle: Text(
-                              contact.info!.phones!.isNotEmpty ? contact.info!
-                                  .phones!
-                                  .elementAt(0).value.toString() : '',
-                              style: Theme
-                                  .of(context)
-                                  .textTheme
-                                  .bodyText2,),
-                            leading: ContactAvatar(contact, 45),
-                            trailing: ContactsTagsNotes(context),
-                          ),
-                        ],
-                      );
-                    }
-                )
+                        {
+                          AppContact contact = Cubit.isSearching==true ?Cubit.FilterdContacts[index]:Cubit.Contacts[index];
 
-            ),
-          );
+                          return Column(
+                            children: [
+                              index==0?FavoritesContactsGroups(AppbarSize, Cubit, FavColors):Container(),
+                              index==0?Text("Contacts"):Container(),
+                              ListTile(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 0),
+                                onTap: () {
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (BuildContext context) =>
+                                          ContactDetails(
+                                            contact,
+                                            onContactDelete: (AppContact _contact) {
+                                              PhoneContactsCubit.get(context).GetRawContacts();
+                                              Navigator.of(context).pop();
+                                            },
+                                            onContactUpdate: (AppContact _contact) {
+                                              PhoneContactsCubit.get(context).GetRawContacts();
+                                            },
+                                          )
+                                  ));
+                                },
+                                title: Text(
+                                  contact.info!.displayName.toString(), style: Theme
+                                    .of(context)
+                                    .textTheme
+                                    .bodyText1,),
+                                subtitle: Text(
+                                  contact.info!.phones!.isNotEmpty ? contact.info!
+                                      .phones!
+                                      .elementAt(0).value.toString() : '',
+                                  style: Theme
+                                      .of(context)
+                                      .textTheme
+                                      .bodyText2,),
+                                leading: ContactAvatar(contact, 45),
+                                trailing: ContactsTagsNotes(context),
+                              ),
+                            ],
+                          );
+                        }
+                    )
+
+                ),
+              );
+
+
   }
 
 
@@ -178,7 +182,7 @@ class _ContactDetailsState extends State<ContactDetails> {
       }
       print(action);
     }
-    return BlocConsumer<AppCubit,AppStates>(
+    return BlocConsumer<PhoneContactsCubit,PhoneContactStates>(
         listener: (context , state){},
         builder: (context , state) {
           return Scaffold(
@@ -210,7 +214,7 @@ class _ContactDetailsState extends State<ContactDetails> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(onPressed: (){
-                                AppCubit.get(context).FavoratesContacts.add(widget.contact);
+                                PhoneContactsCubit.get(context).FavoratesContacts.add(widget.contact);
                               }, icon:Icon(Icons.star)),
                               Padding(
                                 padding: const EdgeInsets.all(8.0),

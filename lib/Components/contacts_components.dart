@@ -1,17 +1,19 @@
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
+import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
 import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
 import 'package:dialer_app/Modules/Contacts/contacts_screen.dart';
+import 'package:dialer_app/Themes/light_theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';
 
-Container FavoritesContactsGroups(double AppbarSize, AppCubit Cubit, List<Color> FavColors) {
+Container FavoritesContactsGroups(double AppbarSize, PhoneContactsCubit Cubit, List<Color> FavColors) {
   return Container(
     height: AppbarSize*2,
     // width: double.infinity,
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(9),
-      color:HexColor("#F2F2F2"),
+      color:ContactsFavBackgroundColor(),
     ),
     child: Stack(
       children: [
@@ -44,7 +46,7 @@ Container FavoritesContactsGroups(double AppbarSize, AppCubit Cubit, List<Color>
               Container(
                 width:1,
                 height: 40,
-                color: Colors.grey,
+                color: HexColor("#5683DE"),
               ),
               Padding(
                 padding: const EdgeInsets.all(15.0),
@@ -59,6 +61,8 @@ Container FavoritesContactsGroups(double AppbarSize, AppCubit Cubit, List<Color>
     ),
   );
 }
+
+
 
 Container FavoritesCards(List<Color> FavColors, int index, AppContact contact, BuildContext context) {
   return Container(

@@ -8,6 +8,7 @@ import 'package:dialer_app/Models/user_model.dart';
 import 'package:dialer_app/Modules/Chat/Cubit/states.dart';
 import 'package:dialer_app/Modules/Login&Register/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Login&Register/Cubit/states.dart';
+import 'package:dialer_app/Modules/profile/Profile%20Cubit/profile_cubit.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -40,34 +41,18 @@ class ChatScreen extends StatelessWidget {
     //   height: 1.2,
     //   fontWeight: FontWeight.w600,
     // ));
-    return BlocProvider.value(
-      value:LoginCubit()..ListCount(),
-      child: BlocConsumer<LoginCubit,LoginCubitStates>(
-        listener: (loginContext ,loginState){
-          // if(LoginCubit.get(context).ListSize !=LoginCubit.get(context).ListSize)
-          //   {
-          //     LoginCubit.get(context).ListListner();
-          //   }
-        },
-        builder:(loginContext ,loginState) {
-
-          final userModel = FirebaseFirestore.instance.collection("Users").withConverter<UserModel>(
-              fromFirestore:(snapshots , _)=> UserModel.fromJson(snapshots.data()),
-              toFirestore: (UserModel , _) =>UserModel.toMap()
+    final userModel = FirebaseFirestore.instance.collection("Users").withConverter<UserModel>(
+        fromFirestore:(snapshots , _)=> UserModel.fromJson(snapshots.data()),
+        toFirestore: (UserModel , _) =>UserModel.toMap()
           );
-          return BlocProvider(
-            create: (context) => ChatAppCubit(),
-            child: BlocConsumer<ChatAppCubit,ChatAppCubitStates>(
-              listener: (context , ChatState){
-              },
-              builder:(context , ChatState)=> Scaffold(
+          return Scaffold(
                 floatingActionButton: FloatingActionButton.extended(
 
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                     onPressed: () {
-                      Navigator.push(loginContext,
+                      Navigator.push(context,
                         MaterialPageRoute(builder:(BuildContext context) => ChatContacts()),
                       );
                     },
@@ -77,74 +62,78 @@ class ChatScreen extends StatelessWidget {
                       Text("New Chat"),
                     ],)
                 ),
-                appBar: ChatAppBar(loginContext, AppbarSize),
+                appBar: ChatAppBar(context, AppbarSize),
                 body: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 12.0),
-                  child: StreamBuilder<QuerySnapshot<UserModel>>(
-                    stream: userModel.snapshots(),
-                    builder:(context , UserModelsnapshot)
-                    {
-                      if (UserModelsnapshot.hasError ) {
-                        return Center(
-                          child: Text(UserModelsnapshot.error.toString()),
-                        );
-                      }
+                  child: MultiBlocProvider(
+                    providers: [
+                      BlocProvider.value(value: ProfileCubit.get(context)..GetChatContacts),
+                      BlocProvider.value(value:ChatAppCubit.get(context)..ListCount()),
+                    ],
+                    child:StreamBuilder<QuerySnapshot<UserModel>>(
+                        stream: userModel.snapshots(),
+                        builder:(context , UserModelsnapshot)
+                        {
+                          if (UserModelsnapshot.hasError ) {
+                            return Center(
+                              child: Text(UserModelsnapshot.error.toString()),
+                            );
+                          }
 
-                      if (!UserModelsnapshot.hasData ) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      final Userdata = UserModelsnapshot.requireData;
+                          if (!UserModelsnapshot.hasData ) {
+                            return const Center(child: CircularProgressIndicator());
+                          }
+                          final Userdata = UserModelsnapshot.requireData;
 
-                      return ListView.separated(
-                          itemCount:LoginCubit.get(context).ListSize,
-                          separatorBuilder: (context,state)=>SizedBox(height: 2,),
-                          itemBuilder:(context , index) {
-                            //ToDo: add list filtering
+                          return BlocBuilder<ChatAppCubit,ChatAppCubitStates>(
+                            builder:(context,state)=> ListView.separated(
+                                itemCount:ChatAppCubit.get(context).ListSize,
+                                separatorBuilder: (context,state)=>SizedBox(height: 2,),
+                                itemBuilder:(context , index) {
+                                  //ToDo: add list filtering
 
-                              final messagesRef = FirebaseFirestore.instance
-                                  .collection("Users")
-                                  .doc(token)
-                                  .collection("chats")
-                                  .doc(Userdata.docs[index].data().uId.toString() !=token?Userdata.docs[index].data().uId.toString():Userdata.docs[index+1].data().uId.toString() )
-                                  .collection("messages")
-                                  .withConverter<MessageModel>(fromFirestore: (snapshots, _) => MessageModel.fromJson(snapshots.data()), toFirestore: (model, _) => ChatAppCubit.get(context).model!.toMap());
+                                    final messagesRef = FirebaseFirestore.instance
+                                        .collection("Users")
+                                        .doc(token)
+                                        .collection("chats")
+                                        .doc(Userdata.docs[index].data().uId.toString() !=token?Userdata.docs[index].data().uId.toString():Userdata.docs[index+1].data().uId.toString() )
+                                        .collection("messages")
+                                        .withConverter<MessageModel>(fromFirestore: (snapshots, _) => MessageModel.fromJson(snapshots.data()), toFirestore: (model, _) => ChatAppCubit.get(context).model!.toMap());
 
 
 
-                                return StreamBuilder<QuerySnapshot<MessageModel>>(
-                                  stream: messagesRef.snapshots(),
-                                        builder:(context , snapshot) {
+                                      return StreamBuilder<QuerySnapshot<MessageModel>>(
+                                        stream: messagesRef.snapshots(),
+                                              builder:(context , snapshot) {
 
-                                          if (snapshot.hasError) {
-                                            return Center(
-                                              child: Text(UserModelsnapshot.error.toString()),
-                                            );
-                                          }
+                                                if (snapshot.hasError) {
+                                                  return Center(
+                                                    child: Text(UserModelsnapshot.error.toString()),
+                                                  );
+                                                }
 
-                                          if (!snapshot.hasData) {
-                                            return const Center(child: CircularProgressIndicator());
-                                          }
+                                                if (!snapshot.hasData) {
+                                                  return const Center(child: CircularProgressIndicator());
+                                                }
 
-                                          final data = snapshot.requireData;
-                                          // return NewMessegesChatList(ProfilePictureSize, ProfilePictureBackgroundWidth, ProfilePictureBackgroundHight, Userdata, index, UserNameFontSize, messagesRef, MsgBoxWidth, MsgBoxHPadding, data);
-                                          if(data.docs[index].data().Seen == false && data.docs[index].data().text!.isNotEmpty && data.docs[index].data().receiverId == token ) {
+                                                final data = snapshot.requireData;
+                                                // return NewMessegesChatList(ProfilePictureSize, ProfilePictureBackgroundWidth, ProfilePictureBackgroundHight, Userdata, index, UserNameFontSize, messagesRef, MsgBoxWidth, MsgBoxHPadding, data);
+                                                if(data.docs[index].data().Seen == false && data.docs[index].data().text!.isNotEmpty && data.docs[index].data().receiverId == token ) {
 
-                                    return NewMessegesChatList(ProfilePictureSize, ProfilePictureBackgroundWidth, ProfilePictureBackgroundHight, Userdata, index, UserNameFontSize, messagesRef, MsgBoxWidth, MsgBoxHPadding, data);
-                                  } else return Container();
-                                        });
-                          },
-                        );
+                                          return NewMessegesChatList(ProfilePictureSize, ProfilePictureBackgroundWidth, ProfilePictureBackgroundHight, Userdata, index, UserNameFontSize, messagesRef, MsgBoxWidth, MsgBoxHPadding, data);
+                                        } else return Container();
+                                              });
+                                },
+                              ),
+                          );
 
-                    },
+                        },
+                      ),
                   ),
 
                 ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
+              );
+
   }
 
   Row NewMessegesChatList(double ProfilePictureSize, double ProfilePictureBackgroundWidth, double ProfilePictureBackgroundHight, QuerySnapshot<UserModel> Userdata, int index, double UserNameFontSize, CollectionReference<MessageModel> messagesRef, double MsgBoxWidth, double MsgBoxHPadding ,data) {

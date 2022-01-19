@@ -47,6 +47,7 @@ class LoginCubit extends Cubit<LoginCubitStates>
       emit(DialerLoginErrorState(error.toString()));
     });
   }
+
   Future<void> saveTokenToDatabase() async {
     // Assume user is logged in for this example
     String? DeviceToken = await FirebaseMessaging.instance.getToken();
@@ -101,166 +102,9 @@ class LoginCubit extends Cubit<LoginCubitStates>
 
 
 
-  File? profileImage;
-  File? CoverImage;
-  String? ProfileImageURL;
-  String? CoverImageURL;
-
-  var picker = ImagePicker();
-
-  Future getProfileImage() async
-  {
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    if(pickedFile !=null){
-      profileImage = File(pickedFile.path) ;
-
-      uploadProfileImage("ProfileImage", profileImage);
-      emit(SocialProfileImagePickedSuccessState());
-
-    }
-    else{
-      print("no image selected");
-      emit(SocialProfileImagePickeedErrorState());
-    }
-  }
-
-  Future getCoverImage() async
-  {
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    if(pickedFile !=null){
-      CoverImage = File(pickedFile.path) ;
 
 
-      uploadCoverImage("CoverImage", CoverImage);
 
-      emit(SocialProfileImagePickedSuccessState());
-
-    }
-    else{
-      print("no image selected");
-      emit(SocialProfileImagePickeedErrorState());
-    }
-  }
-
-  void uploadProfileImage(path , file)
-  {
-    firebase_storage.FirebaseStorage.instance.ref().child("user/ProfileImage/${Uri.file(path).pathSegments.last}").putFile(file).then((value) {
-
-      value.ref.getDownloadURL().then((value) {
-
-        print("image Url : " + value.toString());
-        ProfileImageURL = value.toString();
-        emit(SocialUploadImagePickedSuccessState());
-      }).catchError((Error){
-        print("Error on getting download link : " + Error.toString());
-        emit(SocialUploadImageErrorState());
-      });
-
-    }).catchError((Error){
-      print("Error on uploading the image : " + Error.toString());
-      emit(SocialUploadImageErrorState());
-    });
-  }
-  void uploadCoverImage(path , file)
-
-  {
-    firebase_storage.FirebaseStorage.instance.ref().child("user/CoverImage/${Uri.file(path).pathSegments.last}").putFile(file).then((value) {
-
-      value.ref.getDownloadURL().then((value) {
-
-        print("image Url : " + value.toString());
-        CoverImageURL = value.toString();
-        emit(SocialUploadImagePickedSuccessState());
-      }).catchError((Error){
-        print("Error on getting download link : " + Error.toString());
-        emit(SocialUploadImageErrorState());
-      });
-
-    }).catchError((Error){
-      print("Error on uploading the image : " + Error.toString());
-      emit(SocialUploadImageErrorState());
-    });
-  }
-
-  void updateUser({String? name , String? bio}){
-
-    emit(SocialUpdateUserLoadingState());
-    UserModel model = UserModel(
-      name : name,
-      bio : bio,
-      uId: token,
-      image: ProfileImageURL.toString(),
-      cover:CoverImageURL.toString(),
-
-    );
-    //TODO:Fix Profile Updater impleminting it with new Cubit or useing streambuilder
-    // print(CurrentUser[0].image.toString());
-    // CurrentUser[0].image = ProfileImageURL;
-    // CurrentUser[0].cover = CoverImageURL;
-
-    FirebaseFirestore.instance.collection("Users").doc(token).update(model.toMap()).then(
-            (value) {
-
-          emit(SocialUpdateUserSuccessState());
-        }).catchError((error){
-      print("Error on update : " + error.toString());
-
-      emit(SocialUpdateUserErrorState(error.toString()));
-    });
-  }
-  // bool?NewMessage ;
-  //  Future<bool?> NewMessageDetection (Userdata , index) async{
-  //    await FirebaseFirestore.instance.collection("Users").doc(token).collection("chats").doc(Userdata.docs[index].data().uId).get().then((element){element.data()?.forEach((key, value) {
-  //     if(key == "NewMessage")
-  //     {
-  //       if(value ==true)
-  //         {
-  //           NewMessage = true;
-  //         } else {
-  //         NewMessage =false;
-  //       }
-  //     }
-  //   });
-  //
-  //   });
-  //    print("value here :" + NewMessage.toString());
-  //    print("Index value : " +index.toString());
-  //    // emit(NewMessageRecived());
-  //    return NewMessage;
-  // }
-  int ListSize=0;
-  Future<void> ListCount() async {
-    ListSize =  0;
-    await FirebaseFirestore.instance.collection("Users").get().then((value)  {
-
-      value.docs.forEach((element)
-      async {
-        if (element.data()['uId'] != token) {
-          bool? NewMessageCount;
-          await FirebaseFirestore.instance.collection("Users").doc(token).collection("chats").doc(element
-              .data()
-          ['uId']
-              .toString()).collection("messages").get().then((value) {
-            for (var element in value.docs) {
-              if (element.data()['Seen'] == false) {
-                NewMessageCount = true;
-              } else {
-                NewMessageCount == true? NewMessageCount=true:NewMessageCount=false;
-              }
-            }
-          });
-
-          NewMessageCount == true ? ListSize++ : null;
-
-        }
-        print("item count : " + ListSize.toString());
-
-      });
-    });
-
-  }
 
 void ListListner(){
   emit(NewMessageRecived());

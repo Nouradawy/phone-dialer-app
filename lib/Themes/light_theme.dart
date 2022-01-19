@@ -1,3 +1,5 @@
+import 'package:dialer_app/Components/constants.dart';
+import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,7 +9,7 @@ ThemeData LightThemeData() {
   return ThemeData(
     primaryColor: Colors.blueGrey,
     appBarTheme: AppBarTheme(
-      iconTheme: IconThemeData(color: Colors.black),
+      iconTheme: IconThemeData(color: HexColor("#6D637F")),
       elevation: 0,
       backgroundColor: Colors.transparent,
       systemOverlayStyle: SystemUiOverlayStyle(
@@ -20,7 +22,7 @@ ThemeData LightThemeData() {
     ),
     primarySwatch: Colors.blue,
     floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor:HexColor("#FFD8E4"),
+        backgroundColor:HexColor("#4527A0"),
     ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
       type: BottomNavigationBarType.fixed,
@@ -91,15 +93,16 @@ ThemeData LightThemeData() {
 
   );
 }
-
-
-
-Color SearchBackgroundColor() => HexColor("#FFFFFF").withOpacity(0.52);
-Color AppBarChatIconBackgroundColor() => HexColor("#FFFFFF").withOpacity(0.52);
+HexColor ContactsFavBackgroundColor() => ThemeSwitch?HexColor("#F2F2F2"):HexColor("#1F1B24");
+Color HomePageBackgroundColor() => ThemeSwitch?HexColor("#FAFAFA"):HexColor("#121212");
+HexColor AppBarChatTextColor() => ThemeSwitch?HexColor("#616161"):HexColor("#000000");
+Color SearchBackgroundColor() => ThemeSwitch?HexColor("#FFFFFF").withOpacity(0.52):HexColor("#2D4E80").withOpacity(0.52);
+Color AppBarChatIconBackgroundColor() => ThemeSwitch?HexColor("#FFFFFF").withOpacity(0.52):HexColor("#FFFFFF").withOpacity(0.79);
 Color AppBarMoreIconColor() => HexColor("#FFD8E4");
-Color SearchIconColor() => HexColor("#959595");
-Color AppBarBackgroundColor() => HexColor("#EAE6F2");
-Color AppBarEditIconColor() => HexColor("#FFD8E4");
-Color TabBarlabelColor() => HexColor("#57E3A0");
-Color TabBarindicatorColor() => HexColor("#57E3A0");
-Color TabBarUnselectedlabelColor() => HexColor("#616161");
+Color SearchIconColor() => ThemeSwitch?HexColor("#959595"):HexColor("#0075CE");
+Color AppBarBackgroundColor(context) => AppCubit.get(context).EditorIsActive?AppCubit.get(context).CustomHomePageBackgroundColor:ThemeSwitch?HexColor("#EAE6F2"):HexColor("#2A2A2A");
+HexColor AppBarEditIconColor() => HexColor("#0075CE");
+Color AppBarEditIconBackGroundColor() => ThemeSwitch?HexColor("#FFD8E4"):HexColor("#1F0054").withOpacity(0.78);
+Color TabBarlabelColor() => HexColor("#00B5EE");
+Color TabBarindicatorColor() => HexColor("#00B5EE");
+Color TabBarUnselectedlabelColor() => ThemeSwitch?HexColor("#A5A5A5"):HexColor("#E1E1E1");
