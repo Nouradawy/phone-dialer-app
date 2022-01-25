@@ -1,18 +1,15 @@
 
+import 'package:dialer_app/Components/components.dart';
 import 'package:dialer_app/Components/constants.dart';
-import 'package:dialer_app/Layout/Cubit/cubit.dart';
-import 'package:dialer_app/Layout/Cubit/states.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
-import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_states.dart';
 import 'package:dialer_app/NativeBridge/native_bridge.dart';
 import 'package:dialer_app/NativeBridge/native_states.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
-
 import '../home.dart';
-import '../main.dart';
+import 'Cubit/cubit.dart';
 
 
 class InCallScreen extends StatelessWidget {
@@ -38,40 +35,33 @@ class InCallScreen extends StatelessWidget {
               {
                 _StopWatchTimer.onExecute.add(StopWatchExecute.reset);
                 Cubit.isStopWatchStart =false;
-                Navigator.pop(context);
+                // Navigator.pop(context);
 
-                Navigator.push(context,
-                  MaterialPageRoute(builder: (BuildContext context) => Home(),)
-                );
-                //TODO:ADD Logiect to set the Route to true
+                // Navigator.push(context,
+                //   MaterialPageRoute(builder: (BuildContext context) => Home(),)
+                // );
               }
-            // if(state is PhoneStateRinging ){
-            //   AppCubit.get(context).CallTimerController.start();
-            // }
           },
           builder: (context, state) {
             // NativeBridge.get(context).GetCallerID();
             // AppCubit.get(context).GetCallerID();
             return Scaffold(
               backgroundColor: HexColor("#2C087A"),
-              body: Column(children: [
-                Stack(
-                  children: [
-                    ///Background image Container
-                    Container(
-                      height: 280,
-                      width: double.infinity,
-                      decoration: const BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage(
-                              "assets/Images/blue purple wave.png"),
-                          fit: BoxFit.cover,
-                        ),
+              body: Stack(
+                children: [
+                  Container(
+                    height: 400,
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage(
+                            "assets/Images/blue purple wave.png"),
+                        fit: BoxFit.cover,
                       ),
                     ),
-                    Column(
+                  ),
+                  Column(
                       children: [
-                        /* 1st spacer */
                         SizedBox(
                           height: MediaQuery.of(context).size.height * 0.09,
                         ),
@@ -92,7 +82,7 @@ class InCallScreen extends StatelessWidget {
                                   border: Border.all(
                                     width: 2,
                                     color:
-                                        HexColor("#F8F8F8").withOpacity(0.69),
+                                    HexColor("#F8F8F8").withOpacity(0.69),
                                   ),
                                 ),
                               ),
@@ -106,79 +96,50 @@ class InCallScreen extends StatelessWidget {
                         const SizedBox(height: 8),
                         CallStatesText(),
                         CallerID(context),
-                        CallerPhoneNumber(context)
-                      ]
+                        CallerPhoneNumber(context),
+
+                    Builder(
+                      builder: (context) {
+                        return StreamBuilder<int>(
+                          stream: _StopWatchTimer.rawTime,
+                          builder: (context,snap) {
+
+
+
+                            if(NativeBridge.get(context).isStopWatchStart == true)
+                              {
+                                final value =snap.data;
+                                bool? Hours;
+                                bool? Minutes;
+
+                                if (StopWatchTimer.getRawHours(value!) <= 1)
+                                {
+                                  Hours = false;
+                                } else Hours=true;
+                                var displayTime = StopWatchTimer.getDisplayTime(value,hours:Hours,minute: true, milliSecond: false);
+                                return Cubit.isRinging == false?Text(displayTime):Text("");
+                              } else return Text("");
+
+
+                          },
+                        );
+                      }
                     ),
-                  ],
-                ),
-//TODO: DialwerCountDown
-                Builder(
-
-                  builder: (context) {
-                    return StreamBuilder<int>(
-                      stream: _StopWatchTimer.rawTime,
-                      builder: (context,snap) {
-
-
-
-                        if(NativeBridge.get(context).isStopWatchStart == true)
-                          {
-                            final value =snap.data;
-                            bool? Hours;
-                            bool? Minutes;
-
-                            if (StopWatchTimer.getRawHours(value!) <= 1)
-                            {
-                              Hours = false;
-                            } else Hours=true;
-                            var displayTime = StopWatchTimer.getDisplayTime(value,hours:Hours,minute: true, milliSecond: false);
-                            return Cubit.isRinging == false?Text(displayTime):Text("");
-                          } else return Text("");
-
-
-                      },
-                    );
-                  }
-                ),
-                // Cubit.isRinging == false?  StopWatchTimer.getDisplayTime(value): Text(""),
-                // MediaQuery:Above Quick Replay Adjust for Diff. Screens
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.03,
-                ),
-                InCallMessages(),
-                SizedBox(
-                  /*MediaQuery:Above answer and decline buttons Adjust for Diff. Screens*/
-
-                  height: Cubit.isRinging == true?MediaQuery.of(context).size.height * 0.20:MediaQuery.of(context).size.height * 0.01,
-                ),
-                InCallButtons(context, Cubit.isRinging),
-                SizedBox(
-                  /*MediaQuery:Above answer and decline buttons Adjust for Diff. Screens*/
-
-                  height: Cubit.isRinging == true?MediaQuery.of(context).size.height * 0.08:MediaQuery.of(context).size.height * 0.04,
-                ),
-
-                /*MediaQuery:Above Swipe to send message Adjust for Diff. Screens*/
-                SizedBox(height: MediaQuery.of(context).size.height*0.04,),
-                TextButton(
-                  onPressed: (){
-                    // Cubit.UpdateCallerID();
-                  },
-                  child: Text(
-                    "Swipe up to Send message",
-                    style: TextStyle(
-                      color: HexColor("#B1B1B1").withOpacity(0.70),
-                      fontFamily: "Cairo",
-                      fontSize: 12,
+                    // Cubit.isRinging == false?  StopWatchTimer.getDisplayTime(value): Text(""),
+                    // MediaQuery:Above Quick Replay Adjust for Diff. Screens
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.03,
                     ),
-                  ),
-                ),
-                SizedBox(height: 7),
-                Container(
-                    width: 120,
-                    height: 1,
-                    color: HexColor("#B4B4B4").withOpacity(0.49)),
-              ]),
+                    InCallMessages(),
+                    SizedBox(
+                      /*MediaQuery:Above answer and decline buttons Adjust for Diff. Screens*/
+                      height: Cubit.isRinging == true?MediaQuery.of(context).size.height * 0.20:MediaQuery.of(context).size.height * 0.01,
+                    ),
+                    InCallButtons(context, Cubit.isRinging),
+
+                  ]),
+                ],
+              ),
             );
           }),
     );
@@ -355,7 +316,6 @@ class InCallScreen extends StatelessWidget {
                         customBorder: CircleBorder(),
                         onTap: () {
                           NativeBridge.get(context).isRinging = false;
-
                           NativeBridge.get(context).invokeNativeMethod("AcceptCall",null);
                         },
                         child: CircleAvatar(
@@ -368,9 +328,30 @@ class InCallScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+        SizedBox(
+          /*MediaQuery:Above answer and decline buttons Adjust for Diff. Screens*/
+          height: (MediaQuery.of(context).size.height +  MediaQuery.of(context).padding.bottom) * 0.10,
+        ),
+        TextButton(
+          onPressed: (){
+            // Cubit.UpdateCallerID();
+          },
+          child: Text(
+            "Swipe up to Send message",
+            style: TextStyle(
+              color: HexColor("#B1B1B1").withOpacity(0.70),
+              fontFamily: "Cairo",
+              fontSize: 12,
+            ),
+          ),
+        ),
+        Container(
+            width: 120,
+            height: 1,
+            color: HexColor("#B4B4B4").withOpacity(0.49)),
       ],
     ):
-        Column(
+    AppCubit.get(context).isShowen?InCallDialpad(context, 0 , AppCubit.get(context).dialerController):Column(
           children: [
             Padding(
               padding: const EdgeInsets.only(bottom: 25.0),
@@ -464,70 +445,100 @@ class InCallScreen extends StatelessWidget {
                 ],
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              mainAxisSize: MainAxisSize.max,
+            Column(
               children: [
-                Column(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisSize: MainAxisSize.max,
                   children: [
-                    Container(
-                      decoration:BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(width:1,color:HexColor("#FFFFFF"),),
-                      ) ,
-                      child: InkWell(
-                        onTap: (){
-                          //TODO: Add dialpad to the call
-                        },
-                        child: CircleAvatar(
-                          backgroundColor: HexColor("#464646"),
-                          radius: 31,
-                          child: Image.asset("assets/Images/dialpad.png",scale: 1.4,color: HexColor("#EEEEEE"),),
+                    Column(
+                      children: [
+                        InkWell(
+                           // highlightColor:Colors.red,
+                          splashColor: Colors.red,
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: (){
+                            AppCubit.get(context).dialpadShow();
+                          },
+                          child: Container(
+                            decoration:BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(width:1,color:HexColor("#FFFFFF"),),
+                            ) ,
+                            child: CircleAvatar(
+                              backgroundColor: HexColor("#464646"),
+                              radius: 31,
+                              child: Image.asset("assets/Images/dialpad.png",scale: 1.4,color: HexColor("#EEEEEE"),),
+                            ),
+                          ),
                         ),
-                      ),
+                        Text("Keypad",),
+                      ],
                     ),
-                    Text("Keypad",),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Container(
-                      decoration:BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(width:1,color:HexColor("#FFFFFF"),),
-                      ) ,
-                      child: InkWell(
-                        onTap: (){
-                          //TODO: Setup Confrence calls
-                        },
-                        child: CircleAvatar(
-                          backgroundColor: HexColor("#464646"),
-                            radius: 31,
-                            child: IconButton(onPressed: (){}, icon: Icon(Icons.person_add),iconSize: 37,color: HexColor("#E4E4E4"),)),
-                      ),
-                    ),
-                    Text("Add",),
-                  ],
-                ),
-                Column(
-                  children: [
-                    InkWell(
-                      onTap:(){
-                        NativeBridge.get(context)
-                            .invokeNativeMethod("RejectCall",null);
-                      },
-                      child: CircleAvatar(
-                          backgroundColor: HexColor("#FC5757"),
-                            radius: 31,
-                            child: Image.asset("assets/Images/call_end.png",scale:6),
+                    Column(
+                      children: [
+                        Container(
+                          decoration:BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(width:1,color:HexColor("#FFFFFF"),),
+                          ) ,
+                          child: InkWell(
+                            splashColor: Colors.red,
+                            onTap: (){
+                              //TODO: Setup Confrence calls
+                            },
+                            child: CircleAvatar(
+                              backgroundColor: HexColor("#464646"),
+                                radius: 31,
+                                child: IconButton(onPressed: (){}, icon: Icon(Icons.person_add),iconSize: 37,color: HexColor("#E4E4E4"),)),
+                          ),
                         ),
+                        Text("Add",),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        InkWell(
+                          splashColor: Colors.blue,
+                          onTap:(){
+                            NativeBridge.get(context)
+                                .invokeNativeMethod("RejectCall",null);
+                          },
+                          child: CircleAvatar(
+                              backgroundColor: HexColor("#FC5757"),
+                                radius: 31,
+                                child: Image.asset("assets/Images/call_end.png",scale:6),
+                            ),
+                        ),
+
+                        Text("End",),
+
+                      ],
                     ),
 
-                    Text("End",),
                   ],
                 ),
-
-
+                SizedBox(
+                  /*MediaQuery:Above answer and decline buttons Adjust for Diff. Screens*/
+                  height: (MediaQuery.of(context).size.height +  MediaQuery.of(context).padding.bottom) * 0.07,
+                ),
+                TextButton(
+                  onPressed: (){
+                    // Cubit.UpdateCallerID();
+                  },
+                  child: Text(
+                    "Swipe up to Send message",
+                    style: TextStyle(
+                      color: HexColor("#B1B1B1").withOpacity(0.70),
+                      fontFamily: "Cairo",
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                Container(
+                    width: 120,
+                    height: 1,
+                    color: HexColor("#B4B4B4").withOpacity(0.49)),
               ],
             ),
           ]

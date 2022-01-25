@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
@@ -5,6 +6,8 @@ import 'package:call_log/call_log.dart';
 import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:hexcolor/hexcolor.dart';
 
 import '../appcontacts.dart';
 import 'contacts_states.dart';
@@ -18,8 +21,27 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
   List PhoneCallLogs =[];
   List SearchableCallerIDList = [];
   List CallerID = [];
+
+
+  List BaseColors =[
+    HexColor("#515150"),
+    HexColor("#FF4B76"),
+    HexColor("#2C087A"),
+    HexColor("#C6C972"),
+
+  ];
+  Color? FavoratesItemColor ;
+  int ColorIndex =0;
+
+  void FavoratesItemColors(){
+    FavoratesItemColor = BaseColors[ColorIndex];
+    ColorIndex == BaseColors.length-1?ColorIndex = 0:ColorIndex++;
+
+  }
+
+
+
   Future<void> GetRawContacts() async {
-    emit(RawContactsLoadingState());
     List colors = [
       Colors.green,
       Colors.indigo,
@@ -40,7 +62,15 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
     }).toList();
 
     Contacts =_contacts;
-    emit(RawContactsSuccessState());
+
+    Contacts.forEach((contact) {
+      ContactsService.getAvatar(contact.info!).then((avatar) {
+        if (avatar != null) {
+          return contact.info?.avatar = avatar;
+        }
+    });
+    });
+      emit(RawContactsSuccessState());
   }
 
   void GetCallerID(PhoneNumberQuery) {
@@ -115,9 +145,8 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
   }
 
 
-  Future DialpadSearch (TextEditingController dialerController ) async{
-
-    // if(dialerController.text[0].toString() == "2") {
+ Future DialpadSearch (TextEditingController dialerController) async{
+    // if(dialerController.text[0] == "2") {
     //   SearchTerm = ["a", "b", "c"];
     // }
     // if(dialerController.text[dialerController.text.length] == "3") {
@@ -137,42 +166,51 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
     //   SearchTerm = ["t","u","v"];
     // if(dialerController.text[dialerController.text.length] == "9")
     //   SearchTerm = ["w","x","y"];
+   try
+   {
+      dialerController.text.isEmpty ? FilterdContacts.clear() : null;
+      Firstchr.clear();
+      secondchr.clear();
+      thirdchr.clear();
 
-    dialerController.text.isEmpty ?FilterdContacts.clear():null;
-    Firstchr.clear();
-    secondchr.clear();
-    thirdchr.clear();
-    FilterdContacts.isEmpty?Firstchr.addAll(Contacts):Firstchr.addAll(FilterdContacts);
-    FilterdContacts.isEmpty?secondchr.addAll(Contacts):secondchr.addAll(FilterdContacts);
-    FilterdContacts.isEmpty?thirdchr.addAll(Contacts):thirdchr.addAll(FilterdContacts);
+      if (FilterdContacts.isEmpty) {
+        Firstchr.addAll(Contacts);
+        secondchr.addAll(Contacts);
+        thirdchr.addAll(Contacts);
+      } else {
+        Firstchr.addAll(FilterdContacts);
+        secondchr.addAll(FilterdContacts);
+        thirdchr.addAll(FilterdContacts);
+      }
 
-    Firstchr.retainWhere((contact){
-      String contactName = contact.info!.displayName![dialerController.text.length].toLowerCase();
-      print(SearchTerm[0]);
-      return contactName.contains(SearchTerm[0]);
+      Firstchr.retainWhere((contact) {
+        String contactName = contact.info!.displayName![dialerController.text.length].toLowerCase();
+        return contactName.contains(SearchTerm[0]);
+      });
 
-    });
+      secondchr.retainWhere((contact) {
+        String contactName = contact.info!.displayName![dialerController.text.length].toLowerCase();
+        return contactName.contains(SearchTerm[1]);
+      });
 
-    secondchr.retainWhere((contact){
-      String contactName = contact.info!.displayName![dialerController.text.length].toLowerCase();
-      return contactName.contains(SearchTerm[1]);
-    });
+      thirdchr.retainWhere((contact) {
+        String contactName = contact.info!.displayName![dialerController.text.length].toLowerCase();
+        return contactName.contains(SearchTerm[2]);
+      });
 
-    thirdchr.retainWhere((contact){
-      String contactName = contact.info!.displayName![dialerController.text.length].toLowerCase();
-      return contactName.contains(SearchTerm[2]);
-
-    });
-    if(FilterdContacts.isEmpty) {
-      FilterdContacts.addAll(secondchr);
-      FilterdContacts.addAll(Firstchr);
-      FilterdContacts.addAll(thirdchr);
-    }else {
-      FilterdContacts.clear();
-      FilterdContacts.addAll(secondchr);
-      FilterdContacts.addAll(Firstchr);
-      FilterdContacts.addAll(thirdchr);
-    }
+      if (FilterdContacts.isEmpty) {
+        FilterdContacts.addAll(Firstchr);
+        FilterdContacts.addAll(secondchr);
+        FilterdContacts.addAll(thirdchr);
+      } else {
+        FilterdContacts.clear();
+        FilterdContacts.addAll(Firstchr);
+        FilterdContacts.addAll(secondchr);
+        FilterdContacts.addAll(thirdchr);
+      }
+    } catch(error){
+     return print("error ocuured : $error");
+   }
 
     emit(dialPadSearchSuccessState());
   }

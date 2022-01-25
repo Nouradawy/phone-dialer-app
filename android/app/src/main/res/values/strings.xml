@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">dialer_appe</string>
 
+    <string name="app_name">dialer_appe</string>
+    <string name="facebook_app_id">268285863881523</string>
+    <string name="fb_login_protocol_scheme">fb268285863881523</string>
+    <string name="facebook_client_token">9077c5b93c40baa7e268e88144fb462a</string>
     <string name="logs">Logs:</string>
 
     <string name="global_enable_contact_phone_state_permissions">Please enable contact and read phone state permission</string>

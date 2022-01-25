@@ -105,6 +105,12 @@ class LoginScreen extends StatelessWidget {
                               fallback: (context) =>
                                   Center(child: CircularProgressIndicator()),
                             ),
+                            MaterialButton(onPressed: () {
+                              LoginCubit.get(context).signInWithFacebook();
+                            },child: Row(children: [
+                              Icon(Icons.facebook_outlined),
+                              Text("Login with Facebook"),
+                            ],),),
 
                             const SizedBox(
                               height: 15.0,

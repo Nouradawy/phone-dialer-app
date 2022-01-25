@@ -93,6 +93,29 @@ ThemeData LightThemeData() {
 
   );
 }
+//////////////////////////////////////////////////Other Text Styles ////////////////////////////////////////
+
+TextStyle CallTimeTextStyle() {
+  return TextStyle(
+    fontFamily: "cairo",
+    fontStyle: FontStyle.italic,
+    fontSize: 11,
+    fontWeight: FontWeight.w600,
+  );
+}
+TextStyle PhoneTypeTextStyle() {
+  return TextStyle(
+    fontFamily: "cairo",
+    fontSize: 11,
+    fontWeight: FontWeight.w500,
+    color: Colors.black,
+
+  );
+}
+
+
+
+////////////////////////////////////////////////Colors///////////////////////////////////////////////////
 HexColor ContactsFavBackgroundColor() => ThemeSwitch?HexColor("#F2F2F2"):HexColor("#1F1B24");
 Color HomePageBackgroundColor() => ThemeSwitch?HexColor("#FAFAFA"):HexColor("#121212");
 HexColor AppBarChatTextColor() => ThemeSwitch?HexColor("#616161"):HexColor("#000000");
