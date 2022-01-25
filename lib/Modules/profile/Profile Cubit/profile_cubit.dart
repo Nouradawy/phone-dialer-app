@@ -130,7 +130,6 @@ List<UserModel> CurrentUser = [];
 
 
 void GetChatContacts()async{
-  emit(ExtractCurrrentUserLoading());
   ChatContacts.clear();
   await FirebaseFirestore.instance.collection("Users").get().then((value){
     value.docs.forEach((element)

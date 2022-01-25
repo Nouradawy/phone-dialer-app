@@ -135,10 +135,10 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create:(context)=> ChatAppCubit()),
-        BlocProvider(create: (context)=>NativeBridge()..invokeNativeMethod..phonestateEvents()),
+        BlocProvider(create: (context)=>NativeBridge()..phonestateEvents()),
         BlocProvider(create:(context)=> PhoneContactsCubit()..GetRawContacts()),
         BlocProvider(create: (context)=> AppCubit()),
-        BlocProvider(create: (context)=>ProfileCubit()..GetChatContacts()),
+        BlocProvider(create: (context)=>ProfileCubit()),
 
       ],
     child:BlocBuilder<AppCubit,AppStates>(
@@ -148,7 +148,9 @@ class MyApp extends StatelessWidget {
                       theme: LightThemeData(),
                       darkTheme: DarkThemeData(),
                       themeMode: themeSwitch?ThemeMode.light:ThemeMode.dark,
-                      home: homeScreen,
+                      home: BlocProvider.value(
+                          value:ProfileCubit.get(context)..GetChatContacts(),
+                          child: homeScreen),
                   ),
     )
     );

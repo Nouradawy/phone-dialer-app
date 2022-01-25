@@ -37,6 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   contacts_service: ^0.6.3
 #  system_settings: ^2.0.0
+  font_awesome_flutter: ^9.2.0
   bloc: ^8.0.2
   flutter_bloc: ^8.0.1
   conditional_builder_null_safety: ^0.0.4
@@ -58,6 +59,8 @@ dependencies:
   firebase_storage: ^10.2.4
   firebase_messaging: ^11.2.4
   flex_color_picker: ^2.2.0
+  flutter_facebook_auth: ^4.0.1
+  webview_flutter: ^3.0.0
   ndialog: ^4.1.0
 
 dev_dependencies:

@@ -10,7 +10,7 @@ import 'package:dialer_app/Network/Local/cache_helper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
 
 
@@ -101,7 +101,37 @@ class LoginCubit extends Cubit<LoginCubitStates>
   }
 
 
+  Future<UserCredential> signInWithFacebook() async {
+    final LoginResult loginResult = await FacebookAuth.instance.login(loginBehavior: LoginBehavior.webOnly);
+    final OAuthCredential facebookAuthCredential = FacebookAuthProvider.credential(loginResult.accessToken!.token);
+    return FirebaseAuth.instance.signInWithCredential(facebookAuthCredential).then((value){
+      CacheHelper.saveData(key: 'token', value: value.user?.uid);
+      token = value.user?.uid;
+      saveTokenToDatabase();
+      if(value.additionalUserInfo?.isNewUser == true)
+      {
+        UserModel model = UserModel(
+          name: value.user?.displayName,
+          email: value.user?.email,
+          phone: value.user?.phoneNumber,
+          uId: value.user?.uid,
+          bio: "Write your bio..",
+          cover: "https://image.freepik.com/free-photo/positive-dark-skinned-young-woman-man-bump-fists-agree-be-one-team-look-happily-each-other-celebrates-completed-task-wear-pink-green-clothes-pose-indoor-have-successful-deal_273609-42756.jpg",
+          image: value.user?.photoURL,
+          isEmailVerified: false,
+          IsOnline: true,
+          LastSeen: Timestamp.now(),
+          // tokens:"tokens",
+        );
+        FirebaseFirestore.instance.collection("Users").doc(value.user?.uid).set(model.toMap());
+      }
+      emit(DialerLoginSuccessState(value.user!.uid));
+      return value;
+    }).catchError((error){
 
+      print(error.toString());
+    });
+  }
 
 
 

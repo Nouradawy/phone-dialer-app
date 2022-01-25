@@ -7,9 +7,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';
 
-Container FavoritesContactsGroups(double AppbarSize, PhoneContactsCubit Cubit, List<Color> FavColors) {
+Container FavoritesContactsGroups(double AppbarSize, PhoneContactsCubit Cubit) {
   return Container(
-    height: AppbarSize*2,
+    height:120,
     // width: double.infinity,
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(9),
@@ -18,11 +18,11 @@ Container FavoritesContactsGroups(double AppbarSize, PhoneContactsCubit Cubit, L
     child: Stack(
       children: [
         const Padding(
-          padding: EdgeInsets.only(left: 10.0,top:27),
+          padding: EdgeInsets.only(left: 10.0,top:2),
           child: Text("Favourites"),
         ),
         Padding(
-          padding: const EdgeInsets.only(top:48,bottom: 9),
+          padding: const EdgeInsets.only(top:25,bottom: 9),
           child: Row(
             // mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -36,8 +36,9 @@ Container FavoritesContactsGroups(double AppbarSize, PhoneContactsCubit Cubit, L
                     itemCount: Cubit.FavoratesContacts.length,
                     separatorBuilder: (context,index)=> SizedBox(width: 10,),
                     itemBuilder: (context, index) {
+                      PhoneContactsCubit.get(context).FavoratesItemColors();
                       AppContact contact = Cubit.FavoratesContacts[index];
-                      return FavoritesCards(FavColors, index, contact, context);
+                      return FavoritesCards(index, contact, context);
                     },
                   ),
                 ),
@@ -64,17 +65,17 @@ Container FavoritesContactsGroups(double AppbarSize, PhoneContactsCubit Cubit, L
 
 
 
-Container FavoritesCards(List<Color> FavColors, int index, AppContact contact, BuildContext context) {
+Container FavoritesCards( int index, AppContact contact, BuildContext context) {
+  final Color?  FavColor = PhoneContactsCubit.get(context).FavoratesItemColor;
   return Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(6),
-
-                        color:FavColors[index],
+                        color:FavColor,
                       ),
                       child: Column(
                         children: [
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 6),
                             child: Container(
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,

@@ -6,6 +6,7 @@ import 'package:dialer_app/Models/phone_log_model.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
 import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
 import 'package:dialer_app/Modules/Contacts/contacts_screen.dart';
+import 'package:dialer_app/Themes/light_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:intl/intl.dart';
@@ -18,65 +19,61 @@ class PhoneScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     logs = c1.getCallLogs();
-    return SafeArea(
-      child: PhoneContactsCubit.get(context).isSearching!=true?FutureBuilder<Iterable<CallLogEntry>>(
-        future: logs,
-        builder:(context,snapshot) {
-          if(snapshot.connectionState == ConnectionState.done ) {
-            final entries = snapshot.requireData;
-          return ListView.builder(
-            itemCount:entries.length,
-            itemBuilder: (context, index) {
-              c1.LogAvatarColors();
-              return Column(
-                children: [
-                  index == 0 ?Padding(
-                          padding: const EdgeInsets.only(left: 30.0),
-                          child: Row(
-                            children: const [
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 5.0),
-                                child: Text("All"),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 5.0),
-                                child: Text("Missed"),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 5.0),
-                                child: Text("InBound"),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 5.0),
-                                child: Text("OutBound"),
-                              ),
-                            ],
-                          ),
-                        ):Container(),
+    return PhoneContactsCubit.get(context).isSearching!=true?FutureBuilder<Iterable<CallLogEntry>>(
+      future: logs,
+      builder:(context,snapshot) {
+        if(snapshot.connectionState == ConnectionState.done ) {
+          final entries = snapshot.requireData;
+        return ListView.builder(
+          itemCount:entries.length,
+          itemBuilder: (context, index) {
+            c1.LogAvatarColors();
+            return Column(
+              children: [
+                index == 0 ?Padding(
+                        padding: const EdgeInsets.only(left: 30.0),
+                        child: Row(
+                          children: const [
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 5.0),
+                              child: Text("All"),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 5.0),
+                              child: Text("Missed"),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 5.0),
+                              child: Text("InBound"),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 5.0),
+                              child: Text("OutBound"),
+                            ),
+                          ],
+                        ),
+                      ):Container(),
 
-                  PhoneLogList(entries, index, context),
-                ],
-              );
-            },
-          );
-        } else {
-            return Center(child: CircularProgressIndicator());
-          }
+                PhoneLogList(entries, index, context),
+              ],
+            );
+          },
+        );
+      } else {
+          return Center(child: CircularProgressIndicator());
+        }
+    },
+    ):ListView.builder(
+      itemCount:   PhoneContactsCubit.get(context).FilterdContacts.length,
+      itemBuilder: (context, index) {
+        AppContact contact = PhoneContactsCubit.get(context).FilterdContacts[index];
+        return Column(
+          children: [
+            SearchingList(context, contact),
+          ],
+        );
       },
-      ):ListView.builder(
-        itemCount:   PhoneContactsCubit.get(context).FilterdContacts.length,
-        itemBuilder: (context, index) {
-          AppContact contact = PhoneContactsCubit.get(context).FilterdContacts[index];
-          return Column(
-            children: [
-              SearchingList(context, contact),
-            ],
-          );
-        },
-      )
-
-
-      );
+    );
   }
 
   ListTile PhoneLogList(Iterable<CallLogEntry> entries, int index, BuildContext context) {
@@ -117,24 +114,56 @@ class PhoneScreen extends StatelessWidget {
                                       color:HexColor("#8F00B9"),
                                       borderRadius: BorderRadius.circular(3)
                                     ),
+
                                   ),
                                   Transform.translate(
                                     offset: Offset(5,2),
-                                    child: Container(
-                                      width: MediaQuery.of(context).size.width*0.17,
-                                      height: 30,
-                                      decoration: BoxDecoration(
-                                        color:HexColor("#BFE5F9"),
-                                        borderRadius: BorderRadius.only(
-                                          bottomLeft: Radius.circular(4),
-                                        )
-                                      ),
+                                    child: Column(
+                                      children: [
+                                        Container(
+                                          width: MediaQuery.of(context).size.width*0.15,
+                                          height: 28,
+                                          decoration: BoxDecoration(
+                                            color:HexColor("#BFE5F9"),
+                                            borderRadius: BorderRadius.only(
+                                              bottomLeft: Radius.circular(4),
+                                            )
+                                          ),
+                                          child:Center(
+                                            child: Text(calculateDifference(c1.GetDate(entries.elementAt(index))),style: TextStyle(
+                                              fontFamily: "cairo",
+                                              fontSize: 10,
+
+                                            ),),
+                                          ),
+                                        ),
+                                        Container(
+                                          width: MediaQuery.of(context).size.width*0.15,
+                                          child:Column(
+                                            children: [
+                                              // Text("3",style: TextStyle(
+                                              //   height: 1,
+                                              // ),),
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.end,
+                                                children: [
+                                                  Text("calls",style: TextStyle(
+                                                    // height: 1,
+                                                  ),),
+                                                  CalltypeIcon(entries.elementAt(index).callType),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
                                     ),
+
                                   ),
                                   Transform.translate(
-                                    offset: Offset(MediaQuery.of(context).size.width*0.17+4,2),
+                                    offset: Offset(MediaQuery.of(context).size.width*0.162,2),
                                     child: Container(
-                                      width: MediaQuery.of(context).size.width*0.205,
+                                      width: MediaQuery.of(context).size.width*0.225,
                                       height: 55,
                                       decoration: BoxDecoration(
                                         color:HexColor("#F2E7FE"),
@@ -142,12 +171,25 @@ class PhoneScreen extends StatelessWidget {
                                           bottomLeft: Radius.circular(4),
                                         )
                                       ),
+                                      child:Column(
+                                        crossAxisAlignment: CrossAxisAlignment.end,
+                                        children: [
+                                          SizedBox(height: 5,),
+                                          Padding(
+                                            padding: const EdgeInsets.only(right:8.0),
+                                            child: Text(DateFormat.jm().format(c1.GetDate(entries.elementAt(index))).toString(),style: CallTimeTextStyle(),),
+                                          ),
+                                          Align(
+                                            alignment: entries.elementAt(index).callType==CallType.incoming||entries.elementAt(index).callType==CallType.outgoing?AlignmentDirectional.center:AlignmentDirectional.centerEnd,
+                                            child: Padding(
+                                              padding: EdgeInsets.only(right: entries.elementAt(index).callType==CallType.incoming||entries.elementAt(index).callType==CallType.outgoing?0:8,),
+                                              child: Text("${c1.GetPhoneType(entries.elementAt(index))}  ${DurationFormat(entries.elementAt(index).duration, entries.elementAt(index).callType).toString()}", style: PhoneTypeTextStyle(),),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
-                                  calculateDifference(c1.GetDate(entries.elementAt(index))),
-                                  Transform.translate(
-                                      offset: Offset(MediaQuery.of(context).size.width*0.25,30),
-                                      child: Text("${c1.GetPhoneType(entries.elementAt(index))}" + entries.elementAt(index).duration.toString())),
                                 ],
                               )),
 
@@ -156,6 +198,7 @@ class PhoneScreen extends StatelessWidget {
                     ),
                   );
   }
+
 
   ListTile SearchingList(BuildContext context, AppContact contact) {
     return ListTile(
@@ -187,7 +230,20 @@ class PhoneScreen extends StatelessWidget {
   }
 }
 
+Icon CalltypeIcon(callType) {
+  if(callType == CallType.outgoing)
+  return Icon(Icons.east);
+  if(callType == CallType.missed)
+    return Icon(Icons.west);
+  if(callType == CallType.incoming)
+    return Icon(Icons.west);
+  if(callType == CallType.blocked)
+    return Icon(Icons.block);
+  if(callType == CallType.rejected)
+    return Icon(Icons.phone_disabled);
+  else return Icon(Icons.battery_unknown);
 
+}
 class LoggertAvatar extends StatelessWidget {
   LoggertAvatar( this.size , this.PhoneLog , this.callType ,  this.AvatarColor);
   final CallType? callType;
@@ -337,64 +393,46 @@ LinearGradient getColorGradient(Color? color) {
   ], begin: Alignment.bottomLeft, end: Alignment.topRight);
 }
 
-Row calculateDifference(DateTime date) {
+String calculateDifference(DateTime date) {
   DateTime now = DateTime.now();
   if(DateTime(date.year, date.month, date.day).difference(DateTime(now.year, now.month, now.day)).inDays == 0)
     {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Text("TODAY"),
-          SizedBox(width: 20,),
-          Text(DateFormat.jm().format(DateTime(date.year, date.month, date.day)).toString()),
-        ],
-      );
+      return  "TODAY";
     }
   if(DateTime(date.year, date.month, date.day).difference(DateTime(now.year, now.month, now.day)).inDays == -1)
   {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Text("YESTERDAY"),
-        SizedBox(width: 20,),
-        Text(DateFormat.jm().format(DateTime(date.year, date.month, date.day)).toString()),
-      ],
-    );
+    return "YESTERDAY";
   }
-  else return  Row(
-    mainAxisAlignment: MainAxisAlignment.end,
-    children: [
-      Container(
-        color: Colors.blueGrey,
-        child: Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: Text(DateFormat.d().add_MMM().format(DateTime(date.year, date.month, date.day)).toString(),style: TextStyle(color: Colors.white),),
-        ),
-
-      ),
-      SizedBox(width: 20,),
-      Text(DateFormat.jm().format(DateTime(date.year, date.month, date.day)).toString()),
-
-    ],
-  );
+  else return  DateFormat.d().add_MMM().format(DateTime(date.year, date.month, date.day)).toString();
 
 }
 
-String DurationFormat(Duration){
+String DurationFormat(Duration , calltype){
   String? DurationType;
   int DurationMins = (Duration/60).truncate();
   int DurationSec = (Duration%60).truncate();
-  if(Duration <= 60)
-    {
-      DurationType = "Sec";
-      return Duration.toString() + DurationType;
-    }
-  if(Duration >60)
+  if(calltype == CallType.outgoing || calltype == CallType.incoming )
   {
-    DurationType = " Min";
-    return DurationMins.toString() + DurationType + DurationSec.toString() + " Sec";
-  }
-  return Duration.toString();
+      if (Duration <= 60) {
+        DurationType = " Sec";
+        if(Duration >9) {
+        return "00:${Duration.toString()}";
+      } else{
+          return "00:0${Duration.toString()}";
+        }
+    }
+      if (Duration > 60) {
+        DurationType = " Min";
+        if(Duration >69)
+        {
+        return "${DurationMins.toString()}:${DurationSec.toString()}";
+      } else{
+          return "${DurationMins.toString()}:0$DurationSec.toString()" ;
+        }
+    }
+      return Duration.toString();
+    }
+  return "";
 
 }
 
