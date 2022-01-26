@@ -2,6 +2,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:call_log/call_log.dart';
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Layout/Cubit/states.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_states.dart';
@@ -23,7 +24,6 @@ class NativeBridge extends Cubit<NativeStates> {
   bool? isStopWatchStart;
   NativePhoneEvent? nativePhoneEvent;
   static const EventChannel phonestateEventsChannel = EventChannel("PhoneStatsEvents");
-
 
   Future<void> invokeNativeMethod(String methodName , [dynamic arguments]) async{
   String? result;
@@ -111,8 +111,8 @@ void PhoneState(){
       SearchableCallerIDList.add({
         "CallerID" : element.info?.displayName.toString(),
         "PhoneNumber" :
-        element.info?.phones?.map((e) {
-          return e.value?.replaceAll(' ', '');
+        element.info?.phones.map((e) {
+          return e.number.replaceAll(' ', '');
         }),
 
       });

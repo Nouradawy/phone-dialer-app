@@ -34,8 +34,8 @@ ColorIndex == BaseColors.length-1?ColorIndex = 0:ColorIndex++;
       SearchableCallerIDList.add({
         "CallerID" : element.info?.displayName.toString(),
         "PhoneNumber" :
-        element.info?.phones?.map((e) {
-          return e.value?.replaceAll(' ', '');
+        element.info?.phones.map((e) {
+          return e.number.replaceAll(' ', '');
         }),
 
       });

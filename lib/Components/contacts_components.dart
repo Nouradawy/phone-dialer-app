@@ -83,8 +83,8 @@ Container FavoritesCards( int index, AppContact contact, BuildContext context) {
                                 ),
                                 child: ContactAvatar(contact, 38)),
                           ),
-                          Text(contact.info!.givenName.toString(),style: Theme.of(context).textTheme.subtitle1!.copyWith(color:Colors.white),),
-                          Text(contact.info!.familyName.toString(),style: Theme.of(context).textTheme.subtitle1!.copyWith(color:Colors.white),),
+                          Text(contact.info!.name.first.toString(),style: Theme.of(context).textTheme.subtitle1!.copyWith(color:Colors.white),),
+                          Text(contact.info!.name.last.toString(),style: Theme.of(context).textTheme.subtitle1!.copyWith(color:Colors.white),),
                         ],
                       ),
                     );

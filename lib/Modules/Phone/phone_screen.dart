@@ -8,6 +8,7 @@ import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
 import 'package:dialer_app/Modules/Contacts/contacts_screen.dart';
 import 'package:dialer_app/Themes/light_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:intl/intl.dart';
 
@@ -89,9 +90,16 @@ class PhoneScreen extends StatelessWidget {
                     ),
                     subtitle: Transform.translate(
                       offset:Offset(-5,0),
-                      child: Text(
-                        entries.elementAt(index).number.toString(),
-                        style: Theme.of(context).textTheme.bodyText2,
+                      //TODO: Let the user at the initialization Screen Specify SIM1 & SIM2
+                      child: Row(
+                        children: [
+
+                      Image.asset(entries.first.phoneAccountId == entries.elementAt(index).phoneAccountId?"assets/Images/sim1.png" :"assets/Images/sim2.png",scale: 1.3),
+                          Text(
+                            " ${entries.elementAt(index).number.toString()}",
+                            style: Theme.of(context).textTheme.bodyText2,
+                          ),
+                        ],
                       ),
                     ),
                     leading: LoggertAvatar(55, entries.elementAt(index).name.toString(), entries.elementAt(index).callType, c1.AvatarColor),
@@ -221,7 +229,7 @@ class PhoneScreen extends StatelessWidget {
                       style: Theme.of(context).textTheme.bodyText1,
                     ),
                     subtitle: Text(
-                      contact.info!.phones!.isNotEmpty ? contact.info!.phones!.elementAt(0).value.toString() : '',
+                      contact.info!.phones.isNotEmpty ? contact.info!.phones.elementAt(0).number.toString() : '',
                       style: Theme.of(context).textTheme.bodyText2,
                     ),
                     leading: ContactAvatar(contact, 45),

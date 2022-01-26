@@ -1,11 +1,9 @@
 //package com.phone.dialer.dialer_app.extensions
-//
+//import android.telecom.PhoneAccountHandle
 //import android.annotation.SuppressLint
 //import android.content.Context
 //import android.media.AudioManager
 //import android.net.Uri
-//import com.simplemobiletools.commons.extensions.telecomManager
-//import com.phone.dialer.dialer_app.helpers.Config
 //import com.phone.dialer.dialer_app.models.SIMAccount
 //
 //val Context.config: Config get() = Config.newInstance(applicationContext)

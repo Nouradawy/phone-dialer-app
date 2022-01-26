@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -9,6 +10,10 @@ import 'package:webview_flutter/webview_flutter.dart';
 
 
 class WebViewExample extends StatefulWidget {
+
+  WebViewExample(this.contact);
+  final AppContact contact;
+
   @override
   _WebViewExampleState createState() => _WebViewExampleState();
 }
@@ -48,49 +53,62 @@ class _WebViewExampleState extends State<WebViewExample> {
       ),
       // We're using a Builder here so we have a context that is below the Scaffold
       // to allow calling Scaffold.of(context) so we can show a snackbar.
-      body: Builder(builder: (BuildContext context) {
-        return WebView(
-          allowsInlineMediaPlayback:true,
-          gestureNavigationEnabled : true,
-          initialUrl: 'https://www.facebook.com',
-          //TODO:After Login Turn on JavaScript
-          javascriptMode: JavascriptMode.unrestricted,
+      body: Stack(
+        children: [
 
-          onWebViewCreated: (WebViewController webViewController) {
-            _controller.complete(webViewController);
-          },
-          onProgress: (int progress) {
-            print('WebView is loading (progress : $progress%)');
-          },
-          javascriptChannels: <JavascriptChannel>{
-            _toasterJavascriptChannel(context),
-          },
-          navigationDelegate: (NavigationRequest request) {
-            // if (request.url.startsWith('https://www.youtube.com/')) {
-            //   print('blocking navigation to $request}');
-            //   return NavigationDecision.prevent;
-            // }
-            print('allowing navigation to $request');
-            return NavigationDecision.navigate;
-          },
+          Builder(builder: (BuildContext context) {
+            return WebView(
+              allowsInlineMediaPlayback:true,
+              gestureNavigationEnabled : true,
+              initialUrl: 'https://www.facebook.com',
+              //TODO:After Login Turn on JavaScript
+              // javascriptMode: SignedIN(),
 
-          onPageStarted: (String url) {
-            print('Page started loading: $url');
-            setState(() {
-              Url=url;
-            });
+              onWebViewCreated: (WebViewController webViewController) {
+                _controller.complete(webViewController);
+              },
+              onProgress: (int progress) {
+                print('WebView is loading (progress : $progress%)');
+              },
+              javascriptChannels: <JavascriptChannel>{
+                _toasterJavascriptChannel(context),
+              },
+              navigationDelegate: (NavigationRequest request) {
+                // if (request.url.startsWith('https://www.youtube.com/')) {
+                //   print('blocking navigation to $request}');
+                //   return NavigationDecision.prevent;
+                // }
+                print('allowing navigation to $request');
+                return NavigationDecision.navigate;
+              },
 
-          },
-          onPageFinished: (String url) {
-            print('Page finished loading: $url');
-            Url=url;
-          },
-          backgroundColor: const Color(0x00000000),
-        );
-      }),
+              onPageStarted: (String url) {
+                print('Page started loading: $url');
+                setState(() {
+                  Url=url;
+                });
+
+              },
+              onPageFinished: (String url) {
+                print('Page finished loading: $url');
+                Url=url;
+              },
+              backgroundColor: const Color(0x00000000),
+            );
+          }),
+          // widget.contact.info!.thumbnail != null?CircleAvatar(radius: 30,backgroundImage: MemoryImage(widget.contact.info!.thumbnail!),):Container(),
+        ],
+      ),
       floatingActionButton: favoriteButton(),
     );
   }
+
+  // JavascriptMode SignedIN() {
+  //   setState(() {
+  //
+  //   });
+  //   return Url.toString().contains("checkpoint",0)?JavascriptMode.unrestricted:JavascriptMode.disabled;
+  // }
 
   JavascriptChannel _toasterJavascriptChannel(BuildContext context) {
     return JavascriptChannel(
