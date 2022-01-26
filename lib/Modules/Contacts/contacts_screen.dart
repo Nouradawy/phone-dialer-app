@@ -2,7 +2,7 @@
 import 'dart:typed_data';
 
 import 'package:azlistview/azlistview.dart';
-import 'package:contacts_service/contacts_service.dart';
+
 import 'package:dialer_app/Components/contacts_components.dart';
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
@@ -58,9 +58,8 @@ class ContactsScreen extends StatelessWidget {
                                 .textTheme
                                 .bodyText1,),
                             subtitle: Text(
-                              contact.info!.phones!.isNotEmpty ? contact.info!
-                                  .phones!
-                                  .elementAt(0).value.toString() : '',
+                              contact.info!.phones.isNotEmpty ? contact.info!
+                                  .phones.elementAt(0).number.toString() : '',
                               style: Theme
                                   .of(context)
                                   .textTheme
@@ -101,66 +100,68 @@ class _ContactDetailsState extends State<ContactDetails> {
       'Delete'
     ];
 
-    showDeleteConfirmation() {
-      Widget cancelButton = TextButton(
-        child: const Text('Cancel'),
-        onPressed: () {
-          Navigator.of(context).pop();
-        },
-      );
-      Widget deleteButton = TextButton(
+    // showDeleteConfirmation() {
+    //   Widget cancelButton = TextButton(
+    //     child: const Text('Cancel'),
+    //     onPressed: () {
+    //       Navigator.of(context).pop();
+    //     },
+    //   );
+    //   Widget deleteButton = TextButton(
+    //
+    //     child: const Text('Delete',style:TextStyle(color: Colors.red)),
+    //     onPressed: () async {
+    //       await contact.deleteContact(widget.contact.info);
+    //       widget.onContactDelete(widget.contact);
+    //       Navigator.of(context).pop();
+    //     },
+    //   );
+    //   AlertDialog alert= AlertDialog(
+    //     title: Text('Delete contact?'),
+    //     content: Text('Are you sure you want to delete this contact?'),
+    //     actions: <Widget>[
+    //       cancelButton,
+    //       deleteButton
+    //     ],
+    //   );
+    //
+    //   showDialog(
+    //       context: context,
+    //       builder: (BuildContext context) {
+    //         return alert;
+    //       }
+    //   );
+    //
+    // }
 
-        child: const Text('Delete',style:TextStyle(color: Colors.red)),
-        onPressed: () async {
-          await ContactsService.deleteContact(widget.contact.info!);
-          widget.onContactDelete(widget.contact);
-          Navigator.of(context).pop();
-        },
-      );
-      AlertDialog alert= AlertDialog(
-        title: Text('Delete contact?'),
-        content: Text('Are you sure you want to delete this contact?'),
-        actions: <Widget>[
-          cancelButton,
-          deleteButton
-        ],
-      );
-
-      showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return alert;
-          }
-      );
-
-    }
-
-    onAction(String action) async {
-      switch(action) {
-        case 'Edit':
-          try {
-            Contact updatedContact = await ContactsService.openExistingContact(widget.contact.info!);
-            setState(() {
-              widget.contact.info = updatedContact;
-            });
-            widget.onContactUpdate(widget.contact);
-          } on FormOperationException catch (e) {
-            switch(e.errorCode) {
-              case FormOperationErrorCode.FORM_OPERATION_CANCELED:
-              case FormOperationErrorCode.FORM_COULD_NOT_BE_OPEN:
-              case FormOperationErrorCode.FORM_OPERATION_UNKNOWN_ERROR:
-                print(e.toString());
-            }
-          }
-          break;
-        case 'Delete':
-          showDeleteConfirmation();
-          break;
-      }
-    }
+    // onAction(String action) async {
+    //   switch(action) {
+    //     case 'Edit':
+    //       try {
+    //         Contact updatedContact = await ContactsService.openExistingContact(widget.contact.info!);
+    //         setState(() {
+    //           widget.contact.info = updatedContact;
+    //         });
+    //         widget.onContactUpdate(widget.contact);
+    //       } on FormOperationException catch (e) {
+    //         switch(e.errorCode) {
+    //           case FormOperationErrorCode.FORM_OPERATION_CANCELED:
+    //           case FormOperationErrorCode.FORM_COULD_NOT_BE_OPEN:
+    //           case FormOperationErrorCode.FORM_OPERATION_UNKNOWN_ERROR:
+    //             print(e.toString());
+    //         }
+    //       }
+    //       break;
+    //     case 'Delete':
+    //       showDeleteConfirmation();
+    //       break;
+    //   }
+    // }
     return BlocConsumer<PhoneContactsCubit,PhoneContactStates>(
         listener: (context , state){},
         builder: (context , state) {
+          print("Accounts Length : " + widget.contact.info!.accounts.length.toString());
+          print("socialMedia Length : " + widget.contact.info!.socialMedias.length.toString());
           return Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.grey[100],
@@ -169,42 +170,40 @@ class _ContactDetailsState extends State<ContactDetails> {
                   PhoneContactsCubit.get(context).FavoratesItemColors();
                   PhoneContactsCubit.get(context).FavoratesContacts.add(widget.contact);
                 }, icon:const Icon(Icons.star)),
-                PopupMenuButton(
-                onSelected: onAction,
-                itemBuilder: (BuildContext context) {
-                  return actions.map((String action) {
-                    return PopupMenuItem(
-                      value: action,
-                      child: Text(action),
-                    );
-                  }).toList();
-                },
-              ),
+              //   PopupMenuButton(
+              //   onSelected: onAction,
+              //   itemBuilder: (BuildContext context) {
+              //     return actions.map((String action) {
+              //       return PopupMenuItem(
+              //         value: action,
+              //         child: Text(action),
+              //       );
+              //     }).toList();
+              //   },
+              // ),
 
               ],
               title: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
-                // mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ContactAvatar(widget.contact, 70),
                   SizedBox(width: 10,),
                   Container(
                     width:110,
                     child: Column(
-                      // mainAxisAlignment: MainAxisAlignment.end,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(top:8.0),
-                          child: Text(widget.contact.info!.displayName.toString(),style: TextStyle(color: Colors.black,fontFamily: "Cairo" , fontSize: widget.contact.info!.displayName!.length >32?12:15 , fontWeight: FontWeight.w400  ),overflow: TextOverflow.visible, ),
+                          child: Text(widget.contact.info!.displayName.toString(),style: TextStyle(color: Colors.black,fontFamily: "Cairo" , fontSize: widget.contact.info!.displayName.length >32?12:15 , fontWeight: FontWeight.w400  ),overflow: TextOverflow.visible, ),
 
                         ),
-                        Row(
-                        children: [
-                        FaIcon(FontAwesomeIcons.whatsapp ,size: 15,color: Colors.green,),
-                        SizedBox(width: 2,)
-,                        Text(widget.contact.info!.toString(),style: TextStyle(color: Colors.black,fontFamily: "Cairo" , fontSize: 8 , fontWeight: FontWeight.w400),),
-                        ],),
+//                         Row(
+//                         children: [
+//                         FaIcon(FontAwesomeIcons.whatsapp ,size: 15,color: Colors.green,),
+//                         SizedBox(width: 2,)
+// ,                        Text(widget.contact.info!.socialMedias.elementAt(0).toString(),style: TextStyle(color: Colors.black,fontFamily: "Cairo" , fontSize: 8 , fontWeight: FontWeight.w400),),
+//                         ],),
                         Row(
                         children: [
                         FaIcon(FontAwesomeIcons.facebookSquare ,size: 15,color: Colors.green,),
@@ -236,31 +235,34 @@ class _ContactDetailsState extends State<ContactDetails> {
                     child: ListView(shrinkWrap: true, children: <Widget>[
                       ListTile(
                         title: const Text("Name"),
-                        trailing: Text(widget.contact.info!.givenName ?? ""),
+                        trailing: Text(widget.contact.info!.name.first ),
                       ),
                       ListTile(
                         title: const Text("Family name"),
-                        trailing: Text(widget.contact.info!.familyName ?? ""),
+                        trailing: Text(widget.contact.info!.name.last),
                       ),
+                     widget.contact.info!.accounts.length>1? Row(children: [
+                        Text(widget.contact.info!.accounts[1].name.toString()),
+                      ],):Container() ,
                       Column(
                         children: <Widget>[
                           const ListTile(title: Text("Phones")),
                           Column(
-                            children: widget.contact.info!.phones!
+                            children: widget.contact.info!.phones
                                 .map(
                                   (i) => Padding(
                                 padding:
                                 const EdgeInsets.symmetric(horizontal: 16.0),
                                 child: ListTile(
-                                  title: Text(i.label ?? ""),
-                                  trailing: Text(i.value ?? ""),
+                                  title: Text(i.label.name.toString()),
+                                  trailing: Text(i.normalizedNumber),
                                 ),
                               ),
                             )
                                 .toList(),
                           ),
                           MaterialButton(onPressed: (){
-                            Navigator.push(context,MaterialPageRoute(builder: (BuildContext context) => WebViewExample()));
+                            Navigator.push(context,MaterialPageRoute(builder: (BuildContext context) => WebViewExample(widget.contact,)));
                           },child:Container(
                             color: Colors.blueGrey,
                             width:70,
@@ -296,7 +298,7 @@ class ContactAvatar extends StatelessWidget {
         height: size,
         decoration: BoxDecoration(
             shape: BoxShape.circle, gradient: getColorGradient(contact.color)),
-        child:buildCircleAvatar(contact.info!.avatar,contact.info!.initials()));
+        child:buildCircleAvatar(contact.info!.thumbnail,contact.info!.displayName[0]));
   }
 }
 CircleAvatar buildCircleAvatar(Uint8List? avatar, String initials) {

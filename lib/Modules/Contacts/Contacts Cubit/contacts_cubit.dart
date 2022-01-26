@@ -1,11 +1,11 @@
-import 'dart:typed_data';
+
 import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
 import 'package:call_log/call_log.dart';
-import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 
 import 'package:hexcolor/hexcolor.dart';
 
@@ -50,7 +50,7 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
     ];
     int colorIndex = 0;
 
-    List<AppContact> _contacts = (await ContactsService.getContacts(withThumbnails: false).catchError((error){
+    List<AppContact> _contacts = (await FlutterContacts.getContacts(withProperties: true, withPhoto: true , withAccounts: true , withThumbnail: false ).catchError((error){
       print("Contacts Error : " + error.toString());
     })).map((contact) {
       Color baseColor = colors[colorIndex];
@@ -58,18 +58,18 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
       if (colorIndex == colors.length) {
         colorIndex = 0;
       }
-      return AppContact(info: contact, color: baseColor , tag:contact.displayName![0].toUpperCase());
+      return AppContact(info: contact, color: baseColor , tag:contact.displayName[0].toUpperCase());
     }).toList();
 
     Contacts =_contacts;
 
-    Contacts.forEach((contact) {
-      ContactsService.getAvatar(contact.info!).then((avatar) {
-        if (avatar != null) {
-          return contact.info?.avatar = avatar;
-        }
-    });
-    });
+    // Contacts.forEach((contact) {
+    //   ContactsService.getAvatar(contact.info!).then((avatar) {
+    //     if (avatar != null) {
+    //       return contact.info?.avatar = avatar;
+    //     }
+    // });
+    // });
       emit(RawContactsSuccessState());
   }
 
@@ -80,8 +80,8 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
       SearchableCallerIDList.add({
         "CallerID" : element.info?.displayName.toString(),
         "PhoneNumber" :
-        element.info?.phones?.map((e) {
-          return e.value?.replaceAll(' ', '');
+        element.info?.phones.map((e) {
+          return e.number.replaceAll(' ', '');
         }),
 
       });
@@ -138,7 +138,7 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
     FilterdContacts.addAll(Contacts);
     FilterdContacts.retainWhere((contact){
       String searchTerm = SearchController.text.toLowerCase();
-      String contactName = contact.info!.displayName!.toLowerCase();
+      String contactName = contact.info!.displayName.toLowerCase();
       return contactName.contains(searchTerm);
     });
     emit(SearchContactsFinished());
@@ -184,17 +184,17 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
       }
 
       Firstchr.retainWhere((contact) {
-        String contactName = contact.info!.displayName![dialerController.text.length].toLowerCase();
+        String contactName = contact.info!.displayName[dialerController.text.length].toLowerCase();
         return contactName.contains(SearchTerm[0]);
       });
 
       secondchr.retainWhere((contact) {
-        String contactName = contact.info!.displayName![dialerController.text.length].toLowerCase();
+        String contactName = contact.info!.displayName[dialerController.text.length].toLowerCase();
         return contactName.contains(SearchTerm[1]);
       });
 
       thirdchr.retainWhere((contact) {
-        String contactName = contact.info!.displayName![dialerController.text.length].toLowerCase();
+        String contactName = contact.info!.displayName[dialerController.text.length].toLowerCase();
         return contactName.contains(SearchTerm[2]);
       });
 
