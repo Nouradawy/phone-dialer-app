@@ -1,9 +1,11 @@
 
 import 'package:dialer_app/Components/components.dart';
+import 'package:dialer_app/Components/constants.dart';
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Login&Register/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Login&Register/Cubit/states.dart';
 import 'package:dialer_app/Modules/profile/Profile%20Cubit/profile_cubit.dart';
+import 'package:dialer_app/Network/Local/shared_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -45,6 +47,7 @@ class EditProfileScreen extends StatelessWidget {
                 title:"Edit Profile",
                 actions: [
                   TextButton(onPressed: (){
+                    UserProfilePic = ProfileCubit.get(context).CurrentUser[0].image.toString();
                     Cubit.updateUser(name: NameController.text , bio: BioController.text);
 
                   },
