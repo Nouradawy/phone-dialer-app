@@ -21,6 +21,7 @@ import 'Layout/Cubit/cubit.dart';
 import 'Modules/Login&Register/login_screen.dart';
 import 'NativeBridge/native_bridge.dart';
 import 'Network/Local/cache_helper.dart';
+import 'Network/Local/shared_data.dart';
 import 'Network/Remote/dio_helper.dart';
 import 'Themes/dark_theme.dart';
 import 'home.dart';
@@ -64,8 +65,6 @@ void main() async {
   Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
   String NotificationToken = FirebaseMessaging.instance.getToken(
   ).toString();
-  print("device token :");
-  print(NotificationToken);
 
 
 
@@ -99,6 +98,7 @@ void main() async {
   await CacheHelper.init();
   token = CacheHelper.getData(key: 'token');
   ThemeSharedPref();
+  // GetShardData();
   print("AuthorizationToken: "+token.toString());
   Widget Homescreen = Home();
 

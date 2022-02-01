@@ -1,7 +1,9 @@
 
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:azlistview/azlistview.dart';
+import 'package:dialer_app/Components/constants.dart';
 
 import 'package:dialer_app/Components/contacts_components.dart';
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
@@ -9,6 +11,8 @@ import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_states.dart';
 import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
 import 'package:dialer_app/Modules/webview/webpage.dart';
+import 'package:dialer_app/Network/Local/cache_helper.dart';
+import 'package:dialer_app/Network/Local/shared_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,6 +25,9 @@ class ContactsScreen extends StatelessWidget {
   Widget build(BuildContext context ) {
         var Cubit = PhoneContactsCubit.get(context);
         double AppbarSize = MediaQuery.of(context).padding.top+AppCubit.get(context).AppbarSize-19;
+        PhoneContactsCubit.get(context).GetShardPrefrancesData();
+
+    ContactsLength = Cubit.Contacts.length.toString();
         return Padding(
             padding: EdgeInsets.only(top:AppbarSize),
             child: AzListView(
@@ -34,7 +41,7 @@ class ContactsScreen extends StatelessWidget {
                   AppContact contact = Cubit.isSearching==true ?Cubit.FilterdContacts[index]:Cubit.Contacts[index];
                   return Column(
                     children: [
-                      index==0?FavoritesContactsGroups(AppbarSize, Cubit):Container(),
+                      index==0?FavoritesContactsGroups(Cubit):Container(),
                       index==0?const Text("Contacts"):Container(),
                       ListTile(
                         contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
@@ -100,75 +107,31 @@ class _ContactDetailsState extends State<ContactDetails> {
       'Delete'
     ];
 
-    // showDeleteConfirmation() {
-    //   Widget cancelButton = TextButton(
-    //     child: const Text('Cancel'),
-    //     onPressed: () {
-    //       Navigator.of(context).pop();
-    //     },
-    //   );
-    //   Widget deleteButton = TextButton(
-    //
-    //     child: const Text('Delete',style:TextStyle(color: Colors.red)),
-    //     onPressed: () async {
-    //       await contact.deleteContact(widget.contact.info);
-    //       widget.onContactDelete(widget.contact);
-    //       Navigator.of(context).pop();
-    //     },
-    //   );
-    //   AlertDialog alert= AlertDialog(
-    //     title: Text('Delete contact?'),
-    //     content: Text('Are you sure you want to delete this contact?'),
-    //     actions: <Widget>[
-    //       cancelButton,
-    //       deleteButton
-    //     ],
-    //   );
-    //
-    //   showDialog(
-    //       context: context,
-    //       builder: (BuildContext context) {
-    //         return alert;
-    //       }
-    //   );
-    //
-    // }
-
-    // onAction(String action) async {
-    //   switch(action) {
-    //     case 'Edit':
-    //       try {
-    //         Contact updatedContact = await ContactsService.openExistingContact(widget.contact.info!);
-    //         setState(() {
-    //           widget.contact.info = updatedContact;
-    //         });
-    //         widget.onContactUpdate(widget.contact);
-    //       } on FormOperationException catch (e) {
-    //         switch(e.errorCode) {
-    //           case FormOperationErrorCode.FORM_OPERATION_CANCELED:
-    //           case FormOperationErrorCode.FORM_COULD_NOT_BE_OPEN:
-    //           case FormOperationErrorCode.FORM_OPERATION_UNKNOWN_ERROR:
-    //             print(e.toString());
-    //         }
-    //       }
-    //       break;
-    //     case 'Delete':
-    //       showDeleteConfirmation();
-    //       break;
-    //   }
-    // }
     return BlocConsumer<PhoneContactsCubit,PhoneContactStates>(
         listener: (context , state){},
         builder: (context , state) {
-          print("Accounts Length : " + widget.contact.info!.accounts.length.toString());
-          print("socialMedia Length : " + widget.contact.info!.socialMedias.length.toString());
+
+
           return Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.grey[100],
               actions: [
                 IconButton(onPressed: (){
                   PhoneContactsCubit.get(context).FavoratesItemColors();
-                  PhoneContactsCubit.get(context).FavoratesContacts.add(widget.contact);
+                  final ContactsID = PhoneContactsCubit.get(context).FavoratesContactsID;
+
+                        if (ContactsID.contains(widget.contact.info?.id) == true) {
+                          ContactsID.remove(widget.contact.info?.id);
+                          PhoneContactsCubit.get(context).FavoratesContacts.remove(widget.contact);
+
+                        } else {
+                          ContactsID.add(widget.contact.info?.id);
+                          PhoneContactsCubit.get(context).FavoratesContacts.add(widget.contact);
+                        }
+
+                  CacheHelper.saveData(key: "FavList", value: json.encode(ContactsID));
+
+                      print(PhoneContactsCubit.get(context).FavoratesContactsID.toString());
                 }, icon:const Icon(Icons.star)),
               //   PopupMenuButton(
               //   onSelected: onAction,
@@ -262,7 +225,21 @@ class _ContactDetailsState extends State<ContactDetails> {
                                 .toList(),
                           ),
                           MaterialButton(onPressed: (){
-                            Navigator.push(context,MaterialPageRoute(builder: (BuildContext context) => WebViewExample(widget.contact,)));
+                            PhoneContactsCubit.get(context).Contacts.forEach((element) {
+                              if(element.FBimgURL!=null)
+                                {
+                                  ContactData.addAll({
+                                   "${element.info?.id}": element.FBimgURL,
+                                  });
+                                }
+                            });
+
+                            print(ShardData.toString());
+                            print(ContactData.toString());
+                            CacheHelper.saveData(key: "ShardData", value: json.encode(ShardData));
+                            CacheHelper.saveData(key: "ContactData", value: json.encode(ContactData));
+                            // ));
+                            Navigator.push(context,MaterialPageRoute(builder: (BuildContext context) => Webpage(widget.contact,)));
                           },child:Container(
                             color: Colors.blueGrey,
                             width:70,

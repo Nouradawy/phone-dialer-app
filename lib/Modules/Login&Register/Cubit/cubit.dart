@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dialer_app/Network/Local/shared_data.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:bloc/bloc.dart';
@@ -11,6 +12,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 
 
@@ -132,6 +134,68 @@ class LoginCubit extends Cubit<LoginCubitStates>
       print(error.toString());
     });
   }
+  Future<UserCredential> signInWithGoogle() async {
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
+    );
+
+    return await FirebaseAuth.instance.signInWithCredential(credential).then((value){
+      CacheHelper.saveData(key: 'token', value: value.user?.uid);
+      token = value.user?.uid;
+      saveTokenToDatabase();
+      if(value.additionalUserInfo?.isNewUser == true)
+      {
+        UserModel model = UserModel(
+          name: value.user?.displayName,
+          email: value.user?.email,
+          phone: value.user?.phoneNumber,
+          uId: value.user?.uid,
+          bio: "Write your bio..",
+          cover: "https://image.freepik.com/free-photo/positive-dark-skinned-young-woman-man-bump-fists-agree-be-one-team-look-happily-each-other-celebrates-completed-task-wear-pink-green-clothes-pose-indoor-have-successful-deal_273609-42756.jpg",
+          image: value.user?.photoURL,
+          isEmailVerified: false,
+          IsOnline: true,
+          LastSeen: Timestamp.now(),
+          // tokens:"tokens",
+        );
+        FirebaseFirestore.instance.collection("Users").doc(value.user?.uid).set(model.toMap());
+      }
+      emit(DialerLoginSuccessState(value.user!.uid));
+      return value;
+    }).catchError((error){
+
+      print(error.toString());
+    });
+  }
+
+  Future<Future<UserCredential>?> LinkGoogleAccount() async {
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
+    );
+    return FirebaseAuth.instance.currentUser?.linkWithCredential(credential).then((value){
+      //OnSuccess  =====
+
+    }).catchError((error){
+      print(error.toString());
+    });
+  }
+  Future<Future<UserCredential>?> LinkFacebookAccount() async {
+    final LoginResult loginResult = await FacebookAuth.instance.login(loginBehavior: LoginBehavior.webOnly);
+    final OAuthCredential facebookAuthCredential = FacebookAuthProvider.credential(loginResult.accessToken!.token);
+    return FirebaseAuth.instance.currentUser?.linkWithCredential(facebookAuthCredential).then((value){
+      //OnSuccess  =====
+
+    }).catchError((error){
+      print(error.toString());
+    });
+  }
+
 
 
 

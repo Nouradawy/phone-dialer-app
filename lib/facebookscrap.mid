@@ -1,0 +1,15 @@
+
+************** mbasic Scraping from Frindlist page************************
+fbClassName = await controller.runJavascriptReturningResult("document.querySelectorAll('table')[$i].parentElement.className");
+fbProfileLink = await controller.runJavascriptReturningResult("document.getElementsByClassName($fbClassName)[$i].firstChild.firstChild.firstChild.lastChild.firstChild.href;");
+fbProfileIMG = await controller.runJavascriptReturningResult("document.getElementsByClassName($fbClassName)[$i].firstChild.firstChild.firstChild.firstChild.firstChild.src;");
+fbLengthPage = await controller.runJavascriptReturningResult("document.getElementsByClassName('bv').length;");
+
+
+********************* m.facebook ***************
+
+classname = document.getElementsByTagName("header")[0].nextElementSibling.firstElementChild.firstElementChild.className
+document.getElementsByClassName("classname")[0].lastElementChild.firstElementChild.firstElementChild.lastElementChild
+classnameToCount = document.getElementsByClassName("_55wo _55x2")[0].lastElementChild
+GetCount = document.getElementsByClassName(classnameToCount).length
+document.getElementById("MPhotoUpperContent").getElementsByTagName("div")[9].lastElementChild.firstChild.href

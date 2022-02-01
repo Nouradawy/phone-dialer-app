@@ -2,12 +2,13 @@ import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
 import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
 import 'package:dialer_app/Modules/Contacts/contacts_screen.dart';
+import 'package:dialer_app/Network/Local/shared_data.dart';
 import 'package:dialer_app/Themes/light_theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';
 
-Container FavoritesContactsGroups(double AppbarSize, PhoneContactsCubit Cubit) {
+Container FavoritesContactsGroups(PhoneContactsCubit Cubit) {
   return Container(
     height:120,
     // width: double.infinity,
@@ -37,8 +38,7 @@ Container FavoritesContactsGroups(double AppbarSize, PhoneContactsCubit Cubit) {
                     separatorBuilder: (context,index)=> SizedBox(width: 10,),
                     itemBuilder: (context, index) {
                       PhoneContactsCubit.get(context).FavoratesItemColors();
-                      AppContact contact = Cubit.FavoratesContacts[index];
-                      return FavoritesCards(index, contact, context);
+                      return FavoritesCards(context ,Cubit.FavoratesContacts[index]);
                     },
                   ),
                 ),
@@ -52,7 +52,9 @@ Container FavoritesContactsGroups(double AppbarSize, PhoneContactsCubit Cubit) {
               Padding(
                 padding: const EdgeInsets.all(15.0),
                 child: InkWell(
-                    onTap: (){},
+                    onTap: (){
+                      print(fblist[18].toString());
+                    },
                     child: Image.asset("assets/Images/people_black_24dp.png",scale: 1.4,)),
               ),
             ],
@@ -65,7 +67,7 @@ Container FavoritesContactsGroups(double AppbarSize, PhoneContactsCubit Cubit) {
 
 
 
-Container FavoritesCards( int index, AppContact contact, BuildContext context) {
+Container FavoritesCards( context , Contact) {
   final Color?  FavColor = PhoneContactsCubit.get(context).FavoratesItemColor;
   return Container(
                       decoration: BoxDecoration(
@@ -81,10 +83,10 @@ Container FavoritesCards( int index, AppContact contact, BuildContext context) {
                                   shape: BoxShape.circle,
                                   border: Border.all(width: 1.4,color: Colors.white.withOpacity(0.80)),
                                 ),
-                                child: ContactAvatar(contact, 38)),
+                                child: ContactAvatar(Contact, 38)),
                           ),
-                          Text(contact.info!.name.first.toString(),style: Theme.of(context).textTheme.subtitle1!.copyWith(color:Colors.white),),
-                          Text(contact.info!.name.last.toString(),style: Theme.of(context).textTheme.subtitle1!.copyWith(color:Colors.white),),
+                          Text(Contact.info!.name.last.toString(),style: Theme.of(context).textTheme.subtitle1!.copyWith(color:Colors.white),),
+                          Text(Contact.info!.name.last.toString(),style: Theme.of(context).textTheme.subtitle1!.copyWith(color:Colors.white),),
                         ],
                       ),
                     );

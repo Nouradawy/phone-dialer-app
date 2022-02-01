@@ -3,6 +3,8 @@ import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
 import 'package:call_log/call_log.dart';
+import 'package:dialer_app/Components/constants.dart';
+import 'package:dialer_app/Network/Local/shared_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
@@ -18,9 +20,12 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
 
   List<AppContact> Contacts = [];
   List<AppContact> FavoratesContacts = [];
+  List FavoratesContactsID = [];
   List PhoneCallLogs =[];
   List SearchableCallerIDList = [];
   List CallerID = [];
+  String? faceImage;
+  String? faceProfilelink;
 
 
   List BaseColors =[
@@ -32,6 +37,21 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
   ];
   Color? FavoratesItemColor ;
   int ColorIndex =0;
+
+  void GetShardPrefrancesData(){
+
+    if(FavoratesContactids.isNotEmpty && FavoratesContacts.isEmpty )
+    {
+      FavoratesContactsID = FavoratesContactids;
+      FavoratesContactsID.forEach((id) {
+        Contacts.forEach((element) {
+          if (id == element.info?.id)
+            FavoratesContacts.add(element);
+        });
+      });
+    }
+    }
+
 
   void FavoratesItemColors(){
     FavoratesItemColor = BaseColors[ColorIndex];
@@ -63,13 +83,16 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
 
     Contacts =_contacts;
 
-    // Contacts.forEach((contact) {
-    //   ContactsService.getAvatar(contact.info!).then((avatar) {
-    //     if (avatar != null) {
-    //       return contact.info?.avatar = avatar;
-    //     }
+    // ContactDataString.forEach((element) {
+    //   Contacts.map((e) {
+    //      if(e.info!.id == element["id"])
+    //        {
+    //          e.FBimgURL = element["FBimgURL"];
+    //        }
+    //   });
     // });
-    // });
+
+
       emit(RawContactsSuccessState());
   }
 

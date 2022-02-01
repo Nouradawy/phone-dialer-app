@@ -1,114 +1,201 @@
-import 'dart:async';
-import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
 import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
+import 'package:dialer_app/Network/Local/shared_data.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 
 
-class WebViewExample extends StatefulWidget {
+class Webpage extends StatefulWidget {
 
-  WebViewExample(this.contact);
+  Webpage(this.contact);
   final AppContact contact;
 
   @override
-  _WebViewExampleState createState() => _WebViewExampleState();
+  _WebpageState createState() => _WebpageState();
 }
 
-class _WebViewExampleState extends State<WebViewExample> {
-  final Completer<WebViewController> _controller = Completer<WebViewController>();
-  String? Url ;
+class _WebpageState extends State<Webpage> {
+  late WebViewController controller;
+  var URLaddress = TextEditingController();
+  String? Url;
+  bool? IsFinished= true;
+  bool? FirstTime=true;
 
-  @override
-  void initState() {
-    super.initState();
-    if (Platform.isAndroid) {
-      WebView.platform = SurfaceAndroidWebView();
-    }
-  }
+  String? fbClassName;
+  String? fbProfileLink;
+  String? FriendsCountInSinglePage;
+  String? TotalFriendsCount;
+  String? moreButton;
+  int? pagesCount;
+  String? fbProfileIMG;
+
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: Colors.green,
       appBar: AppBar(
         leadingWidth: 25,
         toolbarHeight: 70,
-        title: Container(
-          color:Colors.black,
-
-          height: 25,
-          child: Text(Url.toString(), overflow: TextOverflow.ellipsis,style: TextStyle(fontSize: 12 , height: 1.7),)
-        ),
-        // This drop down menu demonstrates that Flutter widgets can be shown over the web view.
-        actions: <Widget>[
-          NavigationControls(_controller.future),
-          Container(
-              width: 40,
-              child: SampleMenu(_controller.future)),
-        ],
-      ),
-      // We're using a Builder here so we have a context that is below the Scaffold
-      // to allow calling Scaffold.of(context) so we can show a snackbar.
-      body: Stack(
-        children: [
-
-          Builder(builder: (BuildContext context) {
-            return WebView(
-              allowsInlineMediaPlayback:true,
-              gestureNavigationEnabled : true,
-              initialUrl: 'https://www.facebook.com',
-              //TODO:After Login Turn on JavaScript
-              // javascriptMode: SignedIN(),
-
-              onWebViewCreated: (WebViewController webViewController) {
-                _controller.complete(webViewController);
-              },
-              onProgress: (int progress) {
-                print('WebView is loading (progress : $progress%)');
-              },
-              javascriptChannels: <JavascriptChannel>{
-                _toasterJavascriptChannel(context),
-              },
-              navigationDelegate: (NavigationRequest request) {
-                // if (request.url.startsWith('https://www.youtube.com/')) {
-                //   print('blocking navigation to $request}');
-                //   return NavigationDecision.prevent;
-                // }
-                print('allowing navigation to $request');
-                return NavigationDecision.navigate;
-              },
-
-              onPageStarted: (String url) {
-                print('Page started loading: $url');
-                setState(() {
-                  Url=url;
+        title: TextField(
+          onSubmitted: (url){setState(() {
+            if(url.contains("https://")) {
+                    controller.loadUrl('$url');
+                  }else {
+              controller.loadUrl('https://$url');
+            }
                 });
 
-              },
-              onPageFinished: (String url) {
-                print('Page finished loading: $url');
-                Url=url;
-              },
-              backgroundColor: const Color(0x00000000),
-            );
-          }),
-          // widget.contact.info!.thumbnail != null?CircleAvatar(radius: 30,backgroundImage: MemoryImage(widget.contact.info!.thumbnail!),):Container(),
+          },
+          controller:URLaddress,),
+        actions: <Widget>[
+      Row(
+      children: <Widget>[
+        Container(
+        width: 20,
+        child: IconButton(
+          iconSize: 15,
+          splashRadius: 15,
+          icon: const Icon(Icons.arrow_back_ios),
+          onPressed:() async {
+            if ( await controller.canGoBack()) {
+              await controller.goBack();
+            } else {
+              // ignore: deprecated_member_use
+              Scaffold.of(context).showSnackBar(
+                const SnackBar(content: Text('No back history item')),
+              );
+            }
+          },
+        ),
+      ),
+      Container(
+        width: 25,
+        child: IconButton(
+          iconSize: 15,
+          splashRadius: 15,
+          icon: const Icon(Icons.arrow_forward_ios,),
+          onPressed:()async {
+            if (await controller.canGoForward()) {
+              await controller.goForward();
+            } else {
+              // ignore: deprecated_member_use
+              Scaffold.of(context).showSnackBar(
+                const SnackBar(content: Text('No forward history item')),
+              );
+            }
+          },
+        ),
+      ),
+      Container(
+        alignment: AlignmentDirectional.center,
+        width: 25,
+        child: IconButton(
+          iconSize: 15,
+          splashRadius: 15,
+          icon: const Icon(Icons.replay),
+          onPressed: () {
+            controller.reload();
+          },
+        ),
+      )])
         ],
       ),
-      floatingActionButton: favoriteButton(),
+
+      body: Stack(
+        children: [
+          WebView(
+            javascriptMode: SignedIN(),
+            initialUrl: 'https://m.facebook.com/login.php?',
+            onWebViewCreated:(controller) async {
+              this.controller = controller;
+            } ,
+            onPageStarted: (url){
+              print("page started loading $url");
+              URLaddress.text = url;
+
+            },
+            onPageFinished: (url) async {
+              print("page Finished loading $url");
+              URLaddress.text = url;
+              if(FirstTime == true)
+              {
+                await Future.delayed(Duration(seconds: 5));
+                await controller.loadUrl('https://mbasic.facebook.com/friends/center/friends/?mff_nav=1');
+                TotalFriendsCount = await controller.runJavascriptReturningResult(
+                    "document.getElementById('friends_center_main').firstChild.textContent;");
+                TotalFriendsCount =
+                    TotalFriendsCount?.replaceAll(' Friends', '')
+                        .replaceAll('"', '');
+                print(TotalFriendsCount);
+                fbClassName = await controller.runJavascriptReturningResult("document.querySelectorAll('table')[1].parentElement.className");
+                FriendsCountInSinglePage =
+                    await controller.runJavascriptReturningResult(
+                        "document.getElementsByClassName($fbClassName).length;");
+                pagesCount = (int.parse(TotalFriendsCount!) /
+                        int.parse(FriendsCountInSinglePage!))
+                    .truncate();
+                print("pages count" + pagesCount.toString());
+                FirstTime = false;
+              }
+
+              await Future.delayed(Duration(seconds: 2));
+              String ScrollH = await controller.runJavascriptReturningResult("document.body.scrollHeight");
+              controller.scrollTo(0, int.parse(ScrollH));
+              await Future.delayed(Duration(microseconds: 500));
+              faceScrap(controller, pagesCount  ,moreButton ,fbClassName , FriendsCountInSinglePage , fbProfileLink ,fbProfileIMG ) ;
+
+            },
+          ),
+          InkWell(
+              onTap: (){
+                CookieManager().clearCookies();
+              },
+              child: ContactAvatar(widget.contact))
+        ],
+      ),
+      // floatingActionButton: Column(
+      //   mainAxisAlignment: MainAxisAlignment.end,
+      //   children: [
+      //     UpdateProfileButton(widget.contact),
+      //     UpdateContactAvatar(widget.contact),
+      //   ],
+      // ),
+
     );
   }
 
-  // JavascriptMode SignedIN() {
-  //   setState(() {
-  //
-  //   });
-  //   return Url.toString().contains("checkpoint",0)?JavascriptMode.unrestricted:JavascriptMode.disabled;
-  // }
+  CircleAvatar ContactAvatar(AppContact contact) {
+
+    if(contact.info!.thumbnail != null)
+    {return CircleAvatar(radius: 30,backgroundImage: MemoryImage(widget.contact.info!.thumbnail!),);} else{
+      if(contact.FBimgURL?.isNotEmpty ==true)
+        {
+          return CircleAvatar(radius: 30,backgroundImage: CachedNetworkImageProvider(
+            contact.FBimgURL.toString(),
+          ),);
+        }
+      else {
+        return CircleAvatar(
+          radius: 30,
+          child: Text(
+            contact.info!.displayName[0].toString(),
+            style: TextStyle(color: Colors.white),
+          ),
+        );
+      }
+    }
+
+  }
+
+  JavascriptMode SignedIN() {
+    return URLaddress.text.contains("login")?JavascriptMode.disabled:JavascriptMode.unrestricted;
+    // return JavascriptMode.unrestricted;
+  }
 
   JavascriptChannel _toasterJavascriptChannel(BuildContext context) {
     return JavascriptChannel(
@@ -121,351 +208,85 @@ class _WebViewExampleState extends State<WebViewExample> {
         });
   }
 
-  Widget favoriteButton() {
-    return FutureBuilder<WebViewController>(
-        future: _controller.future,
-        builder: (BuildContext context,
-            AsyncSnapshot<WebViewController> controller) {
-          if (controller.hasData) {
-            return FloatingActionButton(
-              onPressed: () async {
-                final String url = (await controller.data!.currentUrl())!;
-                // ignore: deprecated_member_use
-                Scaffold.of(context).showSnackBar(
-                  SnackBar(content: Text('Favorited $url')),
-                );
-              },
-              child: const Icon(Icons.favorite),
-            );
-          }
-          return Container();
-        });
-  }
+  // Widget UpdateProfileButton(AppContact contact) {
+  //   return FutureBuilder<WebViewController>(
+  //       future: _controller.future,
+  //       builder: (BuildContext context,
+  //           AsyncSnapshot<WebViewController> controller) {
+  //         if (controller.hasData) {
+  //           return FloatingActionButton.extended(
+  //             onPressed: () async {
+  //
+  //               PhoneContactsCubit.get(context).faceProfilelink = (await controller.data!.currentUrl())!;
+  //               // ignore: deprecated_member_use
+  //               Scaffold.of(context).showSnackBar(
+  //                 SnackBar(content: Text('User added success')),
+  //               );
+  //             },
+  //             label: Text("add Username"),
+  //             icon: const Icon(Icons.person),
+  //           );
+  //         }
+  //         return Container();
+  //       });
+  // }
+  // Widget UpdateContactAvatar(AppContact contact) {
+  //   return FutureBuilder<WebViewController>(
+  //       future: _controller.future,
+  //       builder: (BuildContext context,
+  //           AsyncSnapshot<WebViewController> controller) {
+  //         if (controller.hasData) {
+  //           return FloatingActionButton.extended(
+  //             onPressed: () async {
+  //               // contact.info?.photo  = (await controller.data!.currentUrl())!;
+  //               contact.FBimgURL = (await controller.data!.currentUrl())!;
+  //               // ignore: deprecated_member_use
+  //               Scaffold.of(context).showSnackBar(
+  //                 SnackBar(content: Text('profile added success')),
+  //               );
+  //             },
+  //             label: Text("Add Photo"),
+  //             icon: const Icon(Icons.photo),
+  //           );
+  //         }
+  //         return Container();
+  //       });
+  // }
 }
 
-enum MenuOptions {
-  showUserAgent,
-  listCookies,
-  clearCookies,
-  addToCache,
-  listCache,
-  clearCache,
-  navigationDelegate,
-  doPostRequest,
-  loadLocalFile,
-  loadFlutterAsset,
-  loadHtmlString,
-  transparentBackground,
-  setCookie,
-}
 
-class SampleMenu extends StatelessWidget {
-  SampleMenu(this.controller);
+void faceScrap(controller , pagesCount  ,moreButton ,fbClassName , FriendsCountInSinglePage , fbProfileLink ,fbProfileIMG ) async{
+  moreButton = await controller.runJavascriptReturningResult("document.getElementById('friends_center_main').lastElementChild.firstChild.href;");
+  moreButton = moreButton?.replaceAll('"', '');
+  print('$moreButton');
+  fbClassName = await controller.runJavascriptReturningResult("document.querySelectorAll('table')[1].parentElement.className");
+  FriendsCountInSinglePage = await controller.runJavascriptReturningResult("document.getElementsByClassName($fbClassName).length;");
+  for (int i =0; i < int.parse(FriendsCountInSinglePage); i++) {
 
-  final Future<WebViewController> controller;
-  final CookieManager cookieManager = CookieManager();
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<WebViewController>(
-      future: controller,
-      builder:
-          (BuildContext context, AsyncSnapshot<WebViewController> controller) {
-        return PopupMenuButton<MenuOptions>(
-          key: const ValueKey<String>('ShowPopupMenu'),
-          onSelected: (MenuOptions value) {
-            switch (value) {
-              case MenuOptions.showUserAgent:
-                _onShowUserAgent(controller.data!, context);
-                break;
-              case MenuOptions.listCookies:
-                _onListCookies(controller.data!, context);
-                break;
-              case MenuOptions.clearCookies:
-                _onClearCookies(context);
-                break;
-              case MenuOptions.addToCache:
-                _onAddToCache(controller.data!, context);
-                break;
-              case MenuOptions.listCache:
-                _onListCache(controller.data!, context);
-                break;
-              case MenuOptions.clearCache:
-                _onClearCache(controller.data!, context);
-                break;
-              case MenuOptions.doPostRequest:
-                _onDoPostRequest(controller.data!, context);
-                break;
-              case MenuOptions.loadLocalFile:
-                _onLoadLocalFileExample(controller.data!, context);
-                break;
-              case MenuOptions.loadFlutterAsset:
-                _onLoadFlutterAssetExample(controller.data!, context);
-                break;
-              case MenuOptions.setCookie:
-                _onSetCookie(controller.data!, context);
-                break;
-            }
-          },
-          itemBuilder: (BuildContext context) => <PopupMenuItem<MenuOptions>>[
-            PopupMenuItem<MenuOptions>(
-              value: MenuOptions.showUserAgent,
-              child: const Text('Show user agent'),
-              enabled: controller.hasData,
-            ),
-            const PopupMenuItem<MenuOptions>(
-              value: MenuOptions.listCookies,
-              child: Text('List cookies'),
-            ),
-            const PopupMenuItem<MenuOptions>(
-              value: MenuOptions.clearCookies,
-              child: Text('Clear cookies'),
-            ),
-            const PopupMenuItem<MenuOptions>(
-              value: MenuOptions.addToCache,
-              child: Text('Add to cache'),
-            ),
-            const PopupMenuItem<MenuOptions>(
-              value: MenuOptions.listCache,
-              child: Text('List cache'),
-            ),
-            const PopupMenuItem<MenuOptions>(
-              value: MenuOptions.clearCache,
-              child: Text('Clear cache'),
-            ),
-            const PopupMenuItem<MenuOptions>(
-              value: MenuOptions.navigationDelegate,
-              child: Text('Navigation Delegate example'),
-            ),
-            const PopupMenuItem<MenuOptions>(
-              value: MenuOptions.doPostRequest,
-              child: Text('Post Request'),
-            ),
-            const PopupMenuItem<MenuOptions>(
-              value: MenuOptions.loadHtmlString,
-              child: Text('Load HTML string'),
-            ),
-            const PopupMenuItem<MenuOptions>(
-              value: MenuOptions.loadLocalFile,
-              child: Text('Load local file'),
-            ),
-            const PopupMenuItem<MenuOptions>(
-              value: MenuOptions.loadFlutterAsset,
-              child: Text('Load Flutter Asset'),
-            ),
-            const PopupMenuItem<MenuOptions>(
-              key: ValueKey<String>('ShowTransparentBackgroundExample'),
-              value: MenuOptions.transparentBackground,
-              child: Text('Transparent background example'),
-            ),
-            const PopupMenuItem<MenuOptions>(
-              value: MenuOptions.setCookie,
-              child: Text('Set cookie'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _onShowUserAgent(
-      WebViewController controller, BuildContext context) async {
-    // Send a message with the user agent string to the Toaster JavaScript channel we registered
-    // with the WebView.
-    await controller.runJavascript(
-        'Toaster.postMessage("User Agent: " + navigator.userAgent);');
-  }
-
-  Future<void> _onListCookies(
-      WebViewController controller, BuildContext context) async {
-    final String cookies =
-    await controller.runJavascriptReturningResult('document.cookie');
-    // ignore: deprecated_member_use
-    Scaffold.of(context).showSnackBar(SnackBar(
-      content: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          const Text('Cookies:'),
-          _getCookieList(cookies),
-        ],
-      ),
-    ));
-  }
-
-  Future<void> _onAddToCache(
-      WebViewController controller, BuildContext context) async {
-    await controller.runJavascript(
-        'caches.open("test_caches_entry"); localStorage["test_localStorage"] = "dummy_entry";');
-    // ignore: deprecated_member_use
-    Scaffold.of(context).showSnackBar(const SnackBar(
-      content: Text('Added a test entry to cache.'),
-    ));
-  }
-
-  Future<void> _onListCache(
-      WebViewController controller, BuildContext context) async {
-    await controller.runJavascript('caches.keys()'
-        '.then((cacheKeys) => JSON.stringify({"cacheKeys" : cacheKeys, "localStorage" : localStorage}))'
-        '.then((caches) => Toaster.postMessage(caches))');
-  }
-
-  Future<void> _onClearCache(
-      WebViewController controller, BuildContext context) async {
-    await controller.clearCache();
-    // ignore: deprecated_member_use
-    Scaffold.of(context).showSnackBar(const SnackBar(
-      content: Text('Cache cleared.'),
-    ));
-  }
-
-  Future<void> _onClearCookies(BuildContext context) async {
-    final bool hadCookies = await cookieManager.clearCookies();
-    String message = 'There were cookies. Now, they are gone!';
-    if (!hadCookies) {
-      message = 'There are no cookies.';
+      fbProfileLink = await controller.runJavascriptReturningResult("document.getElementsByClassName($fbClassName)[$i].firstChild.firstChild.firstChild.lastChild.firstChild.href;");
+      fbProfileIMG = await controller.runJavascriptReturningResult("document.getElementsByClassName($fbClassName)[$i].firstChild.firstChild.firstChild.firstChild.firstChild.src;");
+      const start = "uid=";
+      const end = "&redirectURI";
+      final startIndex = fbProfileLink.indexOf(start);
+      final endIndx = fbProfileLink.indexOf(end, startIndex + start.length);
+      String UID = fbProfileLink.substring(startIndex + start.length, endIndx);
+      fblist.add({"UID": UID, "ProfileIMG": fbProfileIMG});
     }
-    // ignore: deprecated_member_use
-    Scaffold.of(context).showSnackBar(SnackBar(
-      content: Text(message),
-    ));
-  }
 
+  const start = "ppk=";
+  const end = "&tid";
+  final startIndex = moreButton.indexOf(start);
+  final endIndx = moreButton.indexOf(end, startIndex + start.length);
+  String pagenum = moreButton.substring(startIndex + start.length, endIndx);
+  print("pagenum = "+pagenum);
 
-
-  Future<void> _onSetCookie(
-      WebViewController controller, BuildContext context) async {
-    await CookieManager().setCookie(
-      const WebViewCookie(
-          name: 'foo', value: 'bar', domain: 'httpbin.org', path: '/anything'),
-    );
-    await controller.loadUrl('https://httpbin.org/anything');
-  }
-
-  Future<void> _onDoPostRequest(
-      WebViewController controller, BuildContext context) async {
-    final WebViewRequest request = WebViewRequest(
-      uri: Uri.parse('https://httpbin.org/post'),
-      method: WebViewRequestMethod.post,
-      headers: <String, String>{'foo': 'bar', 'Content-Type': 'text/plain'},
-      body: Uint8List.fromList('Test Body'.codeUnits),
-    );
-    await controller.loadRequest(request);
-  }
-
-  Future<void> _onLoadLocalFileExample(
-      WebViewController controller, BuildContext context) async {
-    final String pathToIndex = await _prepareLocalFile();
-
-    await controller.loadFile(pathToIndex);
-  }
-
-  Future<void> _onLoadFlutterAssetExample(
-      WebViewController controller, BuildContext context) async {
-    await controller.loadFlutterAsset('assets/www/index.html');
-  }
-
-
-  Widget _getCookieList(String cookies) {
-    if (cookies == null || cookies == '""') {
-      return Container();
+  if(int.parse(pagenum) < pagesCount)
+    {await controller.loadUrl('$moreButton');
     }
-    final List<String> cookieList = cookies.split(';');
-    final Iterable<Text> cookieWidgets =
-    cookieList.map((String cookie) => Text(cookie));
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      mainAxisSize: MainAxisSize.min,
-      children: cookieWidgets.toList(),
-    );
-  }
 
-  static Future<String> _prepareLocalFile() async {
-    final String tmpDir = (await getTemporaryDirectory()).path;
-    final File indexFile = File(
-        <String>{tmpDir, 'www', 'index.html'}.join(Platform.pathSeparator));
 
-    await indexFile.create(recursive: true);
-
-    return indexFile.path;
-  }
+  print(fblist);
+  print("total list count "+fblist.length.toString());
+  await Future.delayed(Duration(seconds: 2));
 }
 
-class NavigationControls extends StatelessWidget {
-  const NavigationControls(this._webViewControllerFuture)
-      : assert(_webViewControllerFuture != null);
-
-  final Future<WebViewController> _webViewControllerFuture;
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<WebViewController>(
-      future: _webViewControllerFuture,
-      builder: (BuildContext context, AsyncSnapshot<WebViewController> snapshot) {
-        final bool webViewReady = snapshot.connectionState == ConnectionState.done;
-        final WebViewController? controller = snapshot.data;
-        return Row(
-          children: <Widget>[
-            Container(
-              width: 20,
-              child: IconButton(
-                iconSize: 15,
-                splashRadius: 15,
-                icon: const Icon(Icons.arrow_back_ios),
-                onPressed: !webViewReady
-                    ? null
-                    : () async {
-                  if (await controller!.canGoBack()) {
-                    await controller.goBack();
-                  } else {
-                    // ignore: deprecated_member_use
-                    Scaffold.of(context).showSnackBar(
-                      const SnackBar(content: Text('No back history item')),
-                    );
-                    return;
-                  }
-                },
-              ),
-            ),
-            Container(
-              width: 25,
-              child: IconButton(
-                iconSize: 15,
-                splashRadius: 15,
-                icon: const Icon(Icons.arrow_forward_ios,),
-                onPressed: !webViewReady
-                    ? null
-                    : () async {
-                  if (await controller!.canGoForward()) {
-                    await controller.goForward();
-                  } else {
-                    // ignore: deprecated_member_use
-                    Scaffold.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('No forward history item')),
-                    );
-                    return;
-                  }
-                },
-              ),
-            ),
-            Container(
-              alignment: AlignmentDirectional.center,
-              width: 25,
-              child: IconButton(
-                iconSize: 15,
-                splashRadius: 15,
-                icon: const Icon(Icons.replay),
-                onPressed: !webViewReady
-                    ? null
-                    : () {
-                  controller!.reload();
-                },
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
