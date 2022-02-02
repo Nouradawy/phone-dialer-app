@@ -34,8 +34,8 @@ class Home extends StatelessWidget {
           }},
       child: BlocBuilder<AppCubit,AppStates>(
         builder:(context,state)=> DefaultTabController(
-      length: 2,
-      child: Scaffold(
+          length: 2,
+          child: Scaffold(
         resizeToAvoidBottomInset: false,
         backgroundColor: HomePageBackgroundColor(),
         extendBodyBehindAppBar: true,

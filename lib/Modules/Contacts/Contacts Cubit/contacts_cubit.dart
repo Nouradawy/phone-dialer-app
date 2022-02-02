@@ -1,4 +1,5 @@
 
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
@@ -6,6 +7,7 @@ import 'package:call_log/call_log.dart';
 import 'package:dialer_app/Components/constants.dart';
 import 'package:dialer_app/Network/Local/shared_data.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 
@@ -19,6 +21,7 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
   static PhoneContactsCubit get(context) => BlocProvider.of(context);
 
   List<AppContact> Contacts = [];
+  List<AppContact> ContactsNoThumb = [];
   List<AppContact> FavoratesContacts = [];
   List FavoratesContactsID = [];
   List PhoneCallLogs =[];
@@ -59,7 +62,9 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
 
   }
 
-
+  Future<Uint8List> ToUint8List(URL) async {
+    return (await NetworkAssetBundle(Uri.parse(URL)).load(URL)).buffer.asUint8List();
+  }
 
   Future<void> GetRawContacts() async {
     List colors = [
@@ -70,7 +75,7 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
     ];
     int colorIndex = 0;
 
-    List<AppContact> _contacts = (await FlutterContacts.getContacts(withProperties: true, withPhoto: true , withAccounts: true , withThumbnail: false ).catchError((error){
+    List<AppContact> _contacts = (await FlutterContacts.getContacts(withProperties: true, withPhoto: true , withAccounts: true , withThumbnail: true ).catchError((error){
       print("Contacts Error : " + error.toString());
     })).map((contact) {
       Color baseColor = colors[colorIndex];
@@ -83,14 +88,8 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
 
     Contacts =_contacts;
 
-    // ContactDataString.forEach((element) {
-    //   Contacts.map((e) {
-    //      if(e.info!.id == element["id"])
-    //        {
-    //          e.FBimgURL = element["FBimgURL"];
-    //        }
-    //   });
-    // });
+    Contacts.forEach((element) {
+      element.info!.thumbnail == null?ContactsNoThumb.add(element):null;});
 
 
       emit(RawContactsSuccessState());
@@ -156,9 +155,9 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
 
 //This Function Used to SearchAndFilter Contacts Based on there Name [Used at the top searchBar]
 
-  void SearchContacts(TextEditingController SearchController){
+  void SearchContacts(TextEditingController SearchController, contacts){
     FilterdContacts.clear();
-    FilterdContacts.addAll(Contacts);
+    FilterdContacts.addAll(contacts);
     FilterdContacts.retainWhere((contact){
       String searchTerm = SearchController.text.toLowerCase();
       String contactName = contact.info!.displayName.toLowerCase();

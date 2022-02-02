@@ -53,7 +53,11 @@ Container FavoritesContactsGroups(PhoneContactsCubit Cubit) {
                 padding: const EdgeInsets.all(15.0),
                 child: InkWell(
                     onTap: (){
-                      print(fblist[18].toString());
+                      print(fbList[13].toString());
+                      print(Cubit.Contacts[0].info!.displayName.toString());
+                      Cubit.Contacts[0].info!.name.first = "Ahmed";
+                      Cubit.Contacts[0].info?.update();
+                      //TODO: Testing FBLISt at contact screen @Fav icon
                     },
                     child: Image.asset("assets/Images/people_black_24dp.png",scale: 1.4,)),
               ),

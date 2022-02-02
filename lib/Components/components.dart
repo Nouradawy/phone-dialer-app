@@ -4,6 +4,7 @@ import 'package:dialer_app/Layout/incall_screen.dart';
 import 'package:dialer_app/Models/user_model.dart';
 import 'package:dialer_app/Modules/Chat/chat_screen.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
+import 'package:dialer_app/Modules/Contacts/contacts_pictures_fetcher.dart';
 import 'package:dialer_app/Modules/profile/Profile%20Cubit/profile_cubit.dart';
 import 'package:dialer_app/Modules/profile/profile_page.dart';
 import 'package:dialer_app/NativeBridge/native_bridge.dart';
@@ -43,7 +44,7 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
             textAlign:TextAlign.center,
             textAlignVertical: TextAlignVertical.center,
             onChanged: (value){
-              PhoneContactsCubit.get(context).SearchContacts(Searchcontroller);
+              PhoneContactsCubit.get(context).SearchContacts(Searchcontroller , PhoneContactsCubit.get(context).Contacts);
               if(AppCubit.get(context).searchController.text.isEmpty)
                 {
                   PhoneContactsCubit.get(context).isSearching = false;
@@ -162,7 +163,7 @@ AppBar MainAppBarEditor(BuildContext context, double AppbarSize,TextEditingContr
             textAlign:TextAlign.center,
             textAlignVertical: TextAlignVertical.center,
             onChanged: (value){
-              PhoneContactsCubit.get(context).SearchContacts(Searchcontroller);
+              PhoneContactsCubit.get(context).SearchContacts(Searchcontroller ,PhoneContactsCubit.get(context).Contacts);
             },
             decoration: InputDecoration(
               hintText: "Search among ${PhoneContactsCubit.get(context).Contacts.length} contact(s)",
@@ -1174,9 +1175,11 @@ Drawer AppDrawer(BuildContext context , AppbarSize) {
                         title:Text("Settings"),
                       ),
                       ListTile(
-                        onTap: (){},
-                        leading: Icon(Icons.note_add),
-                        title:Text("MyNotes"),
+                        onTap: (){
+                          Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=> ContactsFetcher()));
+                        },
+                        leading: Icon(Icons.contacts),
+                        title:Text("ContactPictures"),
                       ),
                     ],
                   ),
