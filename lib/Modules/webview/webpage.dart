@@ -109,11 +109,16 @@ class _WebpageState extends State<Webpage> {
       body: Stack(
         children: [
           WebView(
-            javascriptMode: SignedIN(),
-            initialUrl: 'https://m.facebook.com/login.php?',
+            javascriptMode: JavaMode(false),
+            initialUrl: 'https://mbasic.facebook.com',
             onWebViewCreated:(controller) async {
               this.controller = controller;
+              setState(() {
+
+              });
+
             } ,
+            userAgent: "Mozilla/5.0 (Linux; Android 5.1.1; Nexus 5 Build/LMY48B; wv)AppleWebKit/537.36 (KHTML, like Gecko)Version/4.0 Chrome/43.0.2357.65 Mobile Safari/537.36",
             onPageStarted: (url){
               print("page started loading $url");
               URLaddress.text = url;
@@ -122,9 +127,10 @@ class _WebpageState extends State<Webpage> {
             onPageFinished: (url) async {
               print("page Finished loading $url");
               URLaddress.text = url;
+
               if(FirstTime == true)
               {
-                await Future.delayed(Duration(seconds: 5));
+                await Future.delayed(Duration(seconds: 2));
                 await controller.loadUrl('https://mbasic.facebook.com/friends/center/friends/?mff_nav=1');
                 TotalFriendsCount = await controller.runJavascriptReturningResult(
                     "document.getElementById('friends_center_main').firstChild.textContent;");
@@ -143,17 +149,17 @@ class _WebpageState extends State<Webpage> {
                 FirstTime = false;
               }
 
-              await Future.delayed(Duration(seconds: 2));
-              String ScrollH = await controller.runJavascriptReturningResult("document.body.scrollHeight");
-              controller.scrollTo(0, int.parse(ScrollH));
-              await Future.delayed(Duration(microseconds: 500));
+
               faceScrap(controller, pagesCount  ,moreButton ,fbClassName , FriendsCountInSinglePage , fbProfileLink ,fbProfileIMG ) ;
 
             },
           ),
           InkWell(
               onTap: (){
-                CookieManager().clearCookies();
+
+                fbList.clear();
+                print(fbList.toString());
+                // CookieManager().clearCookies();
               },
               child: ContactAvatar(widget.contact))
         ],
@@ -167,6 +173,32 @@ class _WebpageState extends State<Webpage> {
       // ),
 
     );
+  }
+
+  JavascriptMode JavaMode(bool? afterSignin)  {
+
+    if(afterSignin==true){
+      print("isFalse");
+      setState(() {
+
+      });
+      return JavascriptMode.unrestricted;
+    }
+    if(URLaddress.text=='https://mbasic.facebook.com')
+      {
+    //     Future.delayed(Duration(seconds:2)).then((value) async => await controller.loadUrl("https://mbasic.facebook.com/"));
+    //     setState(() {
+    //
+    //     });
+        print("isTrue");
+        return JavascriptMode.disabled;
+      } else {
+      setState(() {
+
+      });
+      print("isFalse");
+      return JavascriptMode.unrestricted;
+    }
   }
 
   CircleAvatar ContactAvatar(AppContact contact) {
@@ -192,10 +224,6 @@ class _WebpageState extends State<Webpage> {
 
   }
 
-  JavascriptMode SignedIN() {
-    return URLaddress.text.contains("login")?JavascriptMode.disabled:JavascriptMode.unrestricted;
-    // return JavascriptMode.unrestricted;
-  }
 
   JavascriptChannel _toasterJavascriptChannel(BuildContext context) {
     return JavascriptChannel(
@@ -256,37 +284,49 @@ class _WebpageState extends State<Webpage> {
 
 
 void faceScrap(controller , pagesCount  ,moreButton ,fbClassName , FriendsCountInSinglePage , fbProfileLink ,fbProfileIMG ) async{
-  moreButton = await controller.runJavascriptReturningResult("document.getElementById('friends_center_main').lastElementChild.firstChild.href;");
-  moreButton = moreButton?.replaceAll('"', '');
-  print('$moreButton');
-  fbClassName = await controller.runJavascriptReturningResult("document.querySelectorAll('table')[1].parentElement.className");
-  FriendsCountInSinglePage = await controller.runJavascriptReturningResult("document.getElementsByClassName($fbClassName).length;");
-  for (int i =0; i < int.parse(FriendsCountInSinglePage); i++) {
+  await Future.delayed(Duration(seconds: 1));
+  String ScrollH = await controller.runJavascriptReturningResult("document.body.scrollHeight");
+  controller.scrollTo(0, int.parse(ScrollH));
+  await Future.delayed(Duration(microseconds: 500));
+
+  await Future.delayed(Duration(seconds: 5)).then((value) async {
+    moreButton = await controller.runJavascriptReturningResult("document.getElementById('friends_center_main').lastElementChild.firstChild.href;");
+    moreButton = moreButton?.replaceAll('"', '');
+    print('$moreButton');
+    fbClassName = await controller.runJavascriptReturningResult("document.querySelectorAll('table')[1].parentElement.className");
+    FriendsCountInSinglePage = await controller.runJavascriptReturningResult("document.getElementsByClassName($fbClassName).length;");
+    for (int i =0; i < int.parse(FriendsCountInSinglePage); i++) {
 
       fbProfileLink = await controller.runJavascriptReturningResult("document.getElementsByClassName($fbClassName)[$i].firstChild.firstChild.firstChild.lastChild.firstChild.href;");
+      String fbUserName = await controller.runJavascriptReturningResult("document.getElementsByClassName($fbClassName)[$i].firstChild.firstChild.firstChild.lastChild.firstChild.textContent;");
       fbProfileIMG = await controller.runJavascriptReturningResult("document.getElementsByClassName($fbClassName)[$i].firstChild.firstChild.firstChild.firstChild.firstChild.src;");
       const start = "uid=";
       const end = "&redirectURI";
       final startIndex = fbProfileLink.indexOf(start);
       final endIndx = fbProfileLink.indexOf(end, startIndex + start.length);
       String UID = fbProfileLink.substring(startIndex + start.length, endIndx);
-      fblist.add({"UID": UID, "ProfileIMG": fbProfileIMG});
+      fbList.add({
+        "UID": UID,
+        "UserName" : fbUserName,
+        "ProfileIMG": fbProfileIMG});
     }
 
-  const start = "ppk=";
-  const end = "&tid";
-  final startIndex = moreButton.indexOf(start);
-  final endIndx = moreButton.indexOf(end, startIndex + start.length);
-  String pagenum = moreButton.substring(startIndex + start.length, endIndx);
-  print("pagenum = "+pagenum);
+    const start = "ppk=";
+    const end = "&tid";
+    final startIndex = moreButton.indexOf(start);
+    final endIndx = moreButton.indexOf(end, startIndex + start.length);
+    String pagenum = moreButton.substring(startIndex + start.length, endIndx);
+    print("pagenum = "+pagenum);
 
-  if(int.parse(pagenum) < pagesCount)
+    if(int.parse(pagenum) <= pagesCount)
     {await controller.loadUrl('$moreButton');
     }
 
 
-  print(fblist);
-  print("total list count "+fblist.length.toString());
-  await Future.delayed(Duration(seconds: 2));
+    print(fbList);
+    print("total list count "+fbList.length.toString());
+
+  });
+
 }
 

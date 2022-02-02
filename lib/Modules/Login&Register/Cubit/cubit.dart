@@ -4,7 +4,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dialer_app/Components/constants.dart';
 import 'package:dialer_app/Models/user_model.dart';
 import 'package:dialer_app/Modules/Login&Register/Cubit/states.dart';
 import 'package:dialer_app/Network/Local/cache_helper.dart';
@@ -170,6 +169,9 @@ class LoginCubit extends Cubit<LoginCubitStates>
       print(error.toString());
     });
   }
+  List<UserInfo>? Providers;
+bool FacebookLinked  = false;
+bool GoogleLinked = false;
 
   Future<Future<UserCredential>?> LinkGoogleAccount() async {
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
@@ -190,10 +192,24 @@ class LoginCubit extends Cubit<LoginCubitStates>
     final OAuthCredential facebookAuthCredential = FacebookAuthProvider.credential(loginResult.accessToken!.token);
     return FirebaseAuth.instance.currentUser?.linkWithCredential(facebookAuthCredential).then((value){
       //OnSuccess  =====
+    }).catchError((error){
+      print(error.toString());
+    });
+  }
+  Future UnlinkFacebookAccount() async {
+    return FirebaseAuth.instance.currentUser?.unlink('facebook.com').then((value){
+      //OnSuccess  =====
 
     }).catchError((error){
       print(error.toString());
     });
+  }
+
+   void GetProvidersList() {
+    Providers = FirebaseAuth.instance.currentUser?.providerData;
+    Providers?[0].providerId == "facebook.com"?FacebookLinked = true :FacebookLinked=false;
+  print(Providers?[0].providerId.toString());
+  print(" facebook linked =  $FacebookLinked : Google = $GoogleLinked");
   }
 
 

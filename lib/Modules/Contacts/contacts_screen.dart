@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:azlistview/azlistview.dart';
-import 'package:dialer_app/Components/constants.dart';
 
 import 'package:dialer_app/Components/contacts_components.dart';
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
@@ -15,6 +14,7 @@ import 'package:dialer_app/Network/Local/cache_helper.dart';
 import 'package:dialer_app/Network/Local/shared_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -46,7 +46,7 @@ class ContactsScreen extends StatelessWidget {
                       ListTile(
                         contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
                            onTap: () {
-
+                             CacheHelper.saveData(key: "fblist", value: json.encode(fbList));
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (BuildContext context) => ContactDetails(
                                 contact,
@@ -280,6 +280,7 @@ class ContactAvatar extends StatelessWidget {
 }
 CircleAvatar buildCircleAvatar(Uint8List? avatar, String initials) {
   if(avatar != null && avatar.isNotEmpty){
+
     return CircleAvatar(backgroundImage:MemoryImage(avatar));
   } else {
     return CircleAvatar(child: Text(initials.toString(),
@@ -300,43 +301,3 @@ LinearGradient getColorGradient(Color? color) {
 }
 
 
-// Row(
-// children: [
-// Container(
-// decoration: BoxDecoration(
-// borderRadius: BorderRadius.circular(7),
-// color: Colors.grey[300],
-// ),
-// width:45,
-// height: MediaQuery.of(context).size.height*0.055,
-// child: Column(
-// mainAxisAlignment: MainAxisAlignment.center,
-// children: [
-// Icon(Icons.call),
-// Text("Call",style: Theme
-//     .of(context)
-// .textTheme
-//     .bodyText1!.copyWith(fontSize: 10),),
-// ],),
-// ),
-// SizedBox(width: 10,),
-// Container(
-// decoration: BoxDecoration(
-// borderRadius: BorderRadius.circular(7),
-// color: Colors.grey[300],
-// ),
-// width:45,
-// height: MediaQuery.of(context).size.height*0.055,
-// child: Column(
-// mainAxisAlignment: MainAxisAlignment.center,
-// children: [
-// Icon(Icons.message),
-// Text("Message",style: Theme
-//     .of(context)
-// .textTheme
-//     .bodyText1!.copyWith(fontSize: 10),),
-// ],),
-// ),
-//
-// ],
-// ),

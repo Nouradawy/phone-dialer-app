@@ -7,7 +7,7 @@ bool ThemeSwitch =true;
 String? UserProfilePic;
 String? ContactsLength;
 List FavoratesContactids=[];
-List fblist = [];
+List fbList = [];
 
 
 Map<String, dynamic> ContactData = {};
@@ -29,10 +29,16 @@ void GetShardData()  {
 
   String CDList = CacheHelper.getData(key: 'ContactData');
   ContactData = json.decode(CDList);
-  print(CDList);
+  print(ContactData);
 
-  String FavoratesContacts= CacheHelper.getData(key: 'FavList');
-  FavoratesContactids = json.decode(FavoratesContacts);
+
+  String FBList = CacheHelper.getData(key: 'fblist');
+  fbList = json.decode(FBList);
+  print(FBList);
+
+
+  // String FavoratesContacts= CacheHelper.getData(key: 'FavList');
+  // FavoratesContactids = json.decode(FavoratesContacts);
 
 
 
