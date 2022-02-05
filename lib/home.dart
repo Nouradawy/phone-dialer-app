@@ -36,32 +36,29 @@ class Home extends StatelessWidget {
         builder:(context,state)=> DefaultTabController(
           length: 2,
           child: Scaffold(
-        resizeToAvoidBottomInset: false,
-        backgroundColor: HomePageBackgroundColor(),
-        extendBodyBehindAppBar: true,
-        appBar:MainAppBar(context, AppbarSize , AppCubit.get(context).searchController),
-        drawer: AppDrawer(context, AppbarSize),
-        drawerDragStartBehavior: DragStartBehavior.start ,
-        floatingActionButton: Cubit.isShowen==false?FloatingActionButton(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          onPressed: () {
-            Cubit.dialpadShow();
-          },
-          child:Image.asset("assets/Images/dialpad.png",scale:1.8 , color: HexColor("#EEEEEE"),),
-        ):null,
-        body: BlocBuilder<PhoneContactsCubit,PhoneContactStates>(
-          builder:(context,state) {
-            return Stack(
-              alignment: AlignmentDirectional.bottomCenter,
-              children: [
-                TabBarView(
-                  children:<Widget> [
-                    PhoneScreen(),
-                    ContactsScreen(),
-                  ],
-                ),
+            resizeToAvoidBottomInset: false,
+            backgroundColor: HomePageBackgroundColor(),
+            extendBodyBehindAppBar: true,
+            appBar:MainAppBar(context, AppbarSize , AppCubit.get(context).searchController),
+            drawer: AppDrawer(context, AppbarSize),
+            drawerDragStartBehavior: DragStartBehavior.start ,
+            floatingActionButton: Cubit.isShowen==false?FloatingActionButton(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ), onPressed: () {
+                Cubit.dialpadShow();},
+              child:Image.asset("assets/Images/dialpad.png",scale:1.8 , color: HexColor("#EEEEEE"),),):null,
+            body: BlocBuilder<PhoneContactsCubit,PhoneContactStates>(
+              builder:(context,state) {
+                return Stack(
+                  alignment: AlignmentDirectional.bottomCenter,
+                  children: [
+                    TabBarView(
+                      children:<Widget> [
+                        PhoneScreen(),
+                        ContactsScreen(),
+                      ],
+                    ),
 
                 Material(
                     color: HexColor("#F9F9F9"),

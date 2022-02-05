@@ -8,17 +8,19 @@ import 'package:flutter_contacts/contact.dart';
 
 class AppContact extends ISuspensionBean {
   final Color? color;
-  String tag;
+  String? tag;
   Contact? info;
   String? FBimgURL;
+  List<Contact>? GooglePhones;
 
 
 
   AppContact({Key? key,
     this.color,
     this.info,
-    required this.tag,
+    this.tag,
     this.FBimgURL,
+    this.GooglePhones,
   });
 
 
@@ -26,5 +28,5 @@ class AppContact extends ISuspensionBean {
 
 
   @override
-  String getSuspensionTag() => tag;
+  String getSuspensionTag() => tag!;
 }

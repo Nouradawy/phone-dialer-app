@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:azlistview/azlistview.dart';
+import 'package:dialer_app/Components/constants.dart';
 
 import 'package:dialer_app/Components/contacts_components.dart';
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
@@ -16,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -88,17 +90,14 @@ class ContactsScreen extends StatelessWidget {
 }
 
 
-class ContactDetails extends StatefulWidget {
+
+
+class ContactDetails extends StatelessWidget {
   ContactDetails(this.contact, {required this.onContactUpdate, required this.onContactDelete});
 
   final AppContact contact;
   final Function(AppContact) onContactUpdate;
   final Function(AppContact) onContactDelete;
-  @override
-  _ContactDetailsState createState() => _ContactDetailsState();
-}
-
-class _ContactDetailsState extends State<ContactDetails> {
 
   @override
   Widget build(BuildContext context) {
@@ -107,11 +106,16 @@ class _ContactDetailsState extends State<ContactDetails> {
       'Delete'
     ];
 
-    return BlocConsumer<PhoneContactsCubit,PhoneContactStates>(
-        listener: (context , state){},
+    return BlocBuilder<PhoneContactsCubit,PhoneContactStates>(
         builder: (context , state) {
-
-
+          final List NumbersInAccount=[];
+          PhoneListBuilder(contact,NumbersInAccount );
+          String? IsPrimery;
+          contact.info?.phones.forEach((e) {
+            if(e.isPrimary ==true){
+              IsPrimery =  e.number;
+            }
+          });
           return Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.grey[100],
@@ -120,21 +124,22 @@ class _ContactDetailsState extends State<ContactDetails> {
                   PhoneContactsCubit.get(context).FavoratesItemColors();
                   final ContactsID = PhoneContactsCubit.get(context).FavoratesContactsID;
 
-                        if (ContactsID.contains(widget.contact.info?.id) == true) {
-                          ContactsID.remove(widget.contact.info?.id);
-                          PhoneContactsCubit.get(context).FavoratesContacts.remove(widget.contact);
+                        if (ContactsID.contains(contact.info?.id) == true) {
+                          ContactsID.remove(contact.info?.id);
+                          PhoneContactsCubit.get(context).FavoratesContacts.remove(contact);
 
                         } else {
-                          ContactsID.add(widget.contact.info?.id);
-                          PhoneContactsCubit.get(context).FavoratesContacts.add(widget.contact);
+                          ContactsID.add(contact.info?.id);
+                          PhoneContactsCubit.get(context).FavoratesContacts.add(contact);
                         }
 
                   CacheHelper.saveData(key: "FavList", value: json.encode(ContactsID));
 
                       print(PhoneContactsCubit.get(context).FavoratesContactsID.toString());
                 }, icon:const Icon(Icons.star)),
+              IconButton(icon: FaIcon(FontAwesomeIcons.edit),onPressed: (){},),
               //   PopupMenuButton(
-              //   onSelected: onAction,
+              //   icon: Icon(Icons.ac_unit),
               //   itemBuilder: (BuildContext context) {
               //     return actions.map((String action) {
               //       return PopupMenuItem(
@@ -149,7 +154,7 @@ class _ContactDetailsState extends State<ContactDetails> {
               title: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  ContactAvatar(widget.contact, 70),
+                  ContactAvatar(contact, 70),
                   SizedBox(width: 10,),
                   Container(
                     width:110,
@@ -158,7 +163,7 @@ class _ContactDetailsState extends State<ContactDetails> {
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(top:8.0),
-                          child: Text(widget.contact.info!.displayName.toString(),style: TextStyle(color: Colors.black,fontFamily: "Cairo" , fontSize: widget.contact.info!.displayName.length >32?12:15 , fontWeight: FontWeight.w400  ),overflow: TextOverflow.visible, ),
+                          child: Text(contact.info!.displayName.toString(),style: TextStyle(color: Colors.black,fontFamily: "Cairo" , fontSize: contact.info!.displayName.length >32?12:15 , fontWeight: FontWeight.w400  ),overflow: TextOverflow.visible, ),
 
                         ),
 //                         Row(
@@ -191,77 +196,67 @@ class _ContactDetailsState extends State<ContactDetails> {
               // titleSpacing: MediaQuery.of(context).size.width*0.25,
             ),
             body: SafeArea(
-              child: Column(
-                children: <Widget>[
+              child: ListView.builder(
+                  physics: NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: contact.info?.phones.length,
+                  itemBuilder: (context,index){
 
-                  Expanded(
-                    child: ListView(shrinkWrap: true, children: <Widget>[
-                      ListTile(
-                        title: const Text("Name"),
-                        trailing: Text(widget.contact.info!.name.first ),
-                      ),
-                      ListTile(
-                        title: const Text("Family name"),
-                        trailing: Text(widget.contact.info!.name.last),
-                      ),
-                     widget.contact.info!.accounts.length>1? Row(children: [
-                        Text(widget.contact.info!.accounts[1].name.toString()),
-                      ],):Container() ,
-                      Column(
-                        children: <Widget>[
-                          const ListTile(title: Text("Phones")),
-                          Column(
-                            children: widget.contact.info!.phones
-                                .map(
-                                  (i) => Padding(
-                                padding:
-                                const EdgeInsets.symmetric(horizontal: 16.0),
-                                child: ListTile(
-                                  title: Text(i.label.name.toString()),
-                                  trailing: Text(i.normalizedNumber),
-                                ),
-                              ),
-                            )
-                                .toList(),
-                          ),
-                          MaterialButton(onPressed: (){
-                            PhoneContactsCubit.get(context).Contacts.forEach((element) {
-                              if(element.FBimgURL!=null)
-                                {
-                                  ContactData.addAll({
-                                   "${element.info?.id}": element.FBimgURL,
-                                  });
-                                }
-                            });
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            AccountIcon(contact.info?.accounts[index].type),
+                            Text("${contact.info?.accounts[index].type}"),
+                          ],
+                        ),
+                        index==0?Row(children:[
+                          FaIcon(FontAwesomeIcons.phone),
+                          Text("${IsPrimery}")]):Container(),
+                        ListView.builder(
+                            physics: NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                            itemCount: contact.info?.phones.length,
+                            itemBuilder: (context,Index){
 
-                            print(ShardData.toString());
-                            print(ContactData.toString());
-                            CacheHelper.saveData(key: "ShardData", value: json.encode(ShardData));
-                            CacheHelper.saveData(key: "ContactData", value: json.encode(ContactData));
-                            // ));
-                            Navigator.push(context,MaterialPageRoute(builder: (BuildContext context) => Webpage(widget.contact,)));
-                          },child:Container(
-                            color: Colors.blueGrey,
-                            width:70,
-                            height: 30,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text("Image Picker" ,style: TextStyle(color:Colors.white),),
-                              ],
-                            ),
-                          )),
-                        ],
-                      )
-                    ]),
-                  )
-                ],
-              ),
+                            return contact.info?.phones[Index].accountType == contact.info?.accounts[index].type &&contact.info?.phones[Index].number !=IsPrimery ?ListTile(
+                              title:Text("${contact.info?.phones[Index].number}"),
+                            ):Container();
+                            }),
+                      ],
+                    );
+                  }),
             ),
           );
         }
     );
   }
+
+  FaIcon AccountIcon(String? AccountType) {
+    if(AccountType?.contains("google")==true)
+    return FaIcon(FontAwesomeIcons.googlePlusSquare);
+    if(AccountType?.contains("whatsapp")==true)
+    return FaIcon(FontAwesomeIcons.whatsappSquare);
+    else
+      return FaIcon(FontAwesomeIcons.facebook);
+  }
+
+   PhoneListBuilder(AppContact contact , NumbersInAccount) {
+   List PhoneList=[];
+   return ListView.builder(
+       itemCount: contact.info?.accounts.length,
+       itemBuilder: (context,index)
+       {
+         return ListTile(
+         title: Text('hi'),
+         );
+     }
+     );
+
+  }
+
+
 }
 
 class ContactAvatar extends StatelessWidget {

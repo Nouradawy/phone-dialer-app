@@ -74,7 +74,6 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
       Colors.orange
     ];
     int colorIndex = 0;
-
     List<AppContact> _contacts = (await FlutterContacts.getContacts(withProperties: true, withPhoto: true , withAccounts: true , withThumbnail: true ).catchError((error){
       print("Contacts Error : " + error.toString());
     })).map((contact) {
@@ -83,13 +82,15 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
       if (colorIndex == colors.length) {
         colorIndex = 0;
       }
+
       return AppContact(info: contact, color: baseColor , tag:contact.displayName[0].toUpperCase());
     }).toList();
 
     Contacts =_contacts;
 
     Contacts.forEach((element) {
-      element.info!.thumbnail == null?ContactsNoThumb.add(element):null;});
+      element.info!.thumbnail == null?ContactsNoThumb.add(element):null;
+    });
 
 
       emit(RawContactsSuccessState());

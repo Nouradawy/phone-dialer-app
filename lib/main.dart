@@ -98,7 +98,7 @@ void main() async {
   await CacheHelper.init();
   token = CacheHelper.getData(key: 'token');
   ThemeSharedPref();
-  GetShardData();
+  // GetShardData();
   print("AuthorizationToken: "+token.toString());
   Widget Homescreen = Home();
 

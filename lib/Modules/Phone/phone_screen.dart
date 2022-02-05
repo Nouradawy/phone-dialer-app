@@ -54,7 +54,6 @@ class PhoneScreen extends StatelessWidget {
                           ],
                         ),
                       ):Container(),
-
                 PhoneLogList(entries, index, context),
               ],
             );
@@ -102,6 +101,7 @@ class PhoneScreen extends StatelessWidget {
                         ],
                       ),
                     ),
+      //TODO:Something Retarining null at loggerAvatar(Only affected by Android 32)
                     leading: LoggertAvatar(55, entries.elementAt(index).name.toString(), entries.elementAt(index).callType, c1.AvatarColor),
                     trailing: Padding(
                       padding: const EdgeInsets.only(right: 8.0),
@@ -257,8 +257,8 @@ class LoggertAvatar extends StatelessWidget {
   final CallType? callType;
   final String PhoneLog;
   final double size;
-
   final Color? AvatarColor;
+
   @override
   Widget build(BuildContext context) {
     if(callType == CallType.outgoing) {

@@ -10,6 +10,7 @@ import 'package:dialer_app/Network/Local/shared_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_contacts/contact.dart';
 
 class MyBlocObserver extends BlocObserver {
 
@@ -124,5 +125,5 @@ class RenderBlendMask extends RenderProxyBox {
   }
 }
 
-
+List<Contact>? contactsfilterd;
 
