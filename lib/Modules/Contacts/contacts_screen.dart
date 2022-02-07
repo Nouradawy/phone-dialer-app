@@ -19,7 +19,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hexcolor/hexcolor.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+
+import 'edit_contact.dart';
 
 class ContactsScreen extends StatelessWidget {
 
@@ -27,7 +30,7 @@ class ContactsScreen extends StatelessWidget {
   Widget build(BuildContext context ) {
         var Cubit = PhoneContactsCubit.get(context);
         double AppbarSize = MediaQuery.of(context).padding.top+AppCubit.get(context).AppbarSize-19;
-        PhoneContactsCubit.get(context).GetShardPrefrancesData();
+        // PhoneContactsCubit.get(context).GetShardPrefrancesData();
 
     ContactsLength = Cubit.Contacts.length.toString();
         return Padding(
@@ -109,35 +112,58 @@ class ContactDetails extends StatelessWidget {
     return BlocBuilder<PhoneContactsCubit,PhoneContactStates>(
         builder: (context , state) {
           final List NumbersInAccount=[];
-          PhoneListBuilder(contact,NumbersInAccount );
           String? IsPrimery;
+          final List SocialMediaList=[{
+            "platform": "facebook",
+            "Icon"  : FaIcon(FontAwesomeIcons.facebookSquare,size: 35,),
+            "UserName": "Heba El-baz",
+          }];
+
           contact.info?.phones.forEach((e) {
             if(e.isPrimary ==true){
               IsPrimery =  e.number;
             }
+            if(e.accountType.contains("google"))
+              {
+                NumbersInAccount.add(e.number);
+              }
           });
+          print(NumbersInAccount);
           return Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.grey[100],
               actions: [
                 IconButton(onPressed: (){
                   PhoneContactsCubit.get(context).FavoratesItemColors();
-                  final ContactsID = PhoneContactsCubit.get(context).FavoratesContactsID;
+                  if(contact.info?.isStarred ==true) {
+                    contact.info?.isStarred = false;
+                    contact.info?.update();
+                    PhoneContactsCubit.get(context).FavoratesContacts.remove(contact);
+                  }else {
+                    contact.info?.isStarred = true;
+                    contact.info?.update();
+                    PhoneContactsCubit.get(context).FavoratesContacts.add(contact);
+                  }
 
-                        if (ContactsID.contains(contact.info?.id) == true) {
-                          ContactsID.remove(contact.info?.id);
-                          PhoneContactsCubit.get(context).FavoratesContacts.remove(contact);
+                  // PhoneContactsCubit.get(context).FavoratesItemColors();
+                  // final ContactsID = PhoneContactsCubit.get(context).FavoratesContactsID;
+                  //
+                  //       if (ContactsID.contains(contact.info?.id) == true) {
+                  //         ContactsID.remove(contact.info?.id);
+                  //         PhoneContactsCubit.get(context).FavoratesContacts.remove(contact);
+                  //
+                  //       } else {
+                  //         ContactsID.add(contact.info?.id);
+                  //         PhoneContactsCubit.get(context).FavoratesContacts.add(contact);
+                  //       }
+                  //
+                  // CacheHelper.saveData(key: "FavList", value: json.encode(ContactsID));
 
-                        } else {
-                          ContactsID.add(contact.info?.id);
-                          PhoneContactsCubit.get(context).FavoratesContacts.add(contact);
-                        }
-
-                  CacheHelper.saveData(key: "FavList", value: json.encode(ContactsID));
-
-                      print(PhoneContactsCubit.get(context).FavoratesContactsID.toString());
+                      // print(PhoneContactsCubit.get(context).FavoratesContactsID.toString());
                 }, icon:const Icon(Icons.star)),
-              IconButton(icon: FaIcon(FontAwesomeIcons.edit),onPressed: (){},),
+              IconButton(icon: FaIcon(FontAwesomeIcons.edit),onPressed: (){
+                Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=>ContactEditor(contact)));
+              },),
               //   PopupMenuButton(
               //   icon: Icon(Icons.ac_unit),
               //   itemBuilder: (BuildContext context) {
@@ -196,65 +222,182 @@ class ContactDetails extends StatelessWidget {
               // titleSpacing: MediaQuery.of(context).size.width*0.25,
             ),
             body: SafeArea(
-              child: ListView.builder(
-                  physics: NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: contact.info?.phones.length,
-                  itemBuilder: (context,index){
-
-                    return Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          children: [
-                            AccountIcon(contact.info?.accounts[index].type),
-                            Text("${contact.info?.accounts[index].type}"),
-                          ],
+              child: Column(
+                children: [
+                  ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: NumbersInAccount.length*55+70,
+                      ),
+                      child: DefaultAccountView(NumbersInAccount, IsPrimery)),
+                  const Divider(thickness: 1, indent: 25, endIndent: 25,),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      const Icon(Icons.sticky_note_2),
+                      const SizedBox(width:15),
+                      contact.info!.notes.length >0?ContactTagNotes(context , contact.info?.notes):Container(
+                        width:MediaQuery.of(context).size.width*0.50,
+                        height: 70,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(4),
+                          color:HexColor("#F5F5F5"),
                         ),
-                        index==0?Row(children:[
-                          FaIcon(FontAwesomeIcons.phone),
-                          Text("${IsPrimery}")]):Container(),
-                        ListView.builder(
-                            physics: NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                            itemCount: contact.info?.phones.length,
-                            itemBuilder: (context,Index){
+                        child: Center(child: Icon(Icons.add)),
+                      ),
+                      const SizedBox(width:21,),
+                      ///Social Media Area Where the user can link there Accounts here
+                      Padding(
+                        padding: const EdgeInsets.only(right: 15.0),
+                        child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: MediaQuery.of(context).size.width*0.25,
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: SocialMediaList.length,
+                              itemBuilder: (context,index){
+                                return Row(children: [
+                                  SocialMediaList[index]["Icon"],
 
-                            return contact.info?.phones[Index].accountType == contact.info?.accounts[index].type &&contact.info?.phones[Index].number !=IsPrimery ?ListTile(
-                              title:Text("${contact.info?.phones[Index].number}"),
-                            ):Container();
-                            }),
-                      ],
-                    );
-                  }),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left:3.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(SocialMediaList[index]["platform"],style: TextStyle(height: 1.3,fontWeight:FontWeight.w600),),
+                                        Text(SocialMediaList[index]["UserName"],style: TextStyle(height: 1,fontSize: 10),),
+                                      ],
+                                    ),
+                                  ),
+                                ],);
+                              },
+                            ),
+                          ),
+                          MaterialButton(
+                            padding: EdgeInsets.all(5),
+                            onPressed: (){},
+                            child: Row(children: [Image.asset("assets/Images/link.png",scale: 2.4,),SizedBox(width: 5),Text("Link Account")],),
+                            color: HexColor("#C2C2C2"),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)
+                            ),
+
+                          ),
+                        ],
+                    ),
+                      ),
+                  ],),
+                ],
+              ),
             ),
           );
         }
     );
   }
 
+  ListView DefaultAccountView(List<dynamic> NumbersInAccount, String? IsPrimery) {
+    return ListView.builder(
+        physics: NeverScrollableScrollPhysics(),
+        itemCount: NumbersInAccount.length,
+        itemBuilder: (context,index){
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ///Account Name and type
+              index==0?Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18.0,vertical: 10),
+                child: Row(
+                  children: [
+                    AccountIcon(contact.info?.accounts[index].type),
+                    Padding(
+                      padding: const EdgeInsets.only(left:8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 4,),
+                          AccountTitle(contact.info?.accounts[index].type),
+                          Transform.translate(
+                              offset: Offset(0,-7),
+                              child: Text("${contact.info?.accounts[index].name}")),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ):Container(),
+              ///Defualt Phone Number
+              index==0 &&IsPrimery!=null ?
+              ListTile(
+                        leading: Icon(Icons.phone_rounded),
+                        title:Text("${IsPrimery}"),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(6),
+                              color:HexColor('#01223B').withOpacity(0.11),
+                            ),
+                            child:IconButton(onPressed: (){} , icon:Icon(Icons.sms_rounded, color: HexColor("#8E2479"),)),
+                          ),
+                            const SizedBox(width: 10),
+                            Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(6),
+                                color:HexColor('#01223B').withOpacity(0.11),
+                              ),
+                              child:IconButton(onPressed: (){} , icon:FaIcon(FontAwesomeIcons.phoneAlt, color: HexColor("#28A7D6"),)),
+                            ),],),
+                      ):Container(),
+              //TODO:ADD more account types Competability(Phone numbers ex:Google - samsung - apple what so ever)
+              contact.info?.accounts[0].type==contact.info?.accounts[0].type &&contact.info?.phones[index].number !=IsPrimery?
+              ListTile(
+                title:Text("${contact.info?.phones[index].number}"),
+                leading: IsPrimery==null?Icon(Icons.phone_rounded):Text(""),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(6),
+                        color:HexColor('#01223B').withOpacity(0.11),
+                      ),
+                      child:IconButton(onPressed: (){} , icon:Icon(Icons.sms_rounded, color: HexColor("#8E2479"),)),
+                    ),
+                    const SizedBox(width: 10),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(6),
+                        color:HexColor('#01223B').withOpacity(0.11),
+                      ),
+                      child:IconButton(onPressed: (){} , icon:FaIcon(FontAwesomeIcons.phoneAlt, color: HexColor("#28A7D6"),)),
+                    ),],),
+              ):Container(),
+            ],
+          );
+        });
+  }
+
+  Text AccountTitle(AccountType) {
+    if(AccountType?.contains("google")==true)
+      return Text("Google");
+    if(AccountType?.contains("whatsapp")==true)
+      return Text("Whatsapp");
+    else
+      return Text("Google");
+  }
+
   FaIcon AccountIcon(String? AccountType) {
     if(AccountType?.contains("google")==true)
-    return FaIcon(FontAwesomeIcons.googlePlusSquare);
+    return FaIcon(FontAwesomeIcons.googlePlusSquare,size:32);
     if(AccountType?.contains("whatsapp")==true)
     return FaIcon(FontAwesomeIcons.whatsappSquare);
     else
       return FaIcon(FontAwesomeIcons.facebook);
   }
 
-   PhoneListBuilder(AppContact contact , NumbersInAccount) {
-   List PhoneList=[];
-   return ListView.builder(
-       itemCount: contact.info?.accounts.length,
-       itemBuilder: (context,index)
-       {
-         return ListTile(
-         title: Text('hi'),
-         );
-     }
-     );
-
-  }
 
 
 }

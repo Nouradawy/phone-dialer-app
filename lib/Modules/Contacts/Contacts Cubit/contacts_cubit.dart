@@ -36,24 +36,23 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
     HexColor("#FF4B76"),
     HexColor("#2C087A"),
     HexColor("#C6C972"),
-
   ];
   Color? FavoratesItemColor ;
   int ColorIndex =0;
 
-  void GetShardPrefrancesData(){
-
-    if(FavoratesContactids.isNotEmpty && FavoratesContacts.isEmpty )
-    {
-      FavoratesContactsID = FavoratesContactids;
-      FavoratesContactsID.forEach((id) {
-        Contacts.forEach((element) {
-          if (id == element.info?.id)
-            FavoratesContacts.add(element);
-        });
-      });
-    }
-    }
+  // void GetShardPrefrancesData(){
+  //
+  //   if(FavoratesContactids.isNotEmpty && FavoratesContacts.isEmpty )
+  //   {
+  //     FavoratesContactsID = FavoratesContactids;
+  //     FavoratesContactsID.forEach((id) {
+  //       Contacts.forEach((element) {
+  //         if (id == element.info?.id)
+  //           FavoratesContacts.add(element);
+  //       });
+  //     });
+  //   }
+  //   }
 
 
   void FavoratesItemColors(){
@@ -90,6 +89,10 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
 
     Contacts.forEach((element) {
       element.info!.thumbnail == null?ContactsNoThumb.add(element):null;
+      if(element.info?.isStarred == true)
+        {
+          FavoratesContacts.add(element);
+        }
     });
 
 
@@ -102,8 +105,7 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
     Contacts.map((element){
       SearchableCallerIDList.add({
         "CallerID" : element.info?.displayName.toString(),
-        "PhoneNumber" :
-        element.info?.phones.map((e) {
+        "PhoneNumber" : element.info?.phones.map((e) {
           return e.number.replaceAll(' ', '');
         }),
 

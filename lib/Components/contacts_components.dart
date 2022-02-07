@@ -6,6 +6,7 @@ import 'package:dialer_app/Network/Local/shared_data.dart';
 import 'package:dialer_app/Themes/light_theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_contacts/properties/note.dart';
 import 'package:hexcolor/hexcolor.dart';
 
 Container FavoritesContactsGroups(PhoneContactsCubit Cubit) {
@@ -112,14 +113,14 @@ ConstrainedBox ContactsTagsNotes(BuildContext context) {
                   padding: const EdgeInsets.only(top:8.0),
                   child: Container(
                       alignment: AlignmentDirectional.topCenter,
-                      width:80,
-                      height: 45,
+                      width:MediaQuery.of(context).size.width*0.30,
+                      height: 48,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(4),
                         color:HexColor("#F5F5F5"),
                       ),
                       child:Padding(
-                        padding: const EdgeInsets.only(top:2.0),
+                        padding: const EdgeInsets.only(top:7.0,right: 5,left: 5),
                         child: Text("Work colleague",style: Theme.of(context).textTheme.caption,),
                       )),
                 ),
@@ -143,6 +144,64 @@ ConstrainedBox ContactsTagsNotes(BuildContext context) {
           ],
         ),
       ],
+    ),
+  );
+}
+
+ConstrainedBox ContactTagNotes(BuildContext context ,List<Note>? Notes) {
+  return ConstrainedBox(
+    constraints: BoxConstraints(
+      maxWidth: MediaQuery.of(context).size.width*0.50,
+      maxHeight: 100,
+    ),
+    child: PageView.builder(
+      itemCount: Notes?.length,
+      itemBuilder:(context,index)=> Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top:8.0),
+                child: Container(
+                    alignment: AlignmentDirectional.topCenter,
+                    width:MediaQuery.of(context).size.width*0.50,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      color:HexColor("#F5F5F5"),
+                    ),
+                    child:Padding(
+                      padding: const EdgeInsets.only(top:9.0,right: 7,left: 7),
+                      child: Text(Notes![index].note,style: Theme.of(context).textTheme.caption,),
+                    )),
+              ),
+              Container(
+                  alignment: AlignmentDirectional.center,
+                  width:26,
+                  height: 14,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(6),
+                      gradient: LinearGradient(
+                        colors: [HexColor("#615A5A"),HexColor("#A227CE")],
+                      )
+                  ),
+                  child:Padding(
+                    padding: const EdgeInsets.only(bottom: 0.0),
+                    child: Text("Hint",style:Theme.of(context).textTheme.button),
+                  )),
+              Transform.translate(
+                offset: Offset(-3,55),
+                child: Align(
+                    alignment: Alignment.bottomRight,
+                    child: Text("${index+1}/${Notes.length}")),
+              ),
+            ],
+          ),
+
+        ],
+      ),
     ),
   );
 }

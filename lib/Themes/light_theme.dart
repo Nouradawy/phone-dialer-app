@@ -88,6 +88,7 @@ ThemeData LightThemeData() {
         color: Colors.black,
         letterSpacing: 0,
         fontWeight: FontWeight.w500,
+        height: 1.2,
       ),
 
     ),
