@@ -2,6 +2,7 @@
 import 'package:dialer_app/Components/components.dart';
 import 'package:dialer_app/Components/constants.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
+import 'package:dialer_app/Modules/Phone/Cubit/cubit.dart';
 import 'package:dialer_app/NativeBridge/native_bridge.dart';
 import 'package:dialer_app/NativeBridge/native_states.dart';
 import 'package:flutter/material.dart';
@@ -36,10 +37,12 @@ class InCallScreen extends StatelessWidget {
                 _StopWatchTimer.onExecute.add(StopWatchExecute.reset);
                 Cubit.isStopWatchStart =false;
                 // Navigator.pop(context);
+                PhoneLogsCubit.get(context).PhoneRange =true;
 
-                // Navigator.push(context,
-                //   MaterialPageRoute(builder: (BuildContext context) => Home(),)
-                // );
+                Navigator.push(context,
+                  MaterialPageRoute(builder: (BuildContext context) => Home(),)
+                );
+
               }
           },
           builder: (context, state) {

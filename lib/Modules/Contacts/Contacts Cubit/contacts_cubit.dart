@@ -10,8 +10,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:flutter_contacts/properties/address.dart';
 
 import 'package:hexcolor/hexcolor.dart';
+import 'package:intl/intl.dart';
 
 import '../appcontacts.dart';
 import 'contacts_states.dart';
@@ -24,12 +26,251 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
   List<AppContact> ContactsNoThumb = [];
   List<AppContact> FavoratesContacts = [];
   List FavoratesContactsID = [];
-  List PhoneCallLogs =[];
+
   List SearchableCallerIDList = [];
   List CallerID = [];
   String? faceImage;
   String? faceProfilelink;
 
+
+  bool DNtoggler=false;
+  bool PNtoggler=false;
+  List<PhoneLabel> PhoneSideMenu = <PhoneLabel>[PhoneLabel.mobile,PhoneLabel.home,PhoneLabel.work,PhoneLabel.faxWork,PhoneLabel.faxHome,PhoneLabel.pager,PhoneLabel.other,PhoneLabel.custom];
+  List<EmailLabel> EmailSideMenu = <EmailLabel>[EmailLabel.home,EmailLabel.work,EmailLabel.other,EmailLabel.custom];
+  List<EventLabel> EventSideMenu = <EventLabel>[EventLabel.birthday,EventLabel.anniversary,EventLabel.other,EventLabel.custom];
+  List<AddressLabel> AddressSideMenu = <AddressLabel>[AddressLabel.home,AddressLabel.work,AddressLabel.school,AddressLabel.other,AddressLabel.other,AddressLabel.custom];
+  // List<Label> RelatedSideMenu = ['Friend','Manager','Assistant','Met through','Client','Brother','Sister','Mother','Father','Sister','Spouse','Child','Custom'];
+  List<SocialMediaLabel> ChatSideMenu = <SocialMediaLabel>[SocialMediaLabel.qqchat,SocialMediaLabel.skype,SocialMediaLabel.yahoo,SocialMediaLabel.aim,SocialMediaLabel.icq,SocialMediaLabel.facebook,SocialMediaLabel.discord,SocialMediaLabel.custom];
+  List<TextEditingController> PhoneNumberController = [];
+  List<PhoneLabel> PhoneSideMenuController = <PhoneLabel>[] ;
+  List<TextEditingController> EmailAddressController = <TextEditingController>[];
+  List<EmailLabel> EmailSideMenuController=<EmailLabel>[];
+  List<TextEditingController> AddressController = [];
+  List<AddressLabel> AddressSideMenuController = <AddressLabel>[];
+
+  List<TextEditingController> EventController= [];
+  List<EventLabel> EventSideMenuController =<EventLabel>[];
+
+  List<TextEditingController> ChatController = [];
+  List<SocialMediaLabel> ChatSideMenuController=<SocialMediaLabel>[];
+
+  int PhoneNumberTextFormCount=0;
+  int EmailTextFormCount=0;
+  int AddressTextFormCount=0;
+  int EventTextFormCount=0;
+  int ChatTextFormCount=0;
+
+  void TextFormFieldInitialize(List NumbersInAccount , AppContact contact){
+
+    if(NumbersInAccount.isNotEmpty)
+    {
+      PhoneNumberTextFormCount = NumbersInAccount.length;
+      NumbersInAccount.add({
+        "label": PhoneSideMenu.first,
+        "number": "",
+      });
+
+      for (int i = 0; i <= PhoneNumberTextFormCount; i++) {
+        PhoneNumberController.add(TextEditingController());
+        PhoneNumberController[i].text = NumbersInAccount[i]['number'];
+        PhoneSideMenuController.add(NumbersInAccount[i]["label"]);
+      }
+    } else {
+      PhoneNumberController.add(TextEditingController());
+      PhoneSideMenuController.add(PhoneSideMenu.first);
+    }
+  if(contact.info!.emails.isNotEmpty)
+  {
+      for (int i = 0; i <= contact.info!.emails.length; i++) {
+        EmailAddressController.add(TextEditingController());
+        i < contact.info!.emails.length?EmailAddressController[i].text = contact.info!.emails[i].address:null;
+        i < contact.info!.emails.length?EmailSideMenuController.add(contact.info!.emails[i].label):null;
+      }
+    } else { EmailAddressController.add(TextEditingController());
+      EmailSideMenuController.add(EmailSideMenu.first);}
+
+  if(contact.info!.addresses.isNotEmpty)
+  {
+      for (int i = 0; i <= contact.info!.addresses.length; i++) {
+        AddressController.add(TextEditingController());
+        i < contact.info!.addresses.length?AddressController[i].text = contact.info!.addresses[i].address:null;
+        i < contact.info!.addresses.length? AddressSideMenuController.add(contact.info!.addresses[i].label):null;
+      }
+    } else {
+    AddressController.add(TextEditingController());
+    AddressSideMenuController.add(AddressSideMenu.first);
+  }
+
+  if(contact.info!.socialMedias.isNotEmpty)
+  {
+      for (int i = 0; i <= contact.info!.socialMedias.length; i++) {
+        ChatController.add(TextEditingController());
+        i < contact.info!.socialMedias.length? ChatController[i].text = contact.info!.socialMedias[i].userName:null;
+        i < contact.info!.socialMedias.length?ChatSideMenuController.add(contact.info!.socialMedias[i].label):null;
+      }
+    } else {
+    ChatController.add(TextEditingController());
+    ChatSideMenuController.add(ChatSideMenu.first);
+  }
+
+
+  if(contact.info!.events.isNotEmpty)
+  {
+    for (int i = 0; i <= (contact.info!.events.length); i++) {
+      print(contact.info!.events.length);
+        EventController.add(TextEditingController());
+
+        i < contact.info!.events.length?EventController[i].text =DateFormat.yMMMd().format(DateTime(contact.info!.events[i].year!,contact.info!.events[i].month,contact.info!.events[i].day)):null;
+        i < contact.info!.events.length?EventSideMenuController.add(contact.info!.events[i].label):null;
+      print(EventController.length);
+      }
+  } else {
+    EventController.add(TextEditingController());
+    EventSideMenuController.add(EventSideMenu.first);
+  }
+
+    emit(TextFormInitialize());
+  }
+
+
+  void PhoneNumberadd(bool? ToAdd ){
+
+  if(ToAdd ==true)
+  {
+      PhoneNumberTextFormCount++;
+      PhoneNumberController.add(TextEditingController());
+      PhoneSideMenuController.add(PhoneSideMenu.first);
+    } else {
+    PhoneNumberTextFormCount--;
+    PhoneNumberController.removeLast();
+    PhoneSideMenuController.removeLast();
+  }
+    // NumbersInAccount.add("");
+  emit(PhoneNumberAddState());
+  // ToAdd =false;
+  }
+  void EmailAddressAdd(bool? ToAdd ){
+
+  if(ToAdd ==true)
+  {
+    EmailTextFormCount++;
+    EmailAddressController.add(TextEditingController());
+    EmailSideMenuController.add(EmailSideMenu.first);
+    } else {
+    EmailTextFormCount--;
+    EmailAddressController.removeLast();
+    EmailSideMenuController.removeLast();
+  }
+    // NumbersInAccount.add("");
+  emit(EmailAddressAddSuccessState());
+  // ToAdd =false;
+  }
+  void AddressAdd(bool? ToAdd ){
+
+  if(ToAdd ==true)
+  {
+    AddressTextFormCount++;
+    AddressController.add(TextEditingController());
+    AddressSideMenuController.add(AddressSideMenu.first);
+    } else {
+    AddressTextFormCount--;
+    AddressController.removeLast();
+    AddressSideMenuController.removeLast();
+  }
+    // NumbersInAccount.add("");
+  emit(AddressAddSuccessState());
+  // ToAdd =false;
+  }
+  void EventAdd(bool? ToAdd ){
+
+  if(ToAdd ==true)
+  {
+    EventTextFormCount++;
+    EventController.add(TextEditingController());
+    EventSideMenuController.add(EventSideMenu.first);
+    } else {
+    EventTextFormCount--;
+    EventController.removeLast();
+
+    EventSideMenuController.removeLast();
+  }
+    // NumbersInAccount.add("");
+  emit(EventAddSuccessState());
+  // ToAdd =false;
+  }
+  void ChatUserNameAdd(bool? ToAdd ){
+
+  if(ToAdd ==true)
+  {
+    ChatTextFormCount++;
+    ChatController.add(TextEditingController());
+    ChatSideMenuController.add(ChatSideMenu.first);
+    } else {
+    ChatTextFormCount--;
+    ChatController.removeLast();
+    ChatSideMenuController.removeLast();
+  }
+    // NumbersInAccount.add("");
+  emit(PhoneNumberAddState());
+  // ToAdd =false;
+  }
+
+  void ContactUpdate(AppContact contact,context){
+    contact.info?.phones.clear();
+    for(int i=0 ; i<PhoneNumberController.length; i++) {
+
+      PhoneNumberController[i].text.isNotEmpty?contact.info?.phones.add(Phone('${PhoneNumberController[i].text}', label: PhoneSideMenuController[i] , accountType: contact.info!.accounts.first.type)):null;
+    }
+
+    contact.info?.emails.clear();
+    for(int i=0 ; i<EmailAddressController.length ; i++) {
+      EmailAddressController[i].text.isNotEmpty?contact.info?.emails.add(Email(EmailAddressController[i].text , label:EmailSideMenuController[i])):null;
+
+    }
+    //
+    contact.info?.addresses.clear();
+    for(int i=0 ; i<AddressController.length; i++) {
+      AddressController[i].text.isNotEmpty?contact.info?.addresses.add(Address(AddressController[i].text , label: AddressSideMenuController[i])):null;
+    }
+    //
+    contact.info?.events.clear();
+    for(int i=0 ; i<EventController.length ; i++) {
+      EventController[i].text.isNotEmpty?contact.info?.events.add(Event(year:DateFormat('yMMMd').parse(EventController[i].text).year,month: DateFormat('yMMMd').parse(EventController[i].text).month, day: DateFormat('yMMMd').parse(EventController[i].text).day)):null;
+    }
+    //
+    contact.info?.socialMedias.clear();
+    for(int i=0 ; i<ChatController.length ; i++) {
+      EventController[i].text.isNotEmpty?contact.info?.socialMedias.add(SocialMedia(ChatController[i].text,label:ChatSideMenuController[i] )):null;
+    }
+
+    contact.info?.update();
+    Navigator.pop(context);
+    PhoneContactsCubit.get(context).PhoneNumberController.clear();
+    PhoneContactsCubit.get(context).PhoneSideMenuController.clear();
+    PhoneContactsCubit.get(context).EmailAddressController.clear();
+    PhoneContactsCubit.get(context).EmailSideMenuController.clear();
+    PhoneContactsCubit.get(context).AddressController.clear();
+    PhoneContactsCubit.get(context).AddressSideMenuController.clear();
+    PhoneContactsCubit.get(context).ChatController.clear();
+    PhoneContactsCubit.get(context).ChatSideMenuController.clear();
+    PhoneContactsCubit.get(context).EventController.clear();
+    PhoneContactsCubit.get(context).EventSideMenuController.clear();
+    emit(ChatAddSuccessState());
+  }
+  void ContactCancel(AppContact contact,context){
+    Navigator.pop(context);
+    PhoneContactsCubit.get(context).PhoneNumberController.clear();
+    PhoneContactsCubit.get(context).PhoneSideMenuController.clear();
+    PhoneContactsCubit.get(context).EmailAddressController.clear();
+    PhoneContactsCubit.get(context).EmailSideMenuController.clear();
+    PhoneContactsCubit.get(context).AddressController.clear();
+    PhoneContactsCubit.get(context).AddressSideMenuController.clear();
+    PhoneContactsCubit.get(context).ChatController.clear();
+    PhoneContactsCubit.get(context).ChatSideMenuController.clear();
+    PhoneContactsCubit.get(context).EventController.clear();
+    PhoneContactsCubit.get(context).EventSideMenuController.clear();
+    emit(ChatAddSuccessState());
+  }
 
   List BaseColors =[
     HexColor("#515150"),
@@ -40,6 +281,20 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
   Color? FavoratesItemColor ;
   int ColorIndex =0;
 
+
+
+  void DisplayNameToggle(){
+    DNtoggler = !DNtoggler;
+    emit(DropDownDisplayName());
+  }
+  void PhoneticNameToggle(){
+    PNtoggler = !PNtoggler;
+    emit(DropDownPhonaticName());
+  }
+
+  void SideMenuUpdater(){
+    emit(SideMenuUpdated());
+  }
   // void GetShardPrefrancesData(){
   //
   //   if(FavoratesContactids.isNotEmpty && FavoratesContacts.isEmpty )
@@ -120,27 +375,7 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
 
   }
 
-  // Future<void> GetPhoneLog()  async{
-  //     (await CallLog.get())
-  //         .map((element) {
-  //       element.name == null ? GetCallerID(element.number) : null;
-  //       return PhoneCallLogs.add({
-  //         "PhoneNumber": element.number,
-  //         "ContactName": element.name != null
-  //             ? element.name
-  //             : CallerID.isNotEmpty
-  //             ? CallerID[0]["CallerID"].toString()
-  //             : "UNKNOWN",
-  //         "PhoneState": element.callType.toString().replaceAll("CallType.", ""),
-  //         "Duration": element.duration,
-  //         "Date": DateTime.fromMillisecondsSinceEpoch(element.timestamp!),
-  //         "AccountID": element.phoneAccountId,
-  //         "SIMname": element.simDisplayName,
-  //       });
-  //     }).toList();
-  //
-  //   emit(PhoneLogsExtractionSuccessful());
-  // }
+
 
 
   bool? isSearching;
@@ -156,7 +391,7 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
   List<AppContact> thirdchr = [];
 
 
-//This Function Used to SearchAndFilter Contacts Based on there Name [Used at the top searchBar]
+///This Function Used to SearchAndFilter Contacts Based on there Name [Used at the top searchBar]
 
   void SearchContacts(TextEditingController SearchController, contacts){
     FilterdContacts.clear();
@@ -239,6 +474,7 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
 
     emit(dialPadSearchSuccessState());
   }
+
 
 
 }

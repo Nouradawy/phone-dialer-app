@@ -1,8 +1,6 @@
-import 'package:dialer_app/Components/constants.dart';
+
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_states.dart';
 import 'package:dialer_app/Modules/Contacts/contacts_screen.dart';
-import 'package:dialer_app/Modules/profile/Profile%20Cubit/profile_cubit.dart';
-
 import 'package:dialer_app/NativeBridge/native_bridge.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';

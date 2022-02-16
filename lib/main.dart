@@ -19,6 +19,7 @@ import 'Components/components.dart';
 import 'Components/constants.dart';
 import 'Layout/Cubit/cubit.dart';
 import 'Modules/Login&Register/login_screen.dart';
+import 'Modules/Phone/Cubit/cubit.dart';
 import 'NativeBridge/native_bridge.dart';
 import 'Network/Local/cache_helper.dart';
 import 'Network/Local/shared_data.dart';
@@ -134,11 +135,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+
         BlocProvider(create:(context)=> ChatAppCubit()),
         BlocProvider(create: (context)=>NativeBridge()..phonestateEvents()),
         BlocProvider(create:(context)=> PhoneContactsCubit()..GetRawContacts()),
         BlocProvider(create: (context)=> AppCubit()),
         BlocProvider(create: (context)=>ProfileCubit()),
+        BlocProvider(create: (context)=>PhoneLogsCubit()),
 
       ],
     child:BlocBuilder<AppCubit,AppStates>(
@@ -148,11 +151,16 @@ class MyApp extends StatelessWidget {
                       theme: LightThemeData(),
                       darkTheme: DarkThemeData(),
                       themeMode: themeSwitch?ThemeMode.light:ThemeMode.dark,
-                      home: BlocProvider.value(
-                          value:ProfileCubit.get(context)..GetChatContacts(),
-                          child: homeScreen),
+                      home: MultiBlocProvider(
+                        providers: [
+                          BlocProvider.value(
+                            value:ProfileCubit.get(context)..GetChatContacts()),
+                          BlocProvider.value(
+                              value:PhoneLogsCubit.get(context)..getCallLogsInitial(PhoneContactsCubit.get(context).Contacts)),
+                        ],
+                            child: homeScreen),
+                      ),
                   ),
-    )
     );
   }
 }

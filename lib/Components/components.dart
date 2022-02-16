@@ -1027,7 +1027,11 @@ Row CallButton(BuildContext context, double AppbarSize , bool DualSIM , TextEdit
         SizedBox(width:MediaQuery.of(context).size.width*0.22),
          InkWell(
            onTap: (){
+
+             PhoneContactsCubit.get(context).isSearching = false;
+             AppCubit.get(context).dialpadShow();
              FlutterPhoneDirectCaller.callNumber(dialerController.text);
+             dialerController.clear();
              Navigator.pushAndRemoveUntil(context,
                MaterialPageRoute(builder: (BuildContext context) => InCallScreen()),
                    (Route<dynamic>route)=>false,);

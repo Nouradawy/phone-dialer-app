@@ -84,11 +84,7 @@ class ContactsScreen extends StatelessWidget {
                     }
                 ),
               );
-
-
   }
-
-
 
 }
 
@@ -104,10 +100,6 @@ class ContactDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<String> actions = <String>[
-      'Edit',
-      'Delete'
-    ];
 
     return BlocBuilder<PhoneContactsCubit,PhoneContactStates>(
         builder: (context , state) {
@@ -123,12 +115,13 @@ class ContactDetails extends StatelessWidget {
             if(e.isPrimary ==true){
               IsPrimery =  e.number;
             }
-            if(e.accountType.contains("google"))
+            if(e.accountType == contact.info?.accounts.first.type)
               {
-                NumbersInAccount.add(e.number);
+                NumbersInAccount.add({
+                  'label':e.label,
+                  'number':e.number});
               }
           });
-          print(NumbersInAccount);
           return Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.grey[100],
@@ -144,37 +137,11 @@ class ContactDetails extends StatelessWidget {
                     contact.info?.update();
                     PhoneContactsCubit.get(context).FavoratesContacts.add(contact);
                   }
-
-                  // PhoneContactsCubit.get(context).FavoratesItemColors();
-                  // final ContactsID = PhoneContactsCubit.get(context).FavoratesContactsID;
-                  //
-                  //       if (ContactsID.contains(contact.info?.id) == true) {
-                  //         ContactsID.remove(contact.info?.id);
-                  //         PhoneContactsCubit.get(context).FavoratesContacts.remove(contact);
-                  //
-                  //       } else {
-                  //         ContactsID.add(contact.info?.id);
-                  //         PhoneContactsCubit.get(context).FavoratesContacts.add(contact);
-                  //       }
-                  //
-                  // CacheHelper.saveData(key: "FavList", value: json.encode(ContactsID));
-
-                      // print(PhoneContactsCubit.get(context).FavoratesContactsID.toString());
                 }, icon:const Icon(Icons.star)),
               IconButton(icon: FaIcon(FontAwesomeIcons.edit),onPressed: (){
-                Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=>ContactEditor(contact)));
+                Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=>ContactEditor(contact,NumbersInAccount.toList())));
               },),
-              //   PopupMenuButton(
-              //   icon: Icon(Icons.ac_unit),
-              //   itemBuilder: (BuildContext context) {
-              //     return actions.map((String action) {
-              //       return PopupMenuItem(
-              //         value: action,
-              //         child: Text(action),
-              //       );
-              //     }).toList();
-              //   },
-              // ),
+
 
               ],
               title: Row(
@@ -221,76 +188,79 @@ class ContactDetails extends StatelessWidget {
               toolbarHeight: MediaQuery.of(context).size.height*0.12,
               // titleSpacing: MediaQuery.of(context).size.width*0.25,
             ),
-            body: SafeArea(
-              child: Column(
-                children: [
-                  ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxHeight: NumbersInAccount.length*55+70,
-                      ),
-                      child: DefaultAccountView(NumbersInAccount, IsPrimery)),
-                  const Divider(thickness: 1, indent: 25, endIndent: 25,),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      const Icon(Icons.sticky_note_2),
-                      const SizedBox(width:15),
-                      contact.info!.notes.length >0?ContactTagNotes(context , contact.info?.notes):Container(
-                        width:MediaQuery.of(context).size.width*0.50,
-                        height: 70,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(4),
-                          color:HexColor("#F5F5F5"),
+            body: BlocBuilder<PhoneContactsCubit,PhoneContactStates>(
+              builder:(context,state)=> SafeArea(
+                child: Column(
+                  children: [
+                    ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight: NumbersInAccount.length*55+70,
                         ),
-                        child: Center(child: Icon(Icons.add)),
-                      ),
-                      const SizedBox(width:21,),
-                      ///Social Media Area Where the user can link there Accounts here
-                      Padding(
-                        padding: const EdgeInsets.only(right: 15.0),
-                        child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Container(
-                            width: MediaQuery.of(context).size.width*0.25,
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: SocialMediaList.length,
-                              itemBuilder: (context,index){
-                                return Row(children: [
-                                  SocialMediaList[index]["Icon"],
+                        child: DefaultAccountView(NumbersInAccount, IsPrimery)),
+                    const Divider(thickness: 1, indent: 25, endIndent: 25,),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        const Icon(Icons.sticky_note_2),
+                        const SizedBox(width:15),
+                        contact.info!.notes.length >0?ContactTagNotes(context , contact.info?.notes):Container(
+                          width:MediaQuery.of(context).size.width*0.50,
+                          height: 70,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            color:HexColor("#F5F5F5"),
+                          ),
+                          child: Center(child: Icon(Icons.add)),
+                        ),
+                        const SizedBox(width:21,),
+                        ///Social Media Area Where the user can link there Accounts here
+                        Padding(
+                          padding: const EdgeInsets.only(right: 15.0),
+                          child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: MediaQuery.of(context).size.width*0.25,
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                itemCount: SocialMediaList.length,
+                                itemBuilder: (context,index){
+                                  return Row(children: [
+                                    SocialMediaList[index]["Icon"],
 
-                                  Padding(
-                                    padding: const EdgeInsets.only(left:3.0),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(SocialMediaList[index]["platform"],style: TextStyle(height: 1.3,fontWeight:FontWeight.w600),),
-                                        Text(SocialMediaList[index]["UserName"],style: TextStyle(height: 1,fontSize: 10),),
-                                      ],
+                                    Padding(
+                                      padding: const EdgeInsets.only(left:3.0),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(SocialMediaList[index]["platform"],style: TextStyle(height: 1.3,fontWeight:FontWeight.w600),),
+                                          Text(SocialMediaList[index]["UserName"],style: TextStyle(height: 1,fontSize: 10),),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],);
+                                  ],);
+                                },
+                              ),
+                            ),
+                            MaterialButton(
+                              padding: EdgeInsets.all(5),
+                              onPressed: (){
                               },
-                            ),
-                          ),
-                          MaterialButton(
-                            padding: EdgeInsets.all(5),
-                            onPressed: (){},
-                            child: Row(children: [Image.asset("assets/Images/link.png",scale: 2.4,),SizedBox(width: 5),Text("Link Account")],),
-                            color: HexColor("#C2C2C2"),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)
-                            ),
+                              child: Row(children: [Image.asset("assets/Images/link.png",scale: 2.4,),SizedBox(width: 5),Text("Link Account")],),
+                              color: HexColor("#C2C2C2"),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)
+                              ),
 
-                          ),
-                        ],
-                    ),
+                            ),
+                          ],
                       ),
-                  ],),
-                ],
+                        ),
+                    ],),
+                  ],
+                ),
               ),
             ),
           );
