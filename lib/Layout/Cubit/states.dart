@@ -27,3 +27,4 @@ class GetChatContactsErrorState extends AppStates{
 }
 
 class ColorPickerColorChange extends AppStates{}
+class PopUpMenuUpdate extends AppStates{}

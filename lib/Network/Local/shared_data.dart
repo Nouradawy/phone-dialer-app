@@ -45,3 +45,7 @@ void GetShardData()  {
 
 
 }
+
+void GetThemeColorData(){
+
+}

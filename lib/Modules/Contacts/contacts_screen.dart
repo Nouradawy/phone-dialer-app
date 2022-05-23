@@ -10,6 +10,9 @@ import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_states.dart';
 import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
+import 'package:dialer_app/Modules/Phone/Cubit/cubit.dart';
+import 'package:dialer_app/Modules/Phone/Cubit/state.dart';
+import 'package:dialer_app/Modules/Phone/phone_screen.dart';
 import 'package:dialer_app/Modules/webview/webpage.dart';
 import 'package:dialer_app/Network/Local/cache_helper.dart';
 import 'package:dialer_app/Network/Local/shared_data.dart';
@@ -122,6 +125,9 @@ class ContactDetails extends StatelessWidget {
                   'number':e.number});
               }
           });
+
+          PhoneLogsCubit.get(context).ContactCallLogs(contact);
+          print("test contact log ");
           return Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.grey[100],
@@ -255,10 +261,62 @@ class ContactDetails extends StatelessWidget {
                               ),
 
                             ),
+
                           ],
                       ),
                         ),
                     ],),
+                    const SizedBox(height: 5),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text("Call logs"),
+                        SizedBox(width: MediaQuery.of(context).size.width*0.70),
+                        const Text("View all"),
+
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    Container(
+                      height: MediaQuery.of(context).size.height*0.30,
+                      child: BlocBuilder<PhoneLogsCubit,PhoneLogsStates>(
+                        builder: (context,index)=>ListView.builder(
+                          itemCount: PhoneLogsCubit.get(context).contactCalllog.length>5?5:PhoneLogsCubit.get(context).contactCalllog.length,
+                          itemBuilder: (context,index) {
+                            PhoneLogsCubit.get(context).LogAvatarColors();
+                            return ListTile(
+                              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                              onTap: () {},
+                              subtitle: Transform.translate(
+                                offset: Offset(-5,0),
+                                child: Text(calculateDifference(PhoneLogsCubit.get(context).contactCalllog[index]["Date"]),style: TextStyle(
+                                  fontFamily: "cairo",
+                                  fontSize: 10,
+
+                                ),),
+                              ),
+                              title: Transform.translate(
+                                offset:Offset(-5,0),
+                                //TODO: Let the user at the initialization Screen Specify SIM1 & SIM2
+                                child: Row(
+                                  children: [
+                                    Image.asset(PhoneLogsCubit.get(context).contactCalllog.first["phoneAccountId"] == PhoneLogsCubit.get(context).contactCalllog[index]["phoneAccountId"]?"assets/Images/sim1.png" :"assets/Images/sim2.png",scale: 1.3),
+                                    Text(
+                                      " ${PhoneLogsCubit.get(context).contactCalllog[index]["number"].toString()}",
+                                      style: Theme.of(context).textTheme.bodyText2,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // //TODO:Something Retarining null at loggerAvatar(Only affected by Android 32)
+
+                            );
+
+                          },),
+                      ),
+                    ),
+
+
                   ],
                 ),
               ),

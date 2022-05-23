@@ -10,6 +10,7 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -70,35 +71,321 @@ Future<void> PermissionHandle() async {
   }
 
 
-  Color CustomHomePageBackgroundColor = ThemeSwitch?HexColor("#EAE6F2"):HexColor("#2A2A2A");
+  Color CustomHomePageBackgroundColor = HexColor("#EAE6F2");
+  Color SearchTextColor = SearchIconColor();
+  Color TabBarTextColor = ThemeSwitch?HexColor("#EAE6F2"):HexColor("#2A2A2A");
+  Color SearchBackground= SearchBackgroundColor();
+
 void SaveCustomTheme(){
   CacheHelper.saveData(key: "CustomHomePageBackgroundColor", value: CustomHomePageBackgroundColor.toString().replaceAll("Color","" ).replaceAll("(", "").replaceAll(")", ""));
 }
 
+  // ConstrainedBox HomePageBackgroundColorPicker(){
+  //   // Show the color picker in sized box in a raised card.
+  //   return ConstrainedBox(
+  //     constraints: BoxConstraints(maxHeight: 500),
+  //     child: DefaultTabController(
+  //       length: 3,
+  //       child: Column(
+  //         children: [
+  //           Text("Choose Your desired section to Customize "),
+  //           TabBar(
+  //               indicatorColor: HexColor("#F07F5C"),
+  //               unselectedLabelColor: Colors.black,
+  //               isScrollable: true,
+  //               labelStyle: TextStyle(fontSize: 10),
+  //               tabs: [
+  //
+  //             Row(children: [Icon(Icons.flip_to_back ,color:Colors.black),Text("Background Color")],),
+  //             Tab(text: 'Search Text Color', icon: FaIcon(FontAwesomeIcons.google ,color:Colors.black)),
+  //             Tab(text: 'Search Background Color', icon: FaIcon(FontAwesomeIcons.twitter, color:Colors.black)),
+  //           ]),
+  //           Container(
+  //             width: 300,
+  //             height: 400,
+  //             child: TabBarView(children: [
+  //               SingleChildScrollView(
+  //                 child: ColorPicker(
+  //                   // enableOpacity: true,
+  //                   // Use the screenPickerColor as start color.
+  //                   color: CustomHomePageBackgroundColor,
+  //                   // Update the screenPickerColor using the callback.
+  //                   pickersEnabled: const <ColorPickerType,bool>{
+  //                     ColorPickerType.custom: true,
+  //                     ColorPickerType.accent: true,
+  //                     ColorPickerType.wheel: true,
+  //                   },
+  //                   onColorChangeEnd: (color) {
+  //                     CustomHomePageBackgroundColor = color;
+  //                     emit(ColorPickerColorChange());
+  //                   },
+  //                   width: 30,
+  //                   height: 30,
+  //                   borderRadius: 22,
+  //                   heading: const Text(
+  //                     'Select color',
+  //                   ),
+  //                   subheading: const Text(
+  //                     'Select color shade',
+  //                   ), onColorChanged: (Color value) {  },
+  //                 ),
+  //               ),
+  //               SingleChildScrollView(
+  //                 child: ColorPicker(
+  //                   // enableOpacity: true,
+  //                   // Use the screenPickerColor as start color.
+  //                   color: CustomHomePageBackgroundColor,
+  //                   // Update the screenPickerColor using the callback.
+  //                   pickersEnabled: const <ColorPickerType,bool>{
+  //                     ColorPickerType.custom: true,
+  //                     ColorPickerType.accent: true,
+  //                     ColorPickerType.wheel: true,
+  //                   },
+  //                   onColorChangeEnd: (color) {
+  //                     CustomHomePageBackgroundColor = color;
+  //                     emit(ColorPickerColorChange());
+  //                   },
+  //                   width: 30,
+  //                   height: 30,
+  //                   borderRadius: 22,
+  //                   heading: const Text(
+  //                     'Select color',
+  //                   ),
+  //                   subheading: const Text(
+  //                     'Select color shade',
+  //                   ), onColorChanged: (Color value) {  },
+  //                 ),
+  //               ),
+  //               SingleChildScrollView(
+  //                 child: ColorPicker(
+  //                   // enableOpacity: true,
+  //                   // Use the screenPickerColor as start color.
+  //                   color: CustomHomePageBackgroundColor,
+  //                   // Update the screenPickerColor using the callback.
+  //                   pickersEnabled: const <ColorPickerType,bool>{
+  //                     ColorPickerType.custom: true,
+  //                     ColorPickerType.accent: true,
+  //                     ColorPickerType.wheel: true,
+  //                   },
+  //                   onColorChangeEnd: (color) {
+  //                     CustomHomePageBackgroundColor = color;
+  //                     emit(ColorPickerColorChange());
+  //                   },
+  //                   width: 30,
+  //                   height: 30,
+  //                   borderRadius: 22,
+  //                   heading: const Text(
+  //                     'Select color',
+  //                   ),
+  //                   subheading: const Text(
+  //                     'Select color shade',
+  //                   ), onColorChanged: (Color value) {  },
+  //                 ),
+  //               ),
+  //
+  //             ]),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+  bool AppBackgroundDropdown = false;
+  bool SearchTextColorDropDown = false;
+  bool TabBarTextColorDropDown = false;
+  bool SearchBackgroundColorDropDown = false;
   ConstrainedBox HomePageBackgroundColorPicker(){
     // Show the color picker in sized box in a raised card.
     return ConstrainedBox(
-      constraints: const BoxConstraints(
-        maxHeight: 350,
-      ),
+      constraints: BoxConstraints(maxHeight: 450),
       child: SingleChildScrollView(
-        child: ColorPicker(
-          // Use the screenPickerColor as start color.
-          color: CustomHomePageBackgroundColor,
-          // Update the screenPickerColor using the callback.
-          onColorChanged: (color) {
-            CustomHomePageBackgroundColor = color;
-            emit(ColorPickerColorChange());
-          },
-          width: 30,
-          height: 30,
-          borderRadius: 22,
-          heading: const Text(
-            'Select color',
-          ),
-          subheading: const Text(
-            'Select color shade',
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text("AppBar Recolor "),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                child:InkWell(
+                    onTap: (){
+                      AppBackgroundDropdown =! AppBackgroundDropdown;
+                      emit(PopUpMenuUpdate());
+                    },
+                    child: Row(children: [Icon(
+                      Icons.format_color_fill,
+                    ),Text("AppBar Background Color")],))
+              ),
+            ),
+            AnimatedSize(
+              curve:Curves.easeIn,
+              duration: Duration(seconds: 1),
+              child: Container(
+                height: AppBackgroundDropdown==false?0:400,
+                child: ColorPicker(
+                  // enableOpacity: true,
+                  // Use the screenPickerColor as start color.
+                  color: CustomHomePageBackgroundColor,
+                  // Update the screenPickerColor using the callback.
+                  pickersEnabled: const <ColorPickerType,bool>{
+                    ColorPickerType.custom: true,
+                    ColorPickerType.accent: true,
+                    ColorPickerType.wheel: true,
+                  },
+                  onColorChangeEnd: (color) {
+                    CustomHomePageBackgroundColor = color;
+                    emit(ColorPickerColorChange());
+                  },
+                  width: 30,
+                  height: 30,
+                  borderRadius: 22,
+                  heading: const Text(
+                    'Select color',
+                  ),
+                  subheading: const Text(
+                    'Select color shade',
+                  ), onColorChanged: (Color value) {  },
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                  child:InkWell(
+                      onTap: (){
+                        SearchTextColorDropDown =! SearchTextColorDropDown;
+
+                        emit(PopUpMenuUpdate());
+                      },
+                      child: Row(children: [Icon(
+                        Icons.format_size,
+                      ),Text("Search Text Color")],))
+              ),
+            ),
+            AnimatedSize(
+              curve:Curves.easeIn,
+              duration: Duration(seconds: 1),
+              child: Container(
+                height: SearchTextColorDropDown==false?0:400,
+                child: ColorPicker(
+                  // enableOpacity: true,
+                  // Use the screenPickerColor as start color.
+                  color: SearchTextColor,
+                  // Update the screenPickerColor using the callback.
+                  pickersEnabled: const <ColorPickerType,bool>{
+                    ColorPickerType.custom: true,
+                    ColorPickerType.accent: true,
+                    ColorPickerType.wheel: true,
+                  },
+                  onColorChangeEnd: (color) {
+                    SearchTextColor = color;
+                    emit(ColorPickerColorChange());
+                  },
+                  width: 30,
+                  height: 30,
+                  borderRadius: 22,
+                  heading: const Text(
+                    'Select color',
+                  ),
+                  subheading: const Text(
+                    'Select color shade',
+                  ), onColorChanged: (Color value) {  },
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                  child:InkWell(
+                      onTap: (){
+                        TabBarTextColorDropDown =! TabBarTextColorDropDown;
+                        emit(PopUpMenuUpdate());
+                      },
+                      child: Row(children: [Icon(
+                        Icons.smart_button,
+                      ),Text("TabBar Text Color")],))
+              ),
+            ),
+            AnimatedSize(
+              curve:Curves.easeIn,
+              duration: Duration(seconds: 1),
+              child: Container(
+                height: TabBarTextColorDropDown==false?0:400,
+                child: ColorPicker(
+                  // enableOpacity: true,
+                  // Use the screenPickerColor as start color.
+                  color: TabBarTextColor,
+                  // Update the screenPickerColor using the callback.
+                  pickersEnabled: const <ColorPickerType,bool>{
+                    ColorPickerType.custom: true,
+                    ColorPickerType.accent: true,
+                    ColorPickerType.wheel: true,
+                  },
+                  onColorChangeEnd: (color) {
+                    TabBarTextColor = color;
+                    emit(ColorPickerColorChange());
+                  },
+                  width: 30,
+                  height: 30,
+                  borderRadius: 22,
+                  heading: const Text(
+                    'Select color',
+                  ),
+                  subheading: const Text(
+                    'Select color shade',
+                  ), onColorChanged: (Color value) {  },
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                  child:InkWell(
+                      onTap: (){
+                        SearchBackgroundColorDropDown =! SearchBackgroundColorDropDown;
+
+                        emit(PopUpMenuUpdate());
+                      },
+                      child: Row(
+                        children: [Icon(
+                        Icons.flip_to_back,
+                      ),Text("Search Background Color")],))
+              ),
+            ),
+            AnimatedSize(
+              curve:Curves.easeIn,
+              duration: Duration(seconds: 1),
+              child: Container(
+                height: SearchBackgroundColorDropDown==false?0:400,
+                child: ColorPicker(
+                  // enableOpacity: true,
+                  // Use the screenPickerColor as start color.
+                  color: SearchBackground,
+                  // Update the screenPickerColor using the callback.
+                  pickersEnabled: const <ColorPickerType,bool>{
+                    ColorPickerType.custom: true,
+                    ColorPickerType.accent: true,
+                    ColorPickerType.wheel: true,
+                  },
+                  onColorChangeEnd: (color) {
+                    SearchBackground = color;
+                    emit(ColorPickerColorChange());
+                  },
+                  width: 30,
+                  height: 30,
+                  borderRadius: 22,
+                  heading: const Text(
+                    'Select color',
+                  ),
+                  subheading: const Text(
+                    'Select color shade',
+                  ), onColorChanged: (Color value) {  },
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

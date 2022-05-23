@@ -21,8 +21,9 @@ ThemeData LightThemeData() {
       //   borderRadius: BorderRadius.circular(7)
       // ),
     ),
-    primarySwatch: Colors.blue,
+    primarySwatch: Colors.indigo,
     floatingActionButtonTheme: FloatingActionButtonThemeData(
+      ///FloatingActionButton BackGround Color
         backgroundColor:HexColor("#4527A0"),
     ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
@@ -53,12 +54,14 @@ ThemeData LightThemeData() {
           fontSize: 10,
           color:HexColor("#8F8F8F").withOpacity(0.6)
       ),
+      ///Contact Name (title)
       bodyText1:TextStyle(
         fontFamily: "Cairo",
         fontSize: 15,
         height: 1,
         color:HexColor("#292929"),
       ),
+      ///Contact Number (Subtitle)
       bodyText2: TextStyle(
         fontSize: 12,
         fontFamily: "Cairo",
@@ -97,28 +100,46 @@ ThemeData LightThemeData() {
 }
 //////////////////////////////////////////////////Other Text Styles ////////////////////////////////////////
 
+//////////////CallLogScreen(Details)///////////////////////////
 TextStyle CallTimeTextStyle() {
   return TextStyle(
     fontFamily: "cairo",
-    fontStyle: FontStyle.italic,
+    // fontStyle: FontStyle.italic,
     fontSize: 11,
     fontWeight: FontWeight.w600,
   );
 }
 TextStyle PhoneTypeTextStyle() {
   return TextStyle(
-    fontFamily: "cairo",
+    fontFamily: "Roboto",
     fontSize: 11,
-    fontWeight: FontWeight.w500,
-    color: Colors.black,
+    fontWeight: FontWeight.w300,
+    color: Colors.red,
 
+  );
+}
+TextStyle PhoneLogDate() {
+  return TextStyle(
+    fontFamily: "Roboto",
+    fontSize: 10,
+    fontWeight: FontWeight.w400,
+    color: Colors.black
   );
 }
 
 
 
 ////////////////////////////////////////////////Colors///////////////////////////////////////////////////
+
+//////////////CallLogScreen///////////////////////////
+HexColor CallLogDetailsBackStrip() => ThemeSwitch?HexColor("#8F00B9"):HexColor("#8F00B9");
+HexColor CallLogDetailsleftContainer() => ThemeSwitch?HexColor("#BFE5F9"):HexColor("#BFE5F9");
+HexColor CallLogDetailsRightContainer() => ThemeSwitch?HexColor("#F2E7FE"):HexColor("#F2E7FE");
+
+
+
 HexColor ContactsFavBackgroundColor() => ThemeSwitch?HexColor("#F2F2F2"):HexColor("#1F1B24");
+
 Color HomePageBackgroundColor() => ThemeSwitch?HexColor("#FAFAFA"):HexColor("#121212");
 HexColor AppBarChatTextColor() => ThemeSwitch?HexColor("#616161"):HexColor("#000000");
 Color SearchBackgroundColor() => ThemeSwitch?HexColor("#FFFFFF").withOpacity(0.52):HexColor("#2D4E80").withOpacity(0.52);

@@ -1,5 +1,6 @@
 
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
+import 'package:dialer_app/Layout/Cubit/states.dart';
 import 'package:dialer_app/Layout/incall_screen.dart';
 import 'package:dialer_app/Models/user_model.dart';
 import 'package:dialer_app/Modules/Chat/chat_screen.dart';
@@ -11,10 +12,12 @@ import 'package:dialer_app/NativeBridge/native_bridge.dart';
 import 'package:dialer_app/Network/Local/shared_data.dart';
 import 'package:dialer_app/Themes/light_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:focused_menu/focused_menu.dart';
 import 'package:focused_menu/modals.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:ndialog/ndialog.dart';
 import '../home-editcolor.dart';
@@ -105,20 +108,21 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
               Container(
                   color: AppBarBackgroundColor(context)
               ),
-              Padding(
-                padding:EdgeInsets.only(top:AppbarSize-13,left:12),
-                child:Container(
-                    width: 35,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color:AppBarEditIconBackGroundColor(),
-                    ),
-                    child: IconButton(onPressed: (){
-                      AppCubit.get(context).EditorIsActive = true;
-                      Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=>HomeScreenEdite()));
-                    }, icon:Icon(Icons.create_outlined , color: AppBarEditIconColor(),),iconSize: 20 ,)),
-              ),
+              // Padding(
+              //   padding:EdgeInsets.only(top:AppbarSize-13,left:12),
+              //   child:Container(
+              //       width: 35,
+              //       height: 36,
+              //       decoration: BoxDecoration(
+              //         borderRadius: BorderRadius.circular(8),
+              //         color:AppBarEditIconBackGroundColor(),
+              //       ),
+              //       child: InkWell(onTap: (){
+              //         Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=>HomeScreenEdite()));
+              //       },
+              //         child: Image.asset("assets/Images/droplet-solid.png",scale: 12,color: HexColor("#4527A0"),),
+              //       )),
+              // ),
             ]
         ),
         clipper: MyCustomeClipper(),
@@ -133,7 +137,6 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
       labelColor: TabBarlabelColor(),
       unselectedLabelColor: TabBarUnselectedlabelColor(),
       indicatorSize: TabBarIndicatorSize.label,
-
       labelStyle:Theme.of(context).textTheme.headline1,
       tabs: const [
         Tab(text:"Phone"),
@@ -151,41 +154,40 @@ AppBar MainAppBarEditor(BuildContext context, double AppbarSize,TextEditingContr
         borderRadius: BorderRadiusDirectional.circular(3),
         color:SearchBackgroundColor(),
       ),
-      child: Stack(
-        children: [
-          Padding(
-            padding: EdgeInsets.only(left:MediaQuery.of(context).size.width*0.55*0.01),
-            child: Icon(Icons.search,color: SearchIconColor(),size: 25,),
+      child:
+
+         InkWell(
+          onTap: (){
+
+            NDialog(
+              content:BlocBuilder<AppCubit,AppStates>(
+                  builder:(context,states)=> AppCubit.get(context).HomePageBackgroundColorPicker()),
+              dialogStyle: DialogStyle(
+                elevation: 10,
+              ),
+            ).show(context , barrierColor: Colors.black.withOpacity(0.20));
+          },
+          child: Row (
+            children: [
+              Padding(
+                padding: EdgeInsets.only(left:MediaQuery.of(context).size.width*0.55*0.01),
+                child: Icon(Icons.search,color: SearchIconColor(),size: 25,),
+              ),
+              Text("Search among ${PhoneContactsCubit.get(context).Contacts.length} contact(s)",style: Theme.of(context).textTheme.headline2!.copyWith(color: AppCubit.get(context).SearchTextColor),),
+
+            ],
           ),
-          TextField(
-            style: Theme.of(context).textTheme.headline2,
-            controller: Searchcontroller,
-            textAlign:TextAlign.center,
-            textAlignVertical: TextAlignVertical.center,
-            onChanged: (value){
-              PhoneContactsCubit.get(context).SearchContacts(Searchcontroller ,PhoneContactsCubit.get(context).Contacts);
-            },
-            decoration: InputDecoration(
-              hintText: "Search among ${PhoneContactsCubit.get(context).Contacts.length} contact(s)",
-              // contentPadding: EdgeInsets.all(0),
-              // alignLabelWithHint: true,
-              // labelText:"Search",
-              hintStyle:Theme.of(context).textTheme.headline2,
-              // isCollapsed: true,
-              border:InputBorder.none,
-              // fillColor: SearchBackgroundColor(),
-            ),
-          ),
-        ],
-      ),
+        ),
     ),
     actions: [
       Padding(
         padding: const EdgeInsets.only(top:16.0,right:15),
         child: InkWell(
           onTap:(){
-            Navigator.push(context,
-            MaterialPageRoute(builder: (BuildContext context) => ChatScreen()));
+            NDialog(
+              content:AppCubit.get(context).HomePageBackgroundColorPicker(),
+              dialogStyle: DialogStyle(),
+            ).show(context);
           },
           child: Stack(
             children: [
@@ -225,7 +227,8 @@ AppBar MainAppBarEditor(BuildContext context, double AppbarSize,TextEditingContr
           child: Stack(
               children: [
                 Container(
-                    color: AppBarBackgroundColor(context)
+                  /// background app bar value
+                    color: AppCubit.get(context).CustomHomePageBackgroundColor
                 ),
                 Padding(
                   padding:EdgeInsets.only(top:AppbarSize-13,left:12),
@@ -239,26 +242,11 @@ AppBar MainAppBarEditor(BuildContext context, double AppbarSize,TextEditingContr
                       child: IconButton(onPressed: (){
                         Navigator.push(context,MaterialPageRoute(builder: (
                             BuildContext context)=>Home()));
+                        AppCubit.get(context).SaveCustomTheme();
+                        print(AppCubit.get(context).CustomHomePageBackgroundColor);
                         AppCubit.get(context).EditorIsActive = false;
-                      }, icon:Icon(Icons.create_outlined , color: AppBarEditIconColor(),),iconSize: 20 ,)),
-                ),
-                Transform.translate(
-                  offset: Offset(MediaQuery.of(context).size.width-50,AppbarSize-15),
-                  child: Container(
-                    width: 25,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(width: 3,color:Colors.white),
-                    ),
-                    child: IconButton(icon:Icon(Icons.circle , color:AppCubit.get(context).CustomHomePageBackgroundColor),onPressed: ()  {
-
-                       NDialog(
-                          content:AppCubit.get(context).HomePageBackgroundColorPicker(),
-                        dialogStyle: DialogStyle(),
-                          ).show(context);
-
-                    },),
-                  ),
+                      }, icon:Icon(Icons.done , color: AppBarEditIconColor(),),iconSize: 20 ,
+                        tooltip: "Apply" ,)),
                 ),
               ]
           ),
@@ -1061,9 +1049,12 @@ Drawer AppDrawer(BuildContext context , AppbarSize) {
               ProfileCubit.get(context)..GetChatContacts();
               var Cubit = ProfileCubit.get(context);
               String UserState = "online";
+
+
               return  Padding(
                 padding:EdgeInsets.only(top:MediaQuery.of(context).padding.top),
                 child: Column(
+
                     children: [
                       Container(height: MediaQuery.of(context).size.height*0.20,
                           color:Colors.amber,
@@ -1184,6 +1175,16 @@ Drawer AppDrawer(BuildContext context , AppbarSize) {
                         },
                         leading: Icon(Icons.contacts),
                         title:Text("ContactPictures"),
+                      ),
+                      ListTile(
+                        onTap: (){
+                            Navigator.push(context, MaterialPageRoute(
+                                builder: (BuildContext context) =>
+                                    HomeScreenEdite()
+                            ));
+                        },
+                        leading: FaIcon(FontAwesomeIcons.theaterMasks),
+                        title:Text("Theme Customization"),
                       ),
                     ],
                   ),
