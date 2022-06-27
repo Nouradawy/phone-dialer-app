@@ -5,6 +5,8 @@ import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart
 import 'package:dialer_app/Modules/Phone/Cubit/cubit.dart';
 import 'package:dialer_app/NativeBridge/native_bridge.dart';
 import 'package:dialer_app/NativeBridge/native_states.dart';
+import 'package:dialer_app/Network/Local/shared_data.dart';
+import 'package:dialer_app/Themes/Cubit/cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hexcolor/hexcolor.dart';
@@ -52,9 +54,21 @@ class InCallScreen extends StatelessWidget {
               backgroundColor: HexColor("#2C087A"),
               body: Stack(
                 children: [
-                  Container(
-                    height: 400,
-                    width: double.infinity,
+                  ThemeCubit.get(context).InCallBackGroundImagePicker !=null?Padding(
+                padding:  EdgeInsets.only(top:double.parse(ThemeCubit.get(context).MyThemeData[ActiveTheme]["InCallBackgroundVerticalPading"])),
+                child: Container(
+                  height: double.parse(ThemeCubit.get(context).MyThemeData[ActiveTheme]["InCallBackgroundHeight"]),
+                  width: double.infinity,
+                  decoration:  BoxDecoration(
+                    image: DecorationImage(
+                      image: ImageSwap(ThemeCubit.get(context).InCallBackGroundImagePicker),
+                      fit: BoxFit.cover,
+                      opacity: double.parse(ThemeCubit.get(context).MyThemeData[ActiveTheme]["InCallBackgroundOpacity"]),
+                    ),
+                  ),
+                ),
+              ):Container(
+                    height: double.parse(ThemeCubit.get(context).MyThemeData[ActiveTheme]["InCallBackgroundHeight"]),
                     decoration: const BoxDecoration(
                       image: DecorationImage(
                         image: AssetImage(
@@ -66,7 +80,7 @@ class InCallScreen extends StatelessWidget {
                   Column(
                       children: [
                         SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.09,
+                          height: MediaQuery.of(context).padding.top + 20,
                         ),
 
                         Stack(

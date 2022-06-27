@@ -1,4 +1,5 @@
 
+
 import 'package:call_log/call_log.dart';
 
 import 'package:bloc/bloc.dart';
@@ -6,7 +7,7 @@ import 'package:dialer_app/Layout/Cubit/states.dart';
 import 'package:dialer_app/Modules/Chat/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
 import 'package:dialer_app/Modules/profile/Profile%20Cubit/profile_cubit.dart';
-import 'package:dialer_app/Themes/light_theme.dart';
+import 'package:dialer_app/Themes/theme_config.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +25,8 @@ import 'NativeBridge/native_bridge.dart';
 import 'Network/Local/cache_helper.dart';
 import 'Network/Local/shared_data.dart';
 import 'Network/Remote/dio_helper.dart';
-import 'Themes/dark_theme.dart';
+import 'Themes/Cubit/cubit.dart';
+
 import 'home.dart';
 
 void callbackDispatcher() {
@@ -60,9 +62,15 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("message data: ${message.data}");
   showToast(text: 'on BackGround', state: ToastStates.SUCCESS,);
 }
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  DioHelper.dio;
+  await CacheHelper.init();
+  token = CacheHelper.getData(key: 'token');
+
+
   Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
   String NotificationToken = FirebaseMessaging.instance.getToken(
   ).toString();
@@ -95,10 +103,8 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
 
-  DioHelper.dio;
-  await CacheHelper.init();
-  token = CacheHelper.getData(key: 'token');
-  ThemeSharedPref();
+
+  // ThemeSharedPref();
   // GetShardData();
   print("AuthorizationToken: "+token.toString());
   Widget Homescreen = Home();
@@ -112,7 +118,7 @@ void main() async {
 
   BlocOverrides.runZoned(
         () =>runApp(MyApp(
-          themeSwitch :ThemeSwitch,
+          // themeSwitch :ThemeSwitch,
           homeScreen:Homescreen,
     )),
     blocObserver: MyBlocObserver(),
@@ -121,46 +127,54 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  final bool themeSwitch;
+  // final bool themeSwitch;
   final Widget homeScreen;
 
 
   const MyApp({
-    required this.themeSwitch,
+    // required this.themeSwitch,
     required this.homeScreen,
   });
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+
     return MultiBlocProvider(
       providers: [
 
-        BlocProvider(create:(context)=> ChatAppCubit()),
+        // BlocProvider(create:(context)=> ChatAppCubit()),
         BlocProvider(create: (context)=>NativeBridge()..phonestateEvents()),
         BlocProvider(create:(context)=> PhoneContactsCubit()..GetRawContacts()),
         BlocProvider(create: (context)=> AppCubit()),
         BlocProvider(create: (context)=>ProfileCubit()),
         BlocProvider(create: (context)=>PhoneLogsCubit()),
+        BlocProvider(create: (context)=>ThemeCubit()),
+
 
       ],
-    child:BlocBuilder<AppCubit,AppStates>(
-      builder:(context,state) =>MaterialApp(
-                      debugShowCheckedModeBanner: false,
-                      debugShowMaterialGrid: false,
-                      theme: LightThemeData(),
-                      darkTheme: DarkThemeData(),
-                      themeMode: themeSwitch?ThemeMode.light:ThemeMode.dark,
-                      home: MultiBlocProvider(
-                        providers: [
-                          BlocProvider.value(
-                            value:ProfileCubit.get(context)..GetChatContacts()),
-                          BlocProvider.value(
-                              value:PhoneLogsCubit.get(context)..getCallLogsInitial(PhoneContactsCubit.get(context).Contacts)),
-                        ],
-                            child: homeScreen),
-                      ),
-                  ),
+      child:BlocBuilder<AppCubit,AppStates>(
+
+        builder:(context,state)
+        {
+          ThemeSharedPref(context);
+          if(Themedata.isNotEmpty)
+            {
+              ThemeCubit.get(context).LoadThemeData();
+            }
+                return MaterialApp(
+                  debugShowCheckedModeBanner: false,
+                  debugShowMaterialGrid: false,
+                  theme: ThemeConfig(),
+                  // themeMode: themeSwitch?ThemeMode.light:ThemeMode.dark,
+                  home: MultiBlocProvider(providers: [
+                    BlocProvider.value(
+                        value: ProfileCubit.get(context)..GetChatContacts()),
+                    BlocProvider.value(
+                        value: PhoneLogsCubit.get(context)..getCallLogsInitial(PhoneContactsCubit.get(context).Contacts)),
+                  ], child: homeScreen),
+                );
+              }),
     );
   }
 }

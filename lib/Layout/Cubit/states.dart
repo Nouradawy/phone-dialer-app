@@ -26,4 +26,4 @@ class GetChatContactsErrorState extends AppStates{
   GetChatContactsErrorState(this.error);
 }
 
-class ColorPickerColorChange extends AppStates{}
+

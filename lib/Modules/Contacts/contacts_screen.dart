@@ -10,6 +10,9 @@ import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_states.dart';
 import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
+import 'package:dialer_app/Modules/Phone/Cubit/cubit.dart';
+import 'package:dialer_app/Modules/Phone/Cubit/state.dart';
+import 'package:dialer_app/Modules/Phone/phone_screen.dart';
 import 'package:dialer_app/Modules/webview/webpage.dart';
 import 'package:dialer_app/Network/Local/cache_helper.dart';
 import 'package:dialer_app/Network/Local/shared_data.dart';
@@ -52,6 +55,7 @@ class ContactsScreen extends StatelessWidget {
                         contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
                            onTap: () {
                              CacheHelper.saveData(key: "fblist", value: json.encode(fbList));
+                             //Todo: CacheHelper saving fblist
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (BuildContext context) => ContactDetails(
                                 contact,
@@ -105,6 +109,7 @@ class ContactDetails extends StatelessWidget {
         builder: (context , state) {
           final List NumbersInAccount=[];
           String? IsPrimery;
+          String? DisplyAccount = contact.info?.accounts.first.type;
           final List SocialMediaList=[{
             "platform": "facebook",
             "Icon"  : FaIcon(FontAwesomeIcons.facebookSquare,size: 35,),
@@ -112,16 +117,24 @@ class ContactDetails extends StatelessWidget {
           }];
 
           contact.info?.phones.forEach((e) {
-            if(e.isPrimary ==true){
-              IsPrimery =  e.number;
-            }
-            if(e.accountType == contact.info?.accounts.first.type)
+            if(contact.info?.accounts.first.type == DisplyAccount)
               {
                 NumbersInAccount.add({
                   'label':e.label,
                   'number':e.number});
               }
+            if(e.isPrimary ==true){
+              IsPrimery =  e.number;
+
+            }
+            // if(e. == contact.info?.accounts.first.type)
+            //   {
+            //
+            //   }
           });
+
+          PhoneLogsCubit.get(context).ContactCallLogs(contact);
+          print("test contact log ");
           return Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.grey[100],
@@ -138,9 +151,9 @@ class ContactDetails extends StatelessWidget {
                     PhoneContactsCubit.get(context).FavoratesContacts.add(contact);
                   }
                 }, icon:const Icon(Icons.star)),
-              IconButton(icon: FaIcon(FontAwesomeIcons.edit),onPressed: (){
-                Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=>ContactEditor(contact,NumbersInAccount.toList())));
-              },),
+                IconButton(icon: FaIcon(FontAwesomeIcons.edit),onPressed: (){
+                  Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=>ContactEditor(contact,NumbersInAccount.toList())));
+                },),
 
 
               ],
@@ -166,17 +179,17 @@ class ContactDetails extends StatelessWidget {
 // ,                        Text(widget.contact.info!.socialMedias.elementAt(0).toString(),style: TextStyle(color: Colors.black,fontFamily: "Cairo" , fontSize: 8 , fontWeight: FontWeight.w400),),
 //                         ],),
                         Row(
-                        children: [
-                        FaIcon(FontAwesomeIcons.facebookSquare ,size: 15,color: Colors.green,),
-                        SizedBox(width: 2,)
-,                        Text("Omar",style: TextStyle(color: Colors.black,fontFamily: "Cairo" , fontSize: 8 , fontWeight: FontWeight.w400),),
-                        ],),
+                          children: [
+                            FaIcon(FontAwesomeIcons.facebookSquare ,size: 15,color: Colors.green,),
+                            SizedBox(width: 2,)
+                            ,                        Text("Omar",style: TextStyle(color: Colors.black,fontFamily: "Cairo" , fontSize: 8 , fontWeight: FontWeight.w400),),
+                          ],),
                         Row(
-                        children: [
-                        FaIcon(FontAwesomeIcons.twitter ,size: 15,color: Colors.green,),
-                        SizedBox(width: 2,)
-,                        Text("Omar",style: TextStyle(color: Colors.black,fontFamily: "Cairo" , fontSize: 8 , fontWeight: FontWeight.w400),),
-                        ],),
+                          children: [
+                            FaIcon(FontAwesomeIcons.twitter ,size: 15,color: Colors.green,),
+                            SizedBox(width: 2,)
+                            ,                        Text("Omar",style: TextStyle(color: Colors.black,fontFamily: "Cairo" , fontSize: 8 , fontWeight: FontWeight.w400),),
+                          ],),
                         SizedBox(height: 8,),
 
                       ],
@@ -218,47 +231,99 @@ class ContactDetails extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(right: 15.0),
                           child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: MediaQuery.of(context).size.width*0.25,
-                              child: ListView.builder(
-                                shrinkWrap: true,
-                                itemCount: SocialMediaList.length,
-                                itemBuilder: (context,index){
-                                  return Row(children: [
-                                    SocialMediaList[index]["Icon"],
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: MediaQuery.of(context).size.width*0.25,
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: SocialMediaList.length,
+                                  itemBuilder: (context,index){
+                                    return Row(children: [
+                                      SocialMediaList[index]["Icon"],
 
-                                    Padding(
-                                      padding: const EdgeInsets.only(left:3.0),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(SocialMediaList[index]["platform"],style: TextStyle(height: 1.3,fontWeight:FontWeight.w600),),
-                                          Text(SocialMediaList[index]["UserName"],style: TextStyle(height: 1,fontSize: 10),),
-                                        ],
+                                      Padding(
+                                        padding: const EdgeInsets.only(left:3.0),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(SocialMediaList[index]["platform"],style: TextStyle(height: 1.3,fontWeight:FontWeight.w600),),
+                                            Text(SocialMediaList[index]["UserName"],style: TextStyle(height: 1,fontSize: 10),),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  ],);
-                                },
+                                    ],);
+                                  },
+                                ),
                               ),
-                            ),
-                            MaterialButton(
-                              padding: EdgeInsets.all(5),
-                              onPressed: (){
-                              },
-                              child: Row(children: [Image.asset("assets/Images/link.png",scale: 2.4,),SizedBox(width: 5),Text("Link Account")],),
-                              color: HexColor("#C2C2C2"),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8)
+                              MaterialButton(
+                                padding: EdgeInsets.all(5),
+                                onPressed: (){
+                                },
+                                child: Row(children: [Image.asset("assets/Images/link.png",scale: 2.4,),SizedBox(width: 5),Text("Link Account")],),
+                                color: HexColor("#C2C2C2"),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8)
+                                ),
+
                               ),
 
-                            ),
-                          ],
-                      ),
+                            ],
+                          ),
                         ),
-                    ],),
+                      ],),
+                    const SizedBox(height: 5),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text("Call logs"),
+                        SizedBox(width: MediaQuery.of(context).size.width*0.70),
+                        const Text("View all"),
+
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    Container(
+                      height: MediaQuery.of(context).size.height*0.30,
+                      child: BlocBuilder<PhoneLogsCubit,PhoneLogsStates>(
+                        builder: (context,index)=>ListView.builder(
+                          itemCount: PhoneLogsCubit.get(context).contactCalllog.length>5?5:PhoneLogsCubit.get(context).contactCalllog.length,
+                          itemBuilder: (context,index) {
+                            PhoneLogsCubit.get(context).LogAvatarColors();
+                            return ListTile(
+                              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                              onTap: () {},
+                              subtitle: Transform.translate(
+                                offset: Offset(-5,0),
+                                child: Text(calculateDifference(PhoneLogsCubit.get(context).contactCalllog[index]["Date"]),style: TextStyle(
+                                  fontFamily: "cairo",
+                                  fontSize: 10,
+
+                                ),),
+                              ),
+                              title: Transform.translate(
+                                offset:Offset(-5,0),
+                                //TODO: Let the user at the initialization Screen Specify SIM1 & SIM2
+                                child: Row(
+                                  children: [
+                                    Image.asset(PhoneLogsCubit.get(context).contactCalllog.first["phoneAccountId"] == PhoneLogsCubit.get(context).contactCalllog[index]["phoneAccountId"]?"assets/Images/sim1.png" :"assets/Images/sim2.png",scale: 1.3),
+                                    Text(
+                                      " ${PhoneLogsCubit.get(context).contactCalllog[index]["number"].toString()}",
+                                      style: Theme.of(context).textTheme.bodyText2,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // //TODO:Something Retarining null at loggerAvatar(Only affected by Android 32)
+
+                            );
+
+                          },),
+                      ),
+                    ),
+
+
                   ],
                 ),
               ),
@@ -301,26 +366,26 @@ class ContactDetails extends StatelessWidget {
               ///Defualt Phone Number
               index==0 &&IsPrimery!=null ?
               ListTile(
-                        leading: Icon(Icons.phone_rounded),
-                        title:Text("${IsPrimery}"),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(6),
-                              color:HexColor('#01223B').withOpacity(0.11),
-                            ),
-                            child:IconButton(onPressed: (){} , icon:Icon(Icons.sms_rounded, color: HexColor("#8E2479"),)),
-                          ),
-                            const SizedBox(width: 10),
-                            Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(6),
-                                color:HexColor('#01223B').withOpacity(0.11),
-                              ),
-                              child:IconButton(onPressed: (){} , icon:FaIcon(FontAwesomeIcons.phoneAlt, color: HexColor("#28A7D6"),)),
-                            ),],),
-                      ):Container(),
+                leading: Icon(Icons.phone_rounded),
+                title:Text("${IsPrimery}"),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(6),
+                      color:HexColor('#01223B').withOpacity(0.11),
+                    ),
+                    child:IconButton(onPressed: (){} , icon:Icon(Icons.sms_rounded, color: HexColor("#8E2479"),)),
+                  ),
+                    const SizedBox(width: 10),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(6),
+                        color:HexColor('#01223B').withOpacity(0.11),
+                      ),
+                      child:IconButton(onPressed: (){} , icon:FaIcon(FontAwesomeIcons.phoneAlt, color: HexColor("#28A7D6"),)),
+                    ),],),
+              ):Container(),
               //TODO:ADD more account types Competability(Phone numbers ex:Google - samsung - apple what so ever)
               contact.info?.accounts[0].type==contact.info?.accounts[0].type &&contact.info?.phones[index].number !=IsPrimery?
               ListTile(
@@ -361,9 +426,9 @@ class ContactDetails extends StatelessWidget {
 
   FaIcon AccountIcon(String? AccountType) {
     if(AccountType?.contains("google")==true)
-    return FaIcon(FontAwesomeIcons.googlePlusSquare,size:32);
+      return FaIcon(FontAwesomeIcons.googlePlusSquare,size:32);
     if(AccountType?.contains("whatsapp")==true)
-    return FaIcon(FontAwesomeIcons.whatsappSquare);
+      return FaIcon(FontAwesomeIcons.whatsappSquare);
     else
       return FaIcon(FontAwesomeIcons.facebook);
   }

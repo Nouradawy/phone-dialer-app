@@ -219,7 +219,7 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
     contact.info?.phones.clear();
     for(int i=0 ; i<PhoneNumberController.length; i++) {
 
-      PhoneNumberController[i].text.isNotEmpty?contact.info?.phones.add(Phone('${PhoneNumberController[i].text}', label: PhoneSideMenuController[i] , accountType: contact.info!.accounts.first.type)):null;
+      PhoneNumberController[i].text.isNotEmpty?contact.info?.phones.add(Phone('${PhoneNumberController[i].text}', label: PhoneSideMenuController[i] )):null;
     }
 
     contact.info?.emails.clear();

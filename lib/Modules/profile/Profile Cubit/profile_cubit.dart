@@ -131,25 +131,24 @@ List<UserModel> CurrentUser = [];
 
 
 void GetChatContacts()async{
-  ChatContacts.clear();
-  await FirebaseFirestore.instance.collection("Users").get().then((value){
-    value.docs.forEach((element)
-    {
-      if(element.data()['uId'] != token) {
-        ChatContacts.add(UserModel.fromJson(element.data()));
-      } else {
-        CurrentUser.clear();
-        CurrentUser.add(UserModel.fromJson(element.data()));
-      }
+    if(ChatContacts.isEmpty) {
+      ChatContacts.clear();
+      await FirebaseFirestore.instance.collection("Users").get().then((value) {
+        value.docs.forEach((element) {
+          if (element.data()['uId'] != token) {
+            ChatContacts.add(UserModel.fromJson(element.data()));
+          } else {
+            CurrentUser.clear();
+            CurrentUser.add(UserModel.fromJson(element.data()));
+          }
+        });
+        emit(ExtractCurrrentUserInfoSuccess());
+      }).catchError((error) {
+        print("GetChatContacts error : " + error.toString());
+        emit(ExtractCurrrentUserInfoError());
+      });
     }
-
-    );
-    emit(ExtractCurrrentUserInfoSuccess());
-  }).catchError((error){
-    print("GetChatContacts error : "+error.toString());
-    emit(ExtractCurrrentUserInfoError());
-  });
-}
+  }
 
 
 

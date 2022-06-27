@@ -3,7 +3,7 @@ import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart
 import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
 import 'package:dialer_app/Modules/Contacts/contacts_screen.dart';
 import 'package:dialer_app/Network/Local/shared_data.dart';
-import 'package:dialer_app/Themes/light_theme.dart';
+import 'package:dialer_app/Themes/theme_config.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/properties/note.dart';

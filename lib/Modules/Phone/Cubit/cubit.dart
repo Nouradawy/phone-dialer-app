@@ -85,9 +85,15 @@ bool PhoneRange = false;
     }
 
 
-
     }
-
+List contactCalllog = [];
+    void ContactCallLogs(AppContact contact){
+      contactCalllog.clear();
+      contactCalllog =PhoneCallLogs.toList();
+      contactCalllog.retainWhere((element) {
+        return contact.info!.phones.any((e) => element["number"]==e.number);
+      });
+    }
   void CallLogsUpdate (List<AppContact> contacts){
     PhoneCallLogs.clear();
     PhoneCallOutBound.clear();

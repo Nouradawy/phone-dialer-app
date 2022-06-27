@@ -15,14 +15,16 @@ import 'Modules/Phone/phone_screen.dart';
 import 'Layout/Cubit/cubit.dart';
 import 'Layout/Cubit/states.dart';
 import 'NativeBridge/native_states.dart';
-import 'Themes/light_theme.dart';
+import 'Themes/theme_config.dart';
 
 
 class Home extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+
     var Cubit = AppCubit.get(context);
     double AppbarSize = MediaQuery.of(context).size.height*Cubit.AppbarSize;
+
     return BlocListener<NativeBridge,NativeStates>(
         listener: (context,state){
           if(state is PhoneStateRinging)
@@ -35,7 +37,7 @@ class Home extends StatelessWidget {
           length: 2,
           child: Scaffold(
             resizeToAvoidBottomInset: false,
-            backgroundColor: HomePageBackgroundColor(),
+            backgroundColor: HomePageBackgroundColor(context),
             extendBodyBehindAppBar: true,
             appBar:MainAppBar(context, AppbarSize , AppCubit.get(context).searchController),
             drawer: AppDrawer(context, AppbarSize),
@@ -44,7 +46,9 @@ class Home extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ), onPressed: () {
-                Cubit.dialpadShow();},
+                Cubit.dialpadShow();
+                // print(DialPadBackgroundImagepath(context).toString());
+                },
               child:Image.asset("assets/Images/dialpad.png",scale:1.8 , color: HexColor("#EEEEEE"),),):null,
             body: BlocBuilder<PhoneContactsCubit,PhoneContactStates>(
               builder:(context,state) {

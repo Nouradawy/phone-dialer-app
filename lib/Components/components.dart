@@ -9,18 +9,24 @@ import 'package:dialer_app/Modules/profile/Profile%20Cubit/profile_cubit.dart';
 import 'package:dialer_app/Modules/profile/profile_page.dart';
 import 'package:dialer_app/NativeBridge/native_bridge.dart';
 import 'package:dialer_app/Network/Local/shared_data.dart';
-import 'package:dialer_app/Themes/light_theme.dart';
+import 'package:dialer_app/Themes/Cubit/cubit.dart';
+import 'package:dialer_app/Themes/Cubit/states.dart';
+import 'package:dialer_app/Themes/theme_config.dart';
+import 'package:dialer_app/Themes/Cubit/multiple_themes_view.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:focused_menu/focused_menu.dart';
 import 'package:focused_menu/modals.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:ndialog/ndialog.dart';
-import '../home-editcolor.dart';
-import '../home.dart';
-import 'constants.dart';
 
+import '../Themes/theme_edittor.dart';
+
+import 'constants.dart';
+ImageProvider<Object> ImageSwap(profileImage) => FileImage(profileImage);
 
 AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController Searchcontroller ) {
   return AppBar(
@@ -30,7 +36,7 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
       width:MediaQuery.of(context).size.width*0.55,
       decoration: BoxDecoration(
         borderRadius: BorderRadiusDirectional.circular(3),
-        color:SearchBackgroundColor(),
+        color:SearchBackgroundColor(context),
       ),
       child: Stack(
         children: [
@@ -39,7 +45,11 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
             child: Icon(Icons.search,color: SearchIconColor(),size: 25,),
           ),
           TextField(
-            style: Theme.of(context).textTheme.headline2,
+            style: TextStyle(
+          fontFamily: "OpenSans",
+          fontSize: 12,
+          color: HexColor(ThemeCubit.get(context).MyThemeData[ActiveTheme]["SearchTextColor"]),
+          ),
             controller: Searchcontroller,
             textAlign:TextAlign.center,
             textAlignVertical: TextAlignVertical.center,
@@ -57,7 +67,11 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
               // contentPadding: EdgeInsets.all(0),
               // alignLabelWithHint: true,
               // labelText:"Search",
-              hintStyle:Theme.of(context).textTheme.headline2,
+              hintStyle:TextStyle(
+                fontFamily: "OpenSans",
+                fontSize: 12,
+                color: HexColor(ThemeCubit.get(context).MyThemeData[ActiveTheme]["SearchTextColor"]),
+              ),
               // isCollapsed: true,
               border:InputBorder.none,
               // fillColor: SearchBackgroundColor(),
@@ -105,20 +119,21 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
               Container(
                   color: AppBarBackgroundColor(context)
               ),
-              Padding(
-                padding:EdgeInsets.only(top:AppbarSize-13,left:12),
-                child:Container(
-                    width: 35,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color:AppBarEditIconBackGroundColor(),
-                    ),
-                    child: IconButton(onPressed: (){
-                      AppCubit.get(context).EditorIsActive = true;
-                      Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=>HomeScreenEdite()));
-                    }, icon:Icon(Icons.create_outlined , color: AppBarEditIconColor(),),iconSize: 20 ,)),
-              ),
+              // Padding(
+              //   padding:EdgeInsets.only(top:AppbarSize-13,left:12),
+              //   child:Container(
+              //       width: 35,
+              //       height: 36,
+              //       decoration: BoxDecoration(
+              //         borderRadius: BorderRadius.circular(8),
+              //         color:AppBarEditIconBackGroundColor(),
+              //       ),
+              //       child: InkWell(onTap: (){
+              //         Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=>HomeScreenEdite()));
+              //       },
+              //         child: Image.asset("assets/Images/droplet-solid.png",scale: 12,color: HexColor("#4527A0"),),
+              //       )),
+              // ),
             ]
         ),
         clipper: MyCustomeClipper(),
@@ -129,11 +144,10 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
       isScrollable: true,
       indicatorPadding: const EdgeInsets.only(bottom: 25),
       labelPadding: const EdgeInsets.only(bottom: 18,left:45,right:45),
-      indicatorColor: TabBarindicatorColor(),
-      labelColor: TabBarlabelColor(),
-      unselectedLabelColor: TabBarUnselectedlabelColor(),
+      indicatorColor: TabBarindicatorColor(context),
+      labelColor: TabBarlabelColor(context),
+      unselectedLabelColor: TabBarUnselectedlabelColor(context),
       indicatorSize: TabBarIndicatorSize.label,
-
       labelStyle:Theme.of(context).textTheme.headline1,
       tabs: const [
         Tab(text:"Phone"),
@@ -149,43 +163,42 @@ AppBar MainAppBarEditor(BuildContext context, double AppbarSize,TextEditingContr
       width:MediaQuery.of(context).size.width*0.55,
       decoration: BoxDecoration(
         borderRadius: BorderRadiusDirectional.circular(3),
-        color:SearchBackgroundColor(),
+        color:ThemeCubit.get(context).SearchBackground,
       ),
-      child: Stack(
-        children: [
-          Padding(
-            padding: EdgeInsets.only(left:MediaQuery.of(context).size.width*0.55*0.01),
-            child: Icon(Icons.search,color: SearchIconColor(),size: 25,),
+      child:
+
+         InkWell(
+          onTap: (){
+
+            NDialog(
+              content:BlocBuilder<ThemeCubit,ThemeStates>(
+                  builder:(context,states)=> ThemeCubit.get(context).HomePageBackgroundColorPicker()),
+              dialogStyle: DialogStyle(
+                elevation: 10,
+              ),
+            ).show(context , barrierColor: Colors.black.withOpacity(0.20));
+          },
+          child: Row (
+            children: [
+              Padding(
+                padding: EdgeInsets.only(left:MediaQuery.of(context).size.width*0.55*0.01),
+                child: Icon(Icons.search,color: SearchIconColor(),size: 25,),
+              ),
+              Text("Search among ${PhoneContactsCubit.get(context).Contacts.length} contact(s)",style: Theme.of(context).textTheme.headline2!.copyWith(color: ThemeCubit.get(context).SearchTextColor),),
+
+            ],
           ),
-          TextField(
-            style: Theme.of(context).textTheme.headline2,
-            controller: Searchcontroller,
-            textAlign:TextAlign.center,
-            textAlignVertical: TextAlignVertical.center,
-            onChanged: (value){
-              PhoneContactsCubit.get(context).SearchContacts(Searchcontroller ,PhoneContactsCubit.get(context).Contacts);
-            },
-            decoration: InputDecoration(
-              hintText: "Search among ${PhoneContactsCubit.get(context).Contacts.length} contact(s)",
-              // contentPadding: EdgeInsets.all(0),
-              // alignLabelWithHint: true,
-              // labelText:"Search",
-              hintStyle:Theme.of(context).textTheme.headline2,
-              // isCollapsed: true,
-              border:InputBorder.none,
-              // fillColor: SearchBackgroundColor(),
-            ),
-          ),
-        ],
-      ),
+        ),
     ),
     actions: [
       Padding(
         padding: const EdgeInsets.only(top:16.0,right:15),
         child: InkWell(
           onTap:(){
-            Navigator.push(context,
-            MaterialPageRoute(builder: (BuildContext context) => ChatScreen()));
+            NDialog(
+              content:ThemeCubit.get(context).HomePageBackgroundColorPicker(),
+              dialogStyle: DialogStyle(),
+            ).show(context);
           },
           child: Stack(
             children: [
@@ -217,7 +230,7 @@ AppBar MainAppBarEditor(BuildContext context, double AppbarSize,TextEditingContr
       child: InkWell(
         onTap: (){
           NDialog(
-            content:AppCubit.get(context).HomePageBackgroundColorPicker(),
+            content:ThemeCubit.get(context).HomePageBackgroundColorPicker(),
             dialogStyle: DialogStyle(),
           ).show(context);
         },
@@ -225,7 +238,8 @@ AppBar MainAppBarEditor(BuildContext context, double AppbarSize,TextEditingContr
           child: Stack(
               children: [
                 Container(
-                    color: AppBarBackgroundColor(context)
+                  /// background app bar value
+                    color: ThemeCubit.get(context).CustomHomePageBackgroundColor
                 ),
                 Padding(
                   padding:EdgeInsets.only(top:AppbarSize-13,left:12),
@@ -237,28 +251,18 @@ AppBar MainAppBarEditor(BuildContext context, double AppbarSize,TextEditingContr
                         color:AppBarEditIconBackGroundColor(),
                       ),
                       child: IconButton(onPressed: (){
-                        Navigator.push(context,MaterialPageRoute(builder: (
-                            BuildContext context)=>Home()));
-                        AppCubit.get(context).EditorIsActive = false;
-                      }, icon:Icon(Icons.create_outlined , color: AppBarEditIconColor(),),iconSize: 20 ,)),
-                ),
-                Transform.translate(
-                  offset: Offset(MediaQuery.of(context).size.width-50,AppbarSize-15),
-                  child: Container(
-                    width: 25,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(width: 3,color:Colors.white),
-                    ),
-                    child: IconButton(icon:Icon(Icons.circle , color:AppCubit.get(context).CustomHomePageBackgroundColor),onPressed: ()  {
 
-                       NDialog(
-                          content:AppCubit.get(context).HomePageBackgroundColorPicker(),
-                        dialogStyle: DialogStyle(),
-                          ).show(context);
+                        if(ThemeCubit.get(context).MultipleThemeEdit == false) {
+                        ThemeCubit.get(context).ThemeApplyChanges();
+                      } else {
+                          ThemeCubit.get(context).ThemeEditData();
+                          ThemeCubit.get(context).SaveThemeList();
 
-                    },),
-                  ),
+                        }
+                      // CacheHelper.saveData(key: "DialPadImage", value: PickedFileShared.path);
+
+                      }, icon:Icon(Icons.done , color: AppBarEditIconColor(),),iconSize: 20 ,
+                        tooltip: "Apply" ,)),
                 ),
               ]
           ),
@@ -271,9 +275,9 @@ AppBar MainAppBarEditor(BuildContext context, double AppbarSize,TextEditingContr
       isScrollable: true,
       indicatorPadding: EdgeInsets.only(bottom: 25),
       labelPadding: EdgeInsets.only(bottom: 18,left:45,right:45),
-      indicatorColor: TabBarindicatorColor(),
-      labelColor: TabBarlabelColor(),
-      unselectedLabelColor: TabBarUnselectedlabelColor(),
+      indicatorColor: ThemeCubit.get(context).TabBarIndicatorColor,
+      labelColor: ThemeCubit.get(context).TabBarTextColor,
+      unselectedLabelColor: ThemeCubit.get(context).UnSelectedTabBarColor,
       indicatorSize: TabBarIndicatorSize.label,
 
       labelStyle:Theme.of(context).textTheme.headline1,
@@ -307,6 +311,45 @@ AppBar ChatAppBar(BuildContext context, double AppbarSize) => AppBar(
       Transform.translate(
           offset: const Offset(0, -4),
           child: IconButton(onPressed: (){}, icon: const Icon(Icons.notifications_none_rounded),color:HexColor("#23036A"),padding: const EdgeInsets.all(1),))
+    ],
+    // leading: IconButton(onPressed: (){}, icon: Icon(Icons.more_vert,color:AppBarMoreIconColor()),),
+    toolbarHeight: AppbarSize,
+    flexibleSpace: SafeArea(
+      child: ClipPath(
+        child: Container(
+            color: AppBarBackgroundColor(context)
+        ),
+        clipper: MyCustomeClipper(),
+      ),
+    ),
+  );
+AppBar MultipleThemeViewAppBar(BuildContext context, double AppbarSize) => AppBar(
+    automaticallyImplyLeading: false,
+    title:Transform.translate(
+      offset:const Offset(0, -4),
+      child: Row(
+        children: [
+          FaIcon(FontAwesomeIcons.theaterMasks),
+          Text(" Themes",style: TextStyle(
+            fontFamily: "Cairo",
+            fontWeight: FontWeight.w600,
+            color:HexColor("#404040"),
+            fontSize: 25,
+          ),),
+        ],
+      ),
+    ),
+    actions: [
+      Transform.translate(
+          offset: const Offset(0, -4),
+          child: IconButton(onPressed: (){
+            if(ThemeCubit.get(context).MultipleThemeEdit==false) {
+                  ThemeCubit.get(context).ThemeEditorIsActive = true;
+                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Theme_Editor()));
+            } else {
+              ThemeCubit.get(context).ThemedDeleteSelection();
+            }
+            }, icon:  Icon(ThemeCubit.get(context).MultipleThemeEdit?ThemeCubit.get(context).DeleteTheme?Icons.delete_forever:Icons.delete:Icons.library_add),color:HexColor("#23036A"),padding: const EdgeInsets.all(1),))
     ],
     // leading: IconButton(onPressed: (){}, icon: Icon(Icons.more_vert,color:AppBarMoreIconColor()),),
     toolbarHeight: AppbarSize,
@@ -408,228 +451,258 @@ AppBar ChatMessagesAppBar(BuildContext context, double AppbarSize , UserModel Co
     ),
   );
 }
-Column Dialpad(BuildContext context, double AppbarSize , TextEditingController dialerController ) {
+Stack Dialpad(BuildContext context, double AppbarSize , TextEditingController dialerController ) {
 bool DualSIM = false;
 
-  return Column(
-    mainAxisSize: MainAxisSize.min,
-    mainAxisAlignment: MainAxisAlignment.end,
-    children:[
-      Padding(
-        padding: const EdgeInsets.only(top:8.0),
-        child: Container(
-          width: 30,
-          height: 1,
-          color:Colors.grey,),
-      ),
+  return Stack(
+    alignment: AlignmentDirectional.bottomCenter,
+    children: [
+      ThemeCubit.get(context).MyThemeData[ActiveTheme]["DialPadBackground"] != "null" ||ThemeCubit.get(context).DialPadBackGroundImagePicker != null ?Container(
+        width:MediaQuery.of(context).size.width,height:dialerController.text.isEmpty? MediaQuery.of(context).size.height/2 - ((MediaQuery.of(context).size.height-AppbarSize)/2)/6:MediaQuery.of(context).size.height/2 - ((MediaQuery.of(context).size.height-AppbarSize)/2)/6-11,
+        decoration: dialerController.text.isEmpty?
 
-      //Show or Hide TextFormField above the dialer if it is empty hide if not show
-      Container(
-        child: dialerController.text.isNotEmpty?TextFormField(
-          style: Theme
-              .of(context)
-              .textTheme
-              .headline3,
-          textAlign: TextAlign.center,
-          controller: dialerController,
-          onChanged: (value) {
-            AppCubit.get(context).ShowHide();
-          },
-          // readOnly: true,
-          showCursor: true,
-          decoration: const InputDecoration(
-            contentPadding: EdgeInsets.symmetric(horizontal: 30),
-            border: InputBorder.none,
+        ThemeCubit.get(context).DialPadBackGroundImagePicker !=null?BoxDecoration(
+          image: DecorationImage(
+            image:ImageSwap(ThemeCubit.get(context).DialPadBackGroundImagePicker),
+            fit: BoxFit.cover,
           ),
-        ):null,
-      ),
-      Row(
-          children: [
-            InkWell(
-              splashColor: Colors.blue[100],
-              customBorder:const RoundedRectangleBorder(
-                borderRadius:BorderRadiusDirectional.only(
-                  topStart: Radius.circular(30),
-                ),
-              ) ,
-              onTap: (){
-                //TODO:Make it Only active while incall
-                NativeBridge.get(context).invokeNativeMethod("num1");
+        borderRadius:BorderRadiusDirectional.only(
+          topStart: Radius.circular(30),
+          topEnd: Radius.circular(30),
+        ),
+      ):null
+            :
 
-                AddingNumberToDialPad(dialerController, context , "1");
+        ThemeCubit.get(context).DialPadBackGroundImagePicker !=null?BoxDecoration(
+          image:DecorationImage(
+            image:ImageSwap(ThemeCubit.get(context).DialPadBackGroundImagePicker),
+            fit: BoxFit.cover,
+          ),
+          ):null,
 
+      ):Container(height: 1,),
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children:[
+          Padding(
+            padding: const EdgeInsets.only(top:8.0),
+            child: Container(
+              width: 30,
+              height: 1,
+              color:Colors.grey,),
+          ),
+
+          //Show or Hide TextFormField above the dialer if it is empty hide if not show
+          Container(
+            child: dialerController.text.isNotEmpty?TextFormField(
+              style: DialPadNumbersColor(context),
+              textAlign: TextAlign.center,
+              controller: dialerController,
+              onChanged: (value) {
+                AppCubit.get(context).ShowHide();
               },
-              child: Container(
-                width:MediaQuery.of(context).size.width/3,
-                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
-                color: Colors.transparent,
-                child:Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("1",style: Theme.of(context).textTheme.headline3),
-                    Transform.translate(
-                        offset: const Offset(0,-4),
-                        child: const Icon(Icons.voicemail,size:15)),
-                  ],
-                ),
+              // readOnly: true,
+              showCursor: true,
+              decoration: const InputDecoration(
+                contentPadding: EdgeInsets.symmetric(horizontal: 30),
+                border: InputBorder.none,
               ),
-            ),
-            InkWell(
-              splashColor: Colors.blue[100],
-              onTap: (){
-                PhoneContactsCubit.get(context).SearchTerm = ["a", "b", "c"];
-                PhoneContactsCubit.get(context).DialpadSearch(dialerController);
-                AddingNumberToDialPad(dialerController, context , "2");
-                // dialerController.text = dialerController.text.isEmpty?"2":dialerController.text +"2";
+            ):null,
+          ),
+          Row(
+              children: [
+                InkWell(
+                  splashColor: Colors.blue[100],
+                  customBorder:const RoundedRectangleBorder(
+                    borderRadius:BorderRadiusDirectional.only(
+                      topStart: Radius.circular(30),
+                    ),
+                  ) ,
+                  onTap: (){
+                    //TODO:Make it Only active while incall
+                    NativeBridge.get(context).invokeNativeMethod("num1");
 
-              },
-              child: DialPadButtonLayout(context, AppbarSize , "2" , "ABC"),
-            ),
-            InkWell(
-              splashColor: Colors.blue,
-              customBorder:const RoundedRectangleBorder(
-                borderRadius:BorderRadiusDirectional.only(
-                  topEnd: Radius.circular(30),
+                    AddingNumberToDialPad(dialerController, context , "1");
+
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border:BorderDirectional(end:BorderSide(color: DialPadBorderColor(context),width: 2)),
+                      color: Colors.transparent,
+                    ),
+                    width:MediaQuery.of(context).size.width/3,
+                    height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
+
+                    child:Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text("1",style: DialPadNumbersColor(context)),
+                        Transform.translate(
+                            offset: const Offset(0,-4),
+                            child:  Icon(Icons.voicemail,size:15 ,color:DialPadVoiceSymbolColor(context))),
+                      ],
+                    ),
+                  ),
                 ),
-              ) ,
-              onTap: (){
-                PhoneContactsCubit.get(context).SearchTerm = ["d", "e", "f"];
-                PhoneContactsCubit.get(context).DialpadSearch(dialerController,);
-                AddingNumberToDialPad(dialerController, context , "3");
-              },
-              child: DialPadButtonLayout(context, AppbarSize , "3" , "DEF"),
-            ),
-          ]
+                InkWell(
+                  splashColor: Colors.blue[100],
+                  onTap: (){
+                    PhoneContactsCubit.get(context).SearchTerm = ["a", "b", "c"];
+                    PhoneContactsCubit.get(context).DialpadSearch(dialerController);
+                    AddingNumberToDialPad(dialerController, context , "2");
+                    // dialerController.text = dialerController.text.isEmpty?"2":dialerController.text +"2";
+
+                  },
+                  child: DialPadButtonLayout(context, AppbarSize , "2" , "ABC"),
+                ),
+                InkWell(
+                  splashColor: Colors.blue,
+                  customBorder:const RoundedRectangleBorder(
+                    borderRadius:BorderRadiusDirectional.only(
+                      topEnd: Radius.circular(30),
+                    ),
+                  ) ,
+                  onTap: (){
+                    PhoneContactsCubit.get(context).SearchTerm = ["d", "e", "f"];
+                    PhoneContactsCubit.get(context).DialpadSearch(dialerController,);
+                    AddingNumberToDialPad(dialerController, context , "3");
+                  },
+                  child: DialPadButtonLayout(context, AppbarSize , "3" , "DEF"),
+                ),
+              ]
+          ),
+          Row(
+              children: [
+                InkWell(
+                  onTap: (){
+                    PhoneContactsCubit.get(context).SearchTerm = ["g", "h", "i"];
+                    PhoneContactsCubit.get(context).DialpadSearch(dialerController,);
+                    AddingNumberToDialPad(dialerController, context , "4");
+                  },
+                  child: DialPadButtonLayout(context, AppbarSize , "4" , "GHI"),
+                ),
+                InkWell(
+                  onTap: (){
+                    PhoneContactsCubit.get(context).SearchTerm = ["j", "k", "l"];
+                    PhoneContactsCubit.get(context).DialpadSearch(dialerController,);
+                    AddingNumberToDialPad(dialerController, context , "5");
+                  },
+                  child: DialPadButtonLayout(context, AppbarSize , "5" , "JKL"),
+                ),
+                InkWell(
+                  onTap: (){
+                    PhoneContactsCubit.get(context).SearchTerm = ["m", "n", "o"];
+                    PhoneContactsCubit.get(context).DialpadSearch(dialerController,);
+                    AddingNumberToDialPad(dialerController, context , "6");
+                  },
+                  child: DialPadButtonLayout(context, AppbarSize , "6" , "MNO"),
+                ),
+              ]
+          ),
+          Row(
+              children: [
+                InkWell(
+                  onTap: (){
+                    PhoneContactsCubit.get(context).SearchTerm = ["p", "q", "r"];
+                    PhoneContactsCubit.get(context).DialpadSearch(dialerController,);
+                    AddingNumberToDialPad(dialerController, context , "7");
+                  },
+                  child: DialPadButtonLayout(context, AppbarSize , "7" , "PQRS"),
+                ),
+                InkWell(
+                  onTap: (){
+                    PhoneContactsCubit.get(context).SearchTerm = ["t", "u", "v"];
+                    PhoneContactsCubit.get(context).DialpadSearch(dialerController,);
+
+                    AddingNumberToDialPad(dialerController, context , "8");
+                  },
+                  child: DialPadButtonLayout(context, AppbarSize , "8" , "TUV"),
+                ),
+                InkWell(
+                  onTap: (){
+                    PhoneContactsCubit.get(context).SearchTerm = ["w", "x", "y"];
+                    PhoneContactsCubit.get(context).DialpadSearch(dialerController);
+
+                    AddingNumberToDialPad(dialerController, context , "9");
+                  },
+                  child: DialPadButtonLayout(context, AppbarSize , "9" , "WXYZ"),
+                ),
+              ]
+          ),
+          Row(
+              children: [
+                InkWell(
+                  onTap: (){
+                    NativeBridge.get(context).invokeNativeMethod("num*");
+                    AddingNumberToDialPad(dialerController, context , "*");
+
+                  },
+                  child: DialPadButtonLayout(context, AppbarSize , "*" , ""),
+                ),
+                InkWell(
+                  onTap: (){
+                    NativeBridge.get(context).invokeNativeMethod("num0");
+                    AddingNumberToDialPad(dialerController, context , "0");
+                  },
+                  child: DialPadButtonLayout(context, AppbarSize , "0" , "+"),
+                ),
+                InkWell(
+                  onTap: (){
+                    NativeBridge.get(context).invokeNativeMethod("num#");
+                    AddingNumberToDialPad(dialerController, context , "#");
+                  },
+                  child: DialPadButtonLayout(context, AppbarSize , "#" , ""),
+                ),
+              ]
+          ),
+          SizedBox(height: 7,),
+          Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                InkWell(
+                  borderRadius: BorderRadius.circular(5),
+                  onTap: (){
+                    AppCubit.get(context).dialpadShow();
+                  },
+                  child: Container(
+                    width:MediaQuery.of(context).size.width*0.07,
+                    height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/9,
+                    child:Image.asset("assets/Images/dialpad.png",scale:1.7),
+                  ),
+                ),
+
+                CallButton(context, AppbarSize , DualSIM , dialerController),
+
+                InkWell(
+                  onTap: (){
+                    dialerController.text = dialerController.text.isNotEmpty ? dialerController.text.substring(0,dialerController.text.length-1) : dialerController.text;
+                    if(dialerController.text.isEmpty){
+                      AppCubit.get(context).ShowHide();
+                      PhoneContactsCubit.get(context).isSearching = false;
+                    }
+
+                  },
+                  onLongPress: (){
+                    dialerController.clear();
+                    if(dialerController.text.isEmpty){
+                      AppCubit.get(context).ShowHide();
+                    }
+                    PhoneContactsCubit.get(context).isSearching = false;
+                  },
+                  child: Container(
+                    width:MediaQuery.of(context).size.width*0.08,
+                    height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/9,
+                    child:Image.asset("assets/Images/backspace.png",scale:1.4,),
+                  ),
+                ),
+              ]
+          ),
+          SizedBox(height: 17,),
+        ],
+
       ),
-      Row(
-          children: [
-            InkWell(
-              onTap: (){
-                PhoneContactsCubit.get(context).SearchTerm = ["g", "h", "i"];
-                PhoneContactsCubit.get(context).DialpadSearch(dialerController,);
-                AddingNumberToDialPad(dialerController, context , "4");
-              },
-              child: DialPadButtonLayout(context, AppbarSize , "4" , "GHI"),
-            ),
-            InkWell(
-              onTap: (){
-                PhoneContactsCubit.get(context).SearchTerm = ["j", "k", "l"];
-                PhoneContactsCubit.get(context).DialpadSearch(dialerController,);
-                AddingNumberToDialPad(dialerController, context , "5");
-              },
-              child: DialPadButtonLayout(context, AppbarSize , "5" , "JKL"),
-            ),
-            InkWell(
-              onTap: (){
-                PhoneContactsCubit.get(context).SearchTerm = ["m", "n", "o"];
-                PhoneContactsCubit.get(context).DialpadSearch(dialerController,);
-                AddingNumberToDialPad(dialerController, context , "6");
-              },
-              child: DialPadButtonLayout(context, AppbarSize , "6" , "MNO"),
-            ),
-          ]
-      ),
-      Row(
-          children: [
-            InkWell(
-              onTap: (){
-                PhoneContactsCubit.get(context).SearchTerm = ["p", "q", "r"];
-                PhoneContactsCubit.get(context).DialpadSearch(dialerController,);
-                AddingNumberToDialPad(dialerController, context , "7");
-              },
-              child: DialPadButtonLayout(context, AppbarSize , "7" , "PQRS"),
-            ),
-            InkWell(
-              onTap: (){
-                PhoneContactsCubit.get(context).SearchTerm = ["t", "u", "v"];
-                PhoneContactsCubit.get(context).DialpadSearch(dialerController,);
-
-                AddingNumberToDialPad(dialerController, context , "8");
-              },
-              child: DialPadButtonLayout(context, AppbarSize , "8" , "TUV"),
-            ),
-            InkWell(
-              onTap: (){
-                PhoneContactsCubit.get(context).SearchTerm = ["w", "x", "y"];
-                PhoneContactsCubit.get(context).DialpadSearch(dialerController);
-
-                AddingNumberToDialPad(dialerController, context , "9");
-              },
-              child: DialPadButtonLayout(context, AppbarSize , "9" , "WXYZ"),
-            ),
-          ]
-      ),
-      Row(
-          children: [
-            InkWell(
-              onTap: (){
-                NativeBridge.get(context).invokeNativeMethod("num*");
-                AddingNumberToDialPad(dialerController, context , "*");
-
-              },
-              child: DialPadButtonLayout(context, AppbarSize , "*" , ""),
-            ),
-            InkWell(
-              onTap: (){
-                NativeBridge.get(context).invokeNativeMethod("num0");
-                AddingNumberToDialPad(dialerController, context , "0");
-              },
-              child: DialPadButtonLayout(context, AppbarSize , "0" , "+"),
-            ),
-            InkWell(
-              onTap: (){
-                NativeBridge.get(context).invokeNativeMethod("num#");
-                AddingNumberToDialPad(dialerController, context , "#");
-              },
-              child: DialPadButtonLayout(context, AppbarSize , "#" , ""),
-            ),
-          ]
-      ),
-      SizedBox(height: 7,),
-      Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            InkWell(
-              borderRadius: BorderRadius.circular(5),
-              onTap: (){
-                AppCubit.get(context).dialpadShow();
-              },
-              child: Container(
-                width:MediaQuery.of(context).size.width*0.07,
-                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/9,
-                child:Image.asset("assets/Images/dialpad.png",scale:1.7),
-              ),
-            ),
-
-            CallButton(context, AppbarSize , DualSIM , dialerController),
-
-            InkWell(
-              onTap: (){
-                dialerController.text = dialerController.text.isNotEmpty ? dialerController.text.substring(0,dialerController.text.length-1) : dialerController.text;
-                if(dialerController.text.isEmpty){
-                  AppCubit.get(context).ShowHide();
-                  PhoneContactsCubit.get(context).isSearching = false;
-                }
-
-              },
-              onLongPress: (){
-                dialerController.clear();
-                if(dialerController.text.isEmpty){
-                  AppCubit.get(context).ShowHide();
-                }
-                PhoneContactsCubit.get(context).isSearching = false;
-              },
-              child: Container(
-                width:MediaQuery.of(context).size.width*0.08,
-                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/9,
-                child:Image.asset("assets/Images/backspace.png",scale:1.4,),
-              ),
-            ),
-          ]
-      ),
-      SizedBox(height: 17,),
     ],
-
   );
 }
 Column InCallDialpad(BuildContext context, double AppbarSize , TextEditingController dialerController ) {
@@ -886,6 +959,10 @@ bool DualSIM = false;
 
 Container DialPadButtonLayout(BuildContext context, double AppbarSize , String Numpad , String alpha) {
   return Container(
+    decoration: BoxDecoration(
+      border:Numpad =="3"||Numpad == "6" || Numpad =="9"|| Numpad =="#"?null:BorderDirectional(end:BorderSide(color: DialPadBorderColor(context),width: 2)),
+      color: Colors.transparent,
+    ),
               width:MediaQuery.of(context).size.width/3,
               height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6,
               child:Column(
@@ -893,10 +970,10 @@ Container DialPadButtonLayout(BuildContext context, double AppbarSize , String N
                 // crossAxisAlignment: CrossAxisAlignment.center,
 
                 children: [
-                  Text(Numpad,style: Theme.of(context).textTheme.headline3),
+                  Text(Numpad,style: DialPadNumbersColor(context)),
                   Transform.translate(
                       offset: const Offset(0,-4),
-                      child: Text(alpha,style:Theme.of(context).textTheme.headline4)),
+                      child: Text(alpha,style:DialPadAlphabetColor(context))),
                 ],
               ),
             );
@@ -1061,9 +1138,12 @@ Drawer AppDrawer(BuildContext context , AppbarSize) {
               ProfileCubit.get(context)..GetChatContacts();
               var Cubit = ProfileCubit.get(context);
               String UserState = "online";
+
+
               return  Padding(
                 padding:EdgeInsets.only(top:MediaQuery.of(context).padding.top),
                 child: Column(
+
                     children: [
                       Container(height: MediaQuery.of(context).size.height*0.20,
                           color:Colors.amber,
@@ -1167,10 +1247,11 @@ Drawer AppDrawer(BuildContext context , AppbarSize) {
                       ),
                       ListTile(
                         onTap: (){
-                          AppCubit.get(context).ThemeSwitcher();
+                          // ThemeCubit.get(context).ThemeSwitcher();
                         },
                         title:Text("Theme"),
-                        trailing: Text(ThemeSwitch?"Light":"Dark"),
+                        trailing:
+                        Text(ActiveTheme == 0 ?"Light":"Dark"),
                       ),
                       Text("System Settings"),
                       ListTile(
@@ -1184,6 +1265,17 @@ Drawer AppDrawer(BuildContext context , AppbarSize) {
                         },
                         leading: Icon(Icons.contacts),
                         title:Text("ContactPictures"),
+                      ),
+                      ListTile(
+                        onTap: (){
+                            Navigator.push(context, MaterialPageRoute(
+                                builder: (BuildContext context) =>
+                                    MultipleThemesView()
+                            ));
+
+                        },
+                        leading: FaIcon(FontAwesomeIcons.theaterMasks),
+                        title:Text("Theme Customization"),
                       ),
                     ],
                   ),
