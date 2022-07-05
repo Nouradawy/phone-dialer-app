@@ -54,19 +54,20 @@ Future<void> ThemeSharedPref (context)   async {
 
 }
 void GetShardData()  {
-  String SDList = CacheHelper.getData(key: 'ShardData');
-  ShardData = json.decode(SDList);
-  print(ShardData);
+  // String SDList = CacheHelper.getData(key: 'ShardData');
+  // ShardData = json.decode(SDList);
+  // print(ShardData);
+  //
+  // String CDList = CacheHelper.getData(key: 'ContactData');
+  // ContactData = json.decode(CDList);
+  // print(ContactData);
 
-  String CDList = CacheHelper.getData(key: 'ContactData');
-  ContactData = json.decode(CDList);
-  print(ContactData);
-
-
+  if(CacheHelper.getData(key: 'fblist')!=null) {
   String FBList = CacheHelper.getData(key: 'fblist');
-  fbList = json.decode(FBList);
-  print(FBList);
 
+    fbList = json.decode(FBList);
+    print(FBList);
+    }
 
   // String FavoratesContacts= CacheHelper.getData(key: 'FavList');
   // FavoratesContactids = json.decode(FavoratesContacts);

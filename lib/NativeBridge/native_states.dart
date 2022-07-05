@@ -18,5 +18,5 @@ class PhoneStateHolding extends NativeStates{}
 class PhoneStateDisconnected extends NativeStates{}
 class PhoneStateDisconnecting extends NativeStates{}
 class PhoneStateConnecting extends NativeStates{}
-class CallerIDSuccessState extends NativeStates{
-}
+class CallerIDSuccessState extends NativeStates{}
+class ScreenRefresh extends NativeStates{}

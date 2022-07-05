@@ -133,6 +133,7 @@ class LoginCubit extends Cubit<LoginCubitStates>
       print(error.toString());
     });
   }
+
   Future<UserCredential> signInWithGoogle() async {
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
     final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;

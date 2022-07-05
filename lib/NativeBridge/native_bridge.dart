@@ -50,7 +50,11 @@ class NativeBridge extends Cubit<NativeStates> {
     }
 
 }
-
+  bool isShowen = false;
+void inCallDialerToggle(){
+  isShowen =! isShowen;
+    emit(ScreenRefresh());
+}
 void PhoneState(){
 
       switch ( nativePhoneEvent?.state) {

@@ -19,10 +19,7 @@ class ContactChatingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double AppbarSize = MediaQuery
-        .of(context)
-        .size
-        .height * 0.11;
+    double AppbarSize = MediaQuery.of(context).size.height * 0.11;
     return BlocProvider.value(
       value:ChatAppCubit()..MessageStateUpdater,
       child: BlocConsumer<ChatAppCubit,ChatAppCubitStates>(

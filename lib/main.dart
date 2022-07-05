@@ -105,7 +105,7 @@ void main() async {
 
 
   // ThemeSharedPref();
-  // GetShardData();
+  GetShardData();
   print("AuthorizationToken: "+token.toString());
   Widget Homescreen = Home();
 
@@ -150,6 +150,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context)=>ProfileCubit()),
         BlocProvider(create: (context)=>PhoneLogsCubit()),
         BlocProvider(create: (context)=>ThemeCubit()),
+        BlocProvider(create: (context)=>ChatAppCubit()),
 
 
       ],

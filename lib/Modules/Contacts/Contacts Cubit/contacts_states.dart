@@ -33,3 +33,6 @@ class EventAddSuccessState extends PhoneContactStates{}
 class ChatAddSuccessState extends PhoneContactStates{}
 
 class ContactUpdateSucessState extends PhoneContactStates{}
+class Contactstatechange extends PhoneContactStates{}
+class isShowenSuccessState extends PhoneContactStates{}
+class dailerInputSuccessstate extends PhoneContactStates{}

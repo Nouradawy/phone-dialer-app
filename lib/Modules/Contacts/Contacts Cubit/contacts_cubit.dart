@@ -403,31 +403,40 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
     });
     emit(SearchContactsFinished());
   }
+  bool isShowen = false;
+  void dialpadShowcontact(){
+    isShowen =! isShowen;
 
+    emit(isShowenSuccessState());
+  }
+  void Daillerinput(){
+    emit(dailerInputSuccessstate());
+  }
 
  Future DialpadSearch (TextEditingController dialerController) async{
-    // if(dialerController.text[0] == "2") {
+    // if(dialerController.value == 2) {
     //   SearchTerm = ["a", "b", "c"];
     // }
-    // if(dialerController.text[dialerController.text.length] == "3") {
+    // if(dialerController.value == 3) {
     //   SearchTerm = ["d", "e", "f"];
     // }
-    // if(dialerController.text[dialerController.text.length] == "4") {
-    //   SearchTerm = ["g", "h", "i"];
+    // if(dialerController.value == 4) {
+    //   SearchTerm = ['g', 'h', 'i'];
     // }
-    // if(dialerController.text[dialerController.text.length] == "5") {
+    // if(dialerController.text == "5") {
     //   SearchTerm = ["j", "k", "l"];
     // }
-    // if(dialerController.text[dialerController.text.length] == "6")
+    // if(dialerController.text == "6")
     //   SearchTerm = ["m","n","o"];
-    // if(dialerController.text[dialerController.text.length] == "7")
+    // if(dialerController.text == "7")
     //   SearchTerm = ["p","q","r"];
-    // if(dialerController.text[dialerController.text.length] == "8")
+    // if(dialerController.text == "8")
     //   SearchTerm = ["t","u","v"];
-    // if(dialerController.text[dialerController.text.length] == "9")
+    // if(dialerController.text == "9")
     //   SearchTerm = ["w","x","y"];
    try
    {
+     isSearching = true;
       dialerController.text.isEmpty ? FilterdContacts.clear() : null;
       Firstchr.clear();
       secondchr.clear();

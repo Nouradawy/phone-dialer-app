@@ -120,9 +120,6 @@ class InCallScreen extends StatelessWidget {
                         return StreamBuilder<int>(
                           stream: _StopWatchTimer.rawTime,
                           builder: (context,snap) {
-
-
-
                             if(NativeBridge.get(context).isStopWatchStart == true)
                               {
                                 final value =snap.data;
@@ -368,7 +365,7 @@ class InCallScreen extends StatelessWidget {
             color: HexColor("#B4B4B4").withOpacity(0.49)),
       ],
     ):
-    AppCubit.get(context).isShowen?InCallDialpad(context, 0 , AppCubit.get(context).dialerController):Column(
+    NativeBridge.get(context).isShowen?InCallDialpad(context, 0 , AppCubit.get(context).dialerController):Column(
           children: [
             Padding(
               padding: const EdgeInsets.only(bottom: 25.0),
@@ -475,7 +472,8 @@ class InCallScreen extends StatelessWidget {
                           splashColor: Colors.red,
                           borderRadius: BorderRadius.circular(20),
                           onTap: (){
-                            AppCubit.get(context).dialpadShow();
+
+                            NativeBridge.get(context).inCallDialerToggle();
                           },
                           child: Container(
                             decoration:BoxDecoration(

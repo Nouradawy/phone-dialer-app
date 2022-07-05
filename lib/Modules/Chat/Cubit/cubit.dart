@@ -13,6 +13,7 @@ ChatAppCubit() : super(ChatAppCubitInitialState());
 static ChatAppCubit get(context) => BlocProvider.of(context);
 var MsgBox = TextEditingController();
 List<MessageModel> messages =[];
+bool NewMessage = false;
 
 
 MessageModel? model;
@@ -29,6 +30,9 @@ void sendMessage({
     Seen: false,
     iSWriting: false,
   );
+
+  NewMessage = !NewMessage;
+  print('NewMessage : ' + NewMessage.toString());
 
   FirebaseFirestore.instance
   .collection("Users")
@@ -59,21 +63,20 @@ void sendMessage({
       "receiverId": receiverId,
       "dateTime":dateTime,
       "Seen": false,
-      "iSWriting": false,
+
       "DocID": value.id,
     });
 
-      FirebaseFirestore.instance
-          .collection("Users")
-          .doc(token)
-          .collection("chats")
-          .doc(receiverId)
-          .set({
-        "NewMessage":true,
+    FirebaseFirestore.instance
+        .collection("Users")
+        .doc(receiverId)
+        .set({
+      "NewMessage": !NewMessage,
 
-      },
-        SetOptions(merge: true),
-      );
+    },
+      SetOptions(merge: true),
+    );
+
 
     print(value.id.toString());
     emit(SendMessageSuccessState());
@@ -87,34 +90,7 @@ void sendMessage({
 
 
 
-// void GetMessages({
-//   required String  receiverId,
-// })
-// {
-//   FirebaseFirestore.instance
-//       .collection("Users")
-//       .doc(token)
-//       .collection("chats")
-//       .doc(receiverId)
-//       .collection("messages")
-//   .orderBy("dateTime")
-//       .snapshots()
-//       .listen((event)
-//   {
-//     event.docChanges.map((e) => e.doc.data().)
-//         print("event changes = isnot empty");
-//         messages.clear();
-//       event.docs.forEach((element){
-//         messages.add(
-//             MessageModel.fromJson(element.data())
-//         );
-//       });
-//         emit(GetMessageSuccessState());
-//
-//     // emit(GetMessageSuccessState());
-//   });
-//
-// }
+
 
 void MessageStateUpdater({
     required String receiverId,
@@ -133,15 +109,7 @@ void MessageStateUpdater({
   })
       .then((value)
   {
-    FirebaseFirestore.instance
-      .collection("Users")
-      .doc(token)
-      .collection("chats")
-      .doc(receiverId)
-      .set({
-    "NewMessage":false,
-    },
-      SetOptions(merge: true),);
+
   }).catchError((Error) {
     print("while updateing MessageState and Error havebeen ocured : " +
         Error.toString());
@@ -164,35 +132,85 @@ void UserWrittingDetection({
   );
 }
 
-  int ListSize=0;
-  Future<void> ListCount() async {
-    ListSize =  0;
+  List ListUnSeenMsg=[];
+  List ListUnSeentokens=[];
+  List UnseenTokens =[];
+  List ListUnseenMsgs =[];
+
+
+  void ListCount() async {
+
+
     await FirebaseFirestore.instance.collection("Users").get().then((value)  {
 
-      value.docs.forEach((element)
+
+      value.docs.forEach((Element)
       async {
-        if (element.data()['uId'] != token) {
-          bool? NewMessageCount;
-          await FirebaseFirestore.instance.collection("Users").doc(token).collection("chats").doc(element
-              .data()
-          ['uId']
-              .toString()).collection("messages").get().then((value) {
+
+        if (Element.data()['uId'] != token) {
+          await FirebaseFirestore.instance.collection("Users").doc(token).collection("chats").doc(Element.data()['uId']).collection("messages").get().then((value) {
+            /// for each unseen msg from only one person it will grow the list +1
             for (var element in value.docs) {
               if (element.data()['Seen'] == false) {
-                NewMessageCount = true;
-              } else {
-                NewMessageCount == true? NewMessageCount=true:NewMessageCount=false;
+
+                ListUnSeenMsg.add({
+                  "Name":Element.data()["name"],
+                  "image":Element.data()["image"],
+                  "token":Element.id,
+                  "text":element.data()["text"]});
+                ListUnSeentokens.add(Element.id);
               }
             }
           });
 
-          NewMessageCount == true ? ListSize++ : null;
+          // NewMessageCount == true ? ListSize.add() : null;
 
         }
-        print("item count : " + ListSize.toString());
-        emit(NewMessageRecivedState());
+
+
+        // print("List at ListCount : " + ListUnSeenMsg.toString());
+        // print("Listof unseentokens" + UnseenTokens.toString());
+        // emit(NewMessageRecivedState());
       });
+
     });
+
+  }
+
+  int Count=0;
+
+  void ScreenUpdate(){
+    ListUnseenMsgs.clear();
+    UnseenTokens = ListUnSeentokens.toSet().toList();
+    print("item count from screen updating : " + ListUnSeenMsg.toString());
+    UnseenTokens.forEach((e) {
+          ListUnseenMsgs.add({
+            "token": e,
+            "text": ListUnSeenMsg.map((element) =>e == element["token"]?element["text"]:null).toList(),
+            "Name": ListUnSeenMsg.map((element) =>e == element["token"]?element["Name"]:null).toList(),
+            "image": ListUnSeenMsg.map((element) =>e == element["token"]?element["image"]:null).toList(),
+            "Length":"",
+          });
+      });
+
+    for(var i=0 ; i<ListUnseenMsgs.length ; i++) {
+      ListUnseenMsgs[i]["text"].removeWhere((element) => element == null);
+      ListUnseenMsgs[i]["Name"].removeWhere((element) => element == null);
+      ListUnseenMsgs[i]["image"].removeWhere((element) => element == null);
+      ListUnseenMsgs[i]["text"].forEach((e){
+        Count++;
+      });
+
+      ListUnseenMsgs[i]["Length"] = Count.toString();
+      ListUnseenMsgs[i]["Name"] = ListUnseenMsgs[i]["Name"][0];
+      ListUnseenMsgs[i]["image"] = ListUnseenMsgs[i]["image"][0];
+      Count=0;
+    }
+    print("Newlist after removing nulls from list : ${ListUnseenMsgs}");
+    ListUnSeenMsg.clear();
+    ListUnSeentokens.clear();
+    UnseenTokens.clear();
+    emit(NewMessageRecivedState());
 
   }
 

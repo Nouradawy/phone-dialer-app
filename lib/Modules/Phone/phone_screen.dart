@@ -24,7 +24,7 @@ class PhoneScreen extends StatelessWidget {
 
     if(PhoneLogsCubit.get(context).PhoneRange == true){
       PhoneLogsCubit.get(context).CallLogsUpdate(PhoneContactsCubit.get(context).Contacts);
-      AppCubit.get(context).ShowHide();
+      PhoneContactsCubit.get(context).Daillerinput();
     }
 
     return  PhoneContactsCubit.get(context).isSearching!=true?

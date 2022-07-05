@@ -23,6 +23,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:ndialog/ndialog.dart';
 
+import '../Modules/Chat/Cubit/cubit.dart';
 import '../Themes/theme_edittor.dart';
 
 import 'constants.dart';
@@ -310,7 +311,9 @@ AppBar ChatAppBar(BuildContext context, double AppbarSize) => AppBar(
     actions: [
       Transform.translate(
           offset: const Offset(0, -4),
-          child: IconButton(onPressed: (){}, icon: const Icon(Icons.notifications_none_rounded),color:HexColor("#23036A"),padding: const EdgeInsets.all(1),))
+          child: IconButton(onPressed: (){
+            ChatAppCubit.get(context).ScreenUpdate();
+          }, icon: const Icon(Icons.notifications_none_rounded),color:HexColor("#23036A"),padding: const EdgeInsets.all(1),))
     ],
     // leading: IconButton(onPressed: (){}, icon: Icon(Icons.more_vert,color:AppBarMoreIconColor()),),
     toolbarHeight: AppbarSize,
@@ -663,7 +666,7 @@ bool DualSIM = false;
                 InkWell(
                   borderRadius: BorderRadius.circular(5),
                   onTap: (){
-                    AppCubit.get(context).dialpadShow();
+                    PhoneContactsCubit.get(context).dialpadShowcontact();
                   },
                   child: Container(
                     width:MediaQuery.of(context).size.width*0.07,
@@ -678,7 +681,7 @@ bool DualSIM = false;
                   onTap: (){
                     dialerController.text = dialerController.text.isNotEmpty ? dialerController.text.substring(0,dialerController.text.length-1) : dialerController.text;
                     if(dialerController.text.isEmpty){
-                      AppCubit.get(context).ShowHide();
+                      PhoneContactsCubit.get(context).Daillerinput();
                       PhoneContactsCubit.get(context).isSearching = false;
                     }
 
@@ -686,7 +689,7 @@ bool DualSIM = false;
                   onLongPress: (){
                     dialerController.clear();
                     if(dialerController.text.isEmpty){
-                      AppCubit.get(context).ShowHide();
+                      PhoneContactsCubit.get(context).Daillerinput();
                     }
                     PhoneContactsCubit.get(context).isSearching = false;
                   },
@@ -899,7 +902,7 @@ bool DualSIM = false;
               splashColor: Colors.blue,
               borderRadius: BorderRadius.circular(7),
               onTap: (){
-                AppCubit.get(context).dialpadShow();
+                NativeBridge.get(context).inCallDialerToggle();
               },
               child: Container(
                 width:30,
@@ -914,8 +917,7 @@ bool DualSIM = false;
                 borderRadius: BorderRadius.circular(5),
                 radius: 2,
                 onTap:(){
-                  NativeBridge.get(context)
-                      .invokeNativeMethod("RejectCall",null);
+                  NativeBridge.get(context).invokeNativeMethod("RejectCall",null);
                 },
                 child: CircleAvatar(
                   backgroundColor: HexColor("#FC5757"),
@@ -932,15 +934,14 @@ bool DualSIM = false;
               onTap: (){
                 dialerController.text = dialerController.text.isNotEmpty ? dialerController.text.substring(0,dialerController.text.length-1) : dialerController.text;
                 if(dialerController.text.isEmpty){
-                  AppCubit.get(context).ShowHide();
                   PhoneContactsCubit.get(context).isSearching = false;
                 }
               },
               onLongPress: (){
                 dialerController.clear();
-                if(dialerController.text.isEmpty){
-                  AppCubit.get(context).ShowHide();
-                }
+                // if(dialerController.text.isEmpty){
+                //   PhoneContactsCubit.get(context).dialpadShowcontact();
+                // }
                 PhoneContactsCubit.get(context).isSearching = false;
               },
               child: Container(
@@ -999,12 +1000,11 @@ Container DialPadButtonLayoutInCall(BuildContext context, double AppbarSize , St
 void AddingNumberToDialPad(TextEditingController dialerController, BuildContext context , String Num) {
   if(dialerController.text.isEmpty)
   {
-    AppCubit.get(context).ShowHide();
+    PhoneContactsCubit.get(context).Daillerinput();
     dialerController.text =Num;
   }else{
-    AppCubit.get(context).ShowHide();
+    PhoneContactsCubit.get(context).Daillerinput();
     dialerController.text =dialerController.text +Num;
-    PhoneContactsCubit.get(context).isSearching = true;
   }
 }
 
@@ -1106,7 +1106,7 @@ Row CallButton(BuildContext context, double AppbarSize , bool DualSIM , TextEdit
            onTap: (){
 
              PhoneContactsCubit.get(context).isSearching = false;
-             AppCubit.get(context).dialpadShow();
+             PhoneContactsCubit.get(context).dialpadShowcontact();
              FlutterPhoneDirectCaller.callNumber(dialerController.text);
              dialerController.clear();
              Navigator.pushAndRemoveUntil(context,

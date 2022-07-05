@@ -6,26 +6,24 @@ import 'package:dialer_app/Network/Local/shared_data.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import 'facebook_fetcher.dart';
+class Faceebook_Fetcher extends StatefulWidget {
 
-class Webpage extends StatefulWidget {
-
-  Webpage(this.contact);
+  Faceebook_Fetcher(this.contact);
   final AppContact contact;
 
   @override
-  _WebpageState createState() => _WebpageState();
+  _Faceebook_FetcherState createState() => _Faceebook_FetcherState();
 }
 
-class _WebpageState extends State<Webpage> {
+class _Faceebook_FetcherState extends State<Faceebook_Fetcher> with TickerProviderStateMixin{
   late WebViewController controller;
   var URLaddress = TextEditingController();
   String? Url;
   bool? IsFinished= true;
   bool? FirstTime=true;
   bool InitialSetup=true;
-
-
+  double ProgressValue = 0;
+  late AnimationController facebookSteps;
   String? fbClassName;
   String? fbProfileLink;
   String? FriendsCountInSinglePage;
@@ -131,31 +129,39 @@ class _WebpageState extends State<Webpage> {
               print("page Finished loading $url");
               URLaddress.text = url;
 
-                // if (FirstTime == true) {
-                //   await Future.delayed(Duration(seconds: 2));
-                //   await controller.loadUrl(
-                //       'https://mbasic.facebook.com/friends/center/friends/?mff_nav=1');
-                //   TotalFriendsCount = await controller.runJavascriptReturningResult(
-                //       "document.getElementById('friends_center_main').firstChild.textContent;");
-                //   TotalFriendsCount =
-                //       TotalFriendsCount?.replaceAll(' Friends', '')
-                //           .replaceAll('"', '');
-                //   print(TotalFriendsCount);
-                //   fbClassName = await controller.runJavascriptReturningResult(
-                //       "document.querySelectorAll('table')[1].parentElement.className");
-                //   FriendsCountInSinglePage =
-                //       await controller.runJavascriptReturningResult(
-                //           "document.getElementsByClassName($fbClassName).length;");
-                //   pagesCount = (int.parse(TotalFriendsCount!) /
-                //           int.parse(FriendsCountInSinglePage!))
-                //       .truncate();
-                //   print("pages count" + pagesCount.toString());
-                //   FirstTime = false;
-                // }
-
+                if (FirstTime == true) {
+                  await Future.delayed(Duration(seconds: 2));
+                  await controller.loadUrl(
+                      'https://mbasic.facebook.com/friends/center/friends/?mff_nav=1');
+                  TotalFriendsCount = await controller.runJavascriptReturningResult(
+                      "document.getElementById('friends_center_main').firstChild.textContent;");
+                  TotalFriendsCount =
+                      TotalFriendsCount?.replaceAll(' Friends', '')
+                          .replaceAll('"', '');
+                  print(TotalFriendsCount);
+                  fbClassName = await controller.runJavascriptReturningResult(
+                      "document.querySelectorAll('table')[1].parentElement.className");
+                  FriendsCountInSinglePage =
+                      await controller.runJavascriptReturningResult(
+                          "document.getElementsByClassName($fbClassName).length;");
+                  pagesCount = (int.parse(TotalFriendsCount!) /
+                          int.parse(FriendsCountInSinglePage!))
+                      .truncate();
+                  print("pages count" + pagesCount.toString());
+                  FirstTime = false;
+                }
+              facebookSteps = AnimationController(
+                vsync: this,
+                  duration: const Duration(seconds: 5),
+              )..addListener(() {
+                setState(() {});
+              });
+              setState(() {
+                ProgressValue = fbList.length.toDouble()/double.parse(TotalFriendsCount!);
+              });
                 faceScrap(controller, pagesCount, moreButton, fbClassName,
                     FriendsCountInSinglePage, fbProfileLink, fbProfileIMG);
-
+              
             },
           ),
           InkWell(
@@ -168,34 +174,46 @@ class _WebpageState extends State<Webpage> {
               child: Container(
                 height: 100,
                 width: MediaQuery.of(context).size.width,
-                color: Colors.grey.withOpacity(0.95),
+                color: Colors.grey.withOpacity(0.90),
                 child: Column(
                   children: [
-                    Text("Step 1"),
-                    Text("Please Sign in to Facebook then Click Continue" ,style: TextStyle(
+                    Text("Extracting facebook Profile Pictures" ,style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 14,
                         color:Colors.deepPurple),),
+                    LinearProgressIndicator(
+                      value: ProgressValue,
+                      // valueColor:AlwaysStoppedAnimation<Color>(Colors.blue),
+                      color: Colors.deepPurple,
+                      // backgroundColor: Colors.deepPurple,
+                    ),
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        TextButton(
-                          onPressed: () {
-                            // CookieManager().clearCookies();
-                            fbList.clear();
-                          },
-                          child: const Text("Clear List"),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(context,
-                                MaterialPageRoute(builder: (BuildContext context) => Faceebook_Fetcher(widget.contact)));
-                          },
-                          child: const Text("Continue"),
-                        ),
+                        Text("Extracting facebook Pictures",style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 9,
+                            color:Colors.deepPurple),),
+                        SizedBox(width: 50,),
+                        Text("${ProgressValue.roundToDouble()}",style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 9,
+                            color:Colors.deepPurple),),
                       ],
                     ),
 
+                    TextButton(
+                      onPressed: () {
+                        InitialSetup=false;
+                      },
+                      child: const Text("Continue"),
+                    ),
+                    // TextButton(
+                    //   onPressed: () {
+                    //     CookieManager().clearCookies();
+                    //   },
+                    //   child: const Text("Clear Cokkies"),
+                    // ),
                   ],
                 ),
               ))

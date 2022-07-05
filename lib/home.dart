@@ -11,6 +11,7 @@ import 'Components/components.dart';
 import 'Layout/incall_screen.dart';
 import 'Modules/Contacts/Contacts Cubit/contacts_cubit.dart';
 
+import 'Modules/Contacts/appcontacts.dart';
 import 'Modules/Phone/phone_screen.dart';
 import 'Layout/Cubit/cubit.dart';
 import 'Layout/Cubit/states.dart';
@@ -35,47 +36,49 @@ class Home extends StatelessWidget {
       child: BlocBuilder<AppCubit,AppStates>(
         builder:(context,state)=> DefaultTabController(
           length: 2,
-          child: Scaffold(
-            resizeToAvoidBottomInset: false,
-            backgroundColor: HomePageBackgroundColor(context),
-            extendBodyBehindAppBar: true,
-            appBar:MainAppBar(context, AppbarSize , AppCubit.get(context).searchController),
-            drawer: AppDrawer(context, AppbarSize),
-            drawerDragStartBehavior: DragStartBehavior.start ,
-            floatingActionButton: Cubit.isShowen==false?FloatingActionButton(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ), onPressed: () {
-                Cubit.dialpadShow();
-                // print(DialPadBackgroundImagepath(context).toString());
-                },
-              child:Image.asset("assets/Images/dialpad.png",scale:1.8 , color: HexColor("#EEEEEE"),),):null,
-            body: BlocBuilder<PhoneContactsCubit,PhoneContactStates>(
-              builder:(context,state) {
-                return Stack(
-                  alignment: AlignmentDirectional.bottomCenter,
-                  children: [
-                    TabBarView(
-                      children:<Widget> [
-                        PhoneScreen(),
-                        ContactsScreen(),
-                      ],
-                    ),
+          child: BlocBuilder<PhoneContactsCubit,PhoneContactStates>(
+            builder:(context,state)=> Scaffold(
+              resizeToAvoidBottomInset: false,
+              backgroundColor: HomePageBackgroundColor(context),
+              extendBodyBehindAppBar: true,
+              appBar:MainAppBar(context, AppbarSize , AppCubit.get(context).searchController),
+              drawer: AppDrawer(context, AppbarSize),
+              drawerDragStartBehavior: DragStartBehavior.start ,
+              floatingActionButton: PhoneContactsCubit.get(context).isShowen==false?FloatingActionButton(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ), onPressed: () {
+                  PhoneContactsCubit.get(context).dialpadShowcontact();
+                  // print(DialPadBackgroundImagepath(context).toString());
+                  },
+                child:Image.asset("assets/Images/dialpad.png",scale:1.8 , color: HexColor("#EEEEEE"),),):null,
+              body: BlocBuilder<PhoneContactsCubit,PhoneContactStates>(
+                builder:(context,state) {
+                  return Stack(
+                    alignment: AlignmentDirectional.bottomCenter,
+                    children: [
+                      TabBarView(
+                        children:<Widget> [
+                          PhoneScreen(),
+                          ContactsScreen(),
+                        ],
+                      ),
 
-                Material(
-                    color: HexColor("#F9F9F9"),
-                    borderRadius: const BorderRadiusDirectional.only(
-                      topStart: Radius.circular(30),
-                      topEnd: Radius.circular(30),
-                    ),
-                    elevation: 10,
-                    child: Cubit.isShowen?Dialpad(context, AppbarSize , AppCubit.get(context).dialerController):null),
+                  Material(
+                      color: HexColor("#F9F9F9"),
+                      borderRadius: const BorderRadiusDirectional.only(
+                        topStart: Radius.circular(30),
+                        topEnd: Radius.circular(30),
+                      ),
+                      elevation: 10,
+                      child: PhoneContactsCubit.get(context).isShowen?Dialpad(context, AppbarSize , AppCubit.get(context).dialerController):null),
 
-              ],
-            );
-          },
+                ],
+              );
+            },
         ),
       ),
+          ),
     ),
     ),
           );
