@@ -1,9 +1,13 @@
 package com.phone.dialer.dialer_app.helpers
 
+import android.database.Observable
 import android.net.Uri
 import android.telecom.Call
+import android.telecom.Call.Details
+import android.telecom.Conference
 import android.telecom.InCallService
 import android.telecom.VideoProfile
+import android.telecom.CallScreeningService
 import android.os.Build
 import android.os.Looper
 import android.telecom.ConnectionService
@@ -13,7 +17,12 @@ import androidx.annotation.RequiresApi
 
 
 class CallManager {
+
+
+
+
     companion object {
+
         var call: Call? = null
         var inCallService: InCallService? = null
 
@@ -44,11 +53,6 @@ class CallManager {
             call?.unregisterCallback(callback)
         }
 
-        fun getState() = if (call == null) {
-            Call.STATE_DISCONNECTED
-        } else {
-            call!!.state
-        }
 
         fun keypad(c: Char) {
             call?.playDtmfTone(c)
@@ -59,6 +63,7 @@ class CallManager {
 
         fun getCallerID():String {
             val handle = call?.details?.handle?.toString()
+
             var phoneNumber : String = Uri.decode(handle)
             val uri = Uri.decode(handle)
 
@@ -85,6 +90,8 @@ class CallManager {
                 else -> {"UNKOWN"}
             }
         }
+
+
 
     }
 

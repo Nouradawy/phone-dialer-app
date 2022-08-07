@@ -7,6 +7,9 @@ class MessageModel
   String? text;
   bool? Seen;
   bool? iSWriting;
+  String? Senderimage;
+  String? SenderName;
+  String? SenderPhone;
 
 
   MessageModel({
@@ -17,6 +20,9 @@ class MessageModel
     this.Seen,
     this.iSWriting,
     this.text,
+    this.SenderName,
+    this.Senderimage,
+    this.SenderPhone,
   });
 
   MessageModel.fromJson(Map<String,dynamic>?json){
@@ -28,6 +34,10 @@ class MessageModel
     Seen = json["Seen"];
     iSWriting = json["iSWriting"];
     DocID = json["DocID"];
+    Senderimage = json["Senderimage"];
+    SenderName = json["SenderName"];
+    SenderPhone = json["SenderPhone"];
+
   }
 
   Map<String,dynamic>toMap(){
@@ -39,6 +49,9 @@ class MessageModel
       "Seen" : Seen,
       "iSWritting" : iSWriting,
       "DocID" : DocID,
+      "Senderimage" : Senderimage,
+      "SenderName" : SenderName,
+      "SenderPhone" : SenderPhone,
     };
   }
 

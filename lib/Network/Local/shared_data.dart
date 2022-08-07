@@ -17,7 +17,8 @@ String? UserProfilePic;
 String? ContactsLength;
 List FavoratesContactids=[];
 List fbList = [];
-
+List ContactNotes = [];
+String? Notes;
 
 
 Map<String, dynamic> ContactData = {};
@@ -30,21 +31,24 @@ Map ShardData =
 
 Future<void> ThemeSharedPref (context)   async {
   // ThemeSwitch = CacheHelper.getData(key: 'ThemeSwitch')==null?ThemeSwitch:CacheHelper.getData(key: 'ThemeSwitch');
-  if(ActiveTheme ==0) {
 
-    String ThemeSavedData = CacheHelper.getData(key:'ThemeList');
-    Themedata =  json.decode(ThemeSavedData);
-    ActiveTheme = CacheHelper.getData(key: 'currentThemeindex');
+    if(CacheHelper.getData(key:'ThemeList') !=null) {
+      String ThemeSavedData = CacheHelper.getData(key: 'ThemeList');
+      Themedata = json.decode(ThemeSavedData);
 
-    if(ThemeCubit.get(context).MyThemeData[ActiveTheme]["DialPadBackground"] !="null") {
-      final imagePermanent = await SaveImagePermanently(ThemeCubit.get(context).MyThemeData[ActiveTheme]["DialPadBackground"]);
-      ThemeCubit.get(context).DialPadBackGroundImagePicker = imagePermanent;
+      if(ThemeCubit.get(context).MyThemeData[ActiveTheme]["DialPadBackground"] !="null") {
+        final imagePermanent = await SaveImagePermanently(ThemeCubit.get(context).MyThemeData[ActiveTheme]["DialPadBackground"]);
+        ThemeCubit.get(context).DialPadBackGroundImagePicker = imagePermanent;
+      }
+      if(ThemeCubit.get(context).MyThemeData[ActiveTheme]["InCallBackground"] !="null") {
+        final imagePermanent = await SaveImagePermanently(ThemeCubit.get(context).MyThemeData[ActiveTheme]["InCallBackground"]);
+        ThemeCubit.get(context).InCallBackGroundImagePicker  = imagePermanent;
+      }
     }
-    if(ThemeCubit.get(context).MyThemeData[ActiveTheme]["InCallBackground"] !="null") {
-      final imagePermanent = await SaveImagePermanently(ThemeCubit.get(context).MyThemeData[ActiveTheme]["InCallBackground"]);
-      ThemeCubit.get(context).InCallBackGroundImagePicker  = imagePermanent;
-    }
-  }
+
+    if(CacheHelper.getData(key: 'currentThemeindex')!=null) ActiveTheme = CacheHelper.getData(key: 'currentThemeindex');
+
+
   // print(Themedata[2]);
   // print(ActiveTheme);
 
@@ -68,7 +72,10 @@ void GetShardData()  {
     fbList = json.decode(FBList);
     print(FBList);
     }
-
+if(CacheHelper.getData(key: "Notes")!=null) {
+    String NoteString = CacheHelper.getData(key: "Notes");
+    ContactNotes = json.decode(NoteString);
+  }
   // String FavoratesContacts= CacheHelper.getData(key: 'FavList');
   // FavoratesContactids = json.decode(FavoratesContacts);
 

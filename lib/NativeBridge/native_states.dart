@@ -1,6 +1,8 @@
 abstract class NativeStates {}
 
-class NativeBridgeInitialState extends NativeStates{}
+class NativeBridgeInitialState extends NativeStates{
+
+}
 
 class NativeBridgeInvokeSuccess extends NativeStates{}
 
@@ -20,3 +22,5 @@ class PhoneStateDisconnecting extends NativeStates{}
 class PhoneStateConnecting extends NativeStates{}
 class CallerIDSuccessState extends NativeStates{}
 class ScreenRefresh extends NativeStates{}
+class NotesEpandeSuccess extends NativeStates{}
+class NewNoteAddedSuccess extends NativeStates{}

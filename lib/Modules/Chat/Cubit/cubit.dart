@@ -14,6 +14,7 @@ static ChatAppCubit get(context) => BlocProvider.of(context);
 var MsgBox = TextEditingController();
 List<MessageModel> messages =[];
 bool NewMessage = false;
+bool UserAvilableAtMessenger = false;
 
 
 MessageModel? model;
@@ -21,6 +22,9 @@ void sendMessage({
   required String receiverId,
   required String dateTime,
   required String text,
+  required String SenderImage,
+  required String SenderName,
+  required String SenderPhone,
 }){
   model = MessageModel(
     text:text,
@@ -63,11 +67,36 @@ void sendMessage({
       "receiverId": receiverId,
       "dateTime":dateTime,
       "Seen": false,
-
       "DocID": value.id,
     });
 
+
+
+        FirebaseFirestore.instance
+            .collection("Users")
+            .doc(receiverId)
+            .collection("UnSeenChat")
+            .doc(token)
+            .collection("messages")
+            .doc(value.id)
+            .set({
+          "text": text,
+          "senderId": token,
+          "dateTime": dateTime,
+          "Senderimage":SenderImage,
+          "SenderName" : SenderName,
+          "SenderPhone":SenderPhone,
+        });
+
     FirebaseFirestore.instance
+        .collection("Users")
+        .doc(receiverId)
+        .collection("UnSeenChat")
+        .doc(token).set({
+      "dummy":true,
+    });
+
+      FirebaseFirestore.instance
         .collection("Users")
         .doc(receiverId)
         .set({
@@ -90,7 +119,23 @@ void sendMessage({
 
 
 
-
+void UnseenMsgesClear({
+  required String receiverId,
+}) {
+  //  FirebaseFirestore.instance
+  //     .collection("Users")
+  //     .doc(token)
+  //     .collection("UnSeenChat")
+  //     .doc(receiverId).collection("messages").get().then((snapshot){
+  //       snapshot.docs.forEach((element) {
+  //         element.reference.delete();
+  //       });
+  // });
+   FirebaseFirestore.instance
+       .collection("Users")
+       .doc(token)
+       .collection("UnSeenChat").doc(receiverId).delete();
+}
 
 void MessageStateUpdater({
     required String receiverId,
@@ -132,86 +177,8 @@ void UserWrittingDetection({
   );
 }
 
-  List ListUnSeenMsg=[];
-  List ListUnSeentokens=[];
-  List UnseenTokens =[];
-  List ListUnseenMsgs =[];
 
-
-  void ListCount() async {
-
-
-    await FirebaseFirestore.instance.collection("Users").get().then((value)  {
-
-
-      value.docs.forEach((Element)
-      async {
-
-        if (Element.data()['uId'] != token) {
-          await FirebaseFirestore.instance.collection("Users").doc(token).collection("chats").doc(Element.data()['uId']).collection("messages").get().then((value) {
-            /// for each unseen msg from only one person it will grow the list +1
-            for (var element in value.docs) {
-              if (element.data()['Seen'] == false) {
-
-                ListUnSeenMsg.add({
-                  "Name":Element.data()["name"],
-                  "image":Element.data()["image"],
-                  "token":Element.id,
-                  "text":element.data()["text"]});
-                ListUnSeentokens.add(Element.id);
-              }
-            }
-          });
-
-          // NewMessageCount == true ? ListSize.add() : null;
-
-        }
-
-
-        // print("List at ListCount : " + ListUnSeenMsg.toString());
-        // print("Listof unseentokens" + UnseenTokens.toString());
-        // emit(NewMessageRecivedState());
-      });
-
-    });
-
-  }
-
-  int Count=0;
-
-  void ScreenUpdate(){
-    ListUnseenMsgs.clear();
-    UnseenTokens = ListUnSeentokens.toSet().toList();
-    print("item count from screen updating : " + ListUnSeenMsg.toString());
-    UnseenTokens.forEach((e) {
-          ListUnseenMsgs.add({
-            "token": e,
-            "text": ListUnSeenMsg.map((element) =>e == element["token"]?element["text"]:null).toList(),
-            "Name": ListUnSeenMsg.map((element) =>e == element["token"]?element["Name"]:null).toList(),
-            "image": ListUnSeenMsg.map((element) =>e == element["token"]?element["image"]:null).toList(),
-            "Length":"",
-          });
-      });
-
-    for(var i=0 ; i<ListUnseenMsgs.length ; i++) {
-      ListUnseenMsgs[i]["text"].removeWhere((element) => element == null);
-      ListUnseenMsgs[i]["Name"].removeWhere((element) => element == null);
-      ListUnseenMsgs[i]["image"].removeWhere((element) => element == null);
-      ListUnseenMsgs[i]["text"].forEach((e){
-        Count++;
-      });
-
-      ListUnseenMsgs[i]["Length"] = Count.toString();
-      ListUnseenMsgs[i]["Name"] = ListUnseenMsgs[i]["Name"][0];
-      ListUnseenMsgs[i]["image"] = ListUnseenMsgs[i]["image"][0];
-      Count=0;
-    }
-    print("Newlist after removing nulls from list : ${ListUnseenMsgs}");
-    ListUnSeenMsg.clear();
-    ListUnSeentokens.clear();
-    UnseenTokens.clear();
-    emit(NewMessageRecivedState());
-
-  }
+  
+  
 
 }

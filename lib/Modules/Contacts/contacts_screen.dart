@@ -21,10 +21,13 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../Layout/incall_screen.dart';
+import '../../NativeBridge/native_bridge.dart';
 import 'edit_contact.dart';
 
 class ContactsScreen extends StatelessWidget {
@@ -49,7 +52,7 @@ class ContactsScreen extends StatelessWidget {
                   AppContact contact = Cubit.isSearching==true ?Cubit.FilterdContacts[index]:Cubit.Contacts[index];
                   return Column(
                     children: [
-                      index==0?FavoritesContactsGroups(Cubit):Container(),
+                      index==0?FavoritesContactsGroups(Cubit,context):Container(),
                       index==0?const Text("Contacts"):Container(),
                       ListTile(
                         contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
@@ -109,6 +112,7 @@ class ContactDetails extends StatelessWidget {
         builder: (context , state) {
           final List NumbersInAccount=[];
           String? IsPrimery;
+          bool CallNotesUpdateSuccess = false;
           String? DisplyAccount = contact.info?.accounts.first.type;
           final List SocialMediaList=[{
             "platform": "facebook",
@@ -133,7 +137,34 @@ class ContactDetails extends StatelessWidget {
             //   }
           });
 
-          PhoneLogsCubit.get(context).ContactCallLogs(contact);
+          if(contact.Notes ==null) {
+        ContactNotes.forEach((element) {
+          if (element["id"] == contact.info?.id) {
+            contact.Notes = element["Notes"].replaceAll("[","").replaceAll("]","").split(',');
+            print(element["Notes"]);
+          }
+        });
+      }
+
+          NativeBridge.get(context).CallNotesUpdate.forEach((e) {
+            if(contact.info?.id ==e) {
+              ContactNotes.forEach((element) {
+                if (element["id"] == contact.info?.id) {
+                  contact.Notes = element["Notes"].replaceAll("[","").replaceAll("]","").split(',');
+
+                  print(element["Notes"]);
+                }
+              });
+              CallNotesUpdateSuccess =true;
+            }
+          });
+          if(CallNotesUpdateSuccess ==true)
+            {
+              NativeBridge.get(context).CallNotesUpdate.remove(contact.info?.id);
+              CallNotesUpdateSuccess= false;
+            }
+          print(contact.info?.phones.first);
+      PhoneLogsCubit.get(context).ContactCallLogs(contact);
           print("test contact log ");
           return Scaffold(
             appBar: AppBar(
@@ -217,15 +248,111 @@ class ContactDetails extends StatelessWidget {
                       children: [
                         const Icon(Icons.sticky_note_2),
                         const SizedBox(width:15),
-                        contact.info!.notes.length >0?ContactTagNotes(context , contact.info?.notes):Container(
-                          width:MediaQuery.of(context).size.width*0.50,
-                          height: 70,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(4),
-                            color:HexColor("#F5F5F5"),
+                        if (contact.Notes != null) PhoneContactsCubit.get(context).NoteEditting==false?
+                            ///if Contact Notes not Empty && i am not in editting mode show Notes
+                        InkWell(
+                            onTap:(){
+                              PhoneContactsCubit.get(context).AddNote();
+                            },
+                            child: ContactTagNotes(context , contact.Notes)):
+                        ///if Contact Notes not Empty && i am in editting mode show Start Editting Notes
+                        InkWell(
+                          onTap: (){
+                            PhoneContactsCubit.get(context).AddNote();
+                          },
+                          child: Container(
+                            width:MediaQuery.of(context).size.width*0.50,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                              color:HexColor("#F5F5F5"),
+                            ),
+                            child: TextField(
+                              style: TextStyle(
+                                fontFamily: "OpenSans",
+                                fontSize: 12,
+                              ),
+                              controller: PhoneContactsCubit.get(context).NotesController,
+                              textAlign:TextAlign.center,
+                              textAlignVertical: TextAlignVertical.center,
+                              onSubmitted: (value){
+                                contact.Notes?.add(value);
+                                PhoneContactsCubit.get(context).AddNote();
+                                PhoneContactsCubit.get(context).NotesController.clear();
+                                ContactNotes.forEach((element) {
+                                  if(element["id"] == contact.info?.id){
+
+                                    element["Notes"]=contact.Notes.toString();
+                                  }
+                                });
+                                CacheHelper.saveData(key: "Notes", value: json.encode(ContactNotes));
+                                print(PhoneContactsCubit.get(context).NoteEditting);
+                                print("Notes : "+contact.Notes.toString());
+                              },
+                              decoration: InputDecoration(
+                                border:InputBorder.none,
+                              ),
+                            ),
                           ),
-                          child: Center(child: Icon(Icons.add)),
+                        ) else PhoneContactsCubit.get(context).NoteEditting==false?InkWell(
+                          onTap: (){
+                            if(contact.Notes ==null)
+                              {
+                                contact.Notes =[];
+                                ContactNotes.add({
+                                  "id":contact.info?.id,
+                                  "Notes" : ""
+                                });
+
+                              }
+                            PhoneContactsCubit.get(context).AddNote();
+                          },
+                          child: Container(
+                            width:MediaQuery.of(context).size.width*0.50,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                              color:HexColor("#F5F5F5"),
+                            ),
+                            child: Center(child: Icon(Icons.add)),
+                          ),
+                        ):InkWell(
+                          onTap: (){
+
+                            PhoneContactsCubit.get(context).AddNote();
+                          },
+                          child: Container(
+                            width:MediaQuery.of(context).size.width*0.50,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(4),
+                              color:HexColor("#F5F5F5"),
+                            ),
+                            child: TextField(
+                              style: TextStyle(
+                                fontFamily: "OpenSans",
+                                fontSize: 12,
+                              ),
+                              controller: PhoneContactsCubit.get(context).NotesController,
+                              textAlign:TextAlign.center,
+                              textAlignVertical: TextAlignVertical.center,
+                              onSubmitted: (value){
+
+                                contact.Notes?[0]=value;
+                                PhoneContactsCubit.get(context).NotesController.clear();
+                                PhoneContactsCubit.get(context).AddNote();
+                                print(PhoneContactsCubit.get(context).NoteEditting);
+                                print("Notes : "+contact.Notes.toString());
+                              },
+                              decoration: InputDecoration(
+                                border:InputBorder.none,
+                              ),
+                            ),
+                          ),
                         ),
+
+
+
                         const SizedBox(width:21,),
                         ///Social Media Area Where the user can link there Accounts here
                         Padding(
@@ -260,6 +387,29 @@ class ContactDetails extends StatelessWidget {
                               MaterialButton(
                                 padding: EdgeInsets.all(5),
                                 onPressed: (){
+                                  ContactNotes.forEach((element) {
+                                    if(element["id"] == contact.info?.id){
+                                      PhoneContactsCubit.get(context).ContactIdExist =true;
+                                    }
+                                  });
+                                  print("testing notes value : "+PhoneContactsCubit.get(context).ContactIdExist.toString());
+                                  if(PhoneContactsCubit.get(context).ContactIdExist == false){
+                                    ContactNotes.add({
+                                      "id":contact.info?.id,
+                                      "Notes" : ""
+                                    });
+                                  }
+
+                                  ContactNotes.forEach((element) {
+                                    if(element["id"] == contact.info?.id){
+
+                                      element["Notes"]=contact.Notes.toString();
+                                    }
+                                  });
+                                  CacheHelper.saveData(key: "Notes", value: json.encode(ContactNotes));
+                                  print(ContactNotes);
+                                  print(Notes);
+                                  PhoneContactsCubit.get(context).ContactIdExist =false;
                                 },
                                 child: Row(children: [Image.asset("assets/Images/link.png",scale: 2.4,),SizedBox(width: 5),Text("Link Account")],),
                                 color: HexColor("#C2C2C2"),
@@ -383,7 +533,18 @@ class ContactDetails extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                         color:HexColor('#01223B').withOpacity(0.11),
                       ),
-                      child:IconButton(onPressed: (){} , icon:FaIcon(FontAwesomeIcons.phoneAlt, color: HexColor("#28A7D6"),)),
+                      child:IconButton(onPressed: (){
+                        PhoneContactsCubit.get(context).isSearching = false;
+                        PhoneContactsCubit.get(context).dialpadShowcontact();
+                        NativeBridge.get(context).PhoneNumberQuery="${IsPrimery}";
+                        FlutterPhoneDirectCaller.callNumber("${IsPrimery}");
+
+                        Navigator.pushAndRemoveUntil(context,
+                          MaterialPageRoute(builder: (BuildContext context) => InCallScreen()),
+                              (Route<dynamic>route)=>false,);
+                        NativeBridge.get(context).isRinging = false;
+
+                      } , icon:FaIcon(FontAwesomeIcons.phoneAlt, color: HexColor("#28A7D6"),)),
                     ),],),
               ):Container(),
               //TODO:ADD more account types Competability(Phone numbers ex:Google - samsung - apple what so ever)
@@ -407,7 +568,17 @@ class ContactDetails extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                         color:HexColor('#01223B').withOpacity(0.11),
                       ),
-                      child:IconButton(onPressed: (){} , icon:FaIcon(FontAwesomeIcons.phoneAlt, color: HexColor("#28A7D6"),)),
+                      child:IconButton(onPressed: (){
+                        PhoneContactsCubit.get(context).isSearching = false;
+                        PhoneContactsCubit.get(context).dialpadShowcontact();
+                        NativeBridge.get(context).PhoneNumberQuery="${contact.info?.phones[index].number}";
+                        FlutterPhoneDirectCaller.callNumber("${contact.info?.phones[index].number}");
+
+                        Navigator.pushAndRemoveUntil(context,
+                          MaterialPageRoute(builder: (BuildContext context) => InCallScreen()),
+                              (Route<dynamic>route)=>false,);
+                        NativeBridge.get(context).isRinging = false;
+                      } , icon:FaIcon(FontAwesomeIcons.phoneAlt, color: HexColor("#28A7D6"),)),
                     ),],),
               ):Container(),
             ],

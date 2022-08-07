@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:sim_data/sim_data.dart';
 
 void main() => runApp(const MyApp());
@@ -27,11 +26,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> init() async {
     SimData simData;
     try {
-      var status = await Permission.phone.status;
-      if (!status.isGranted) {
-        bool isGranted = await Permission.phone.request().isGranted;
-        if (!isGranted) return;
-      }
+
       simData = await SimDataPlugin.getSimData();
       setState(() {
         _isLoading = false;
@@ -82,6 +77,8 @@ class _MyAppState extends State<MyApp> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
                         Text('carrierName: ${card.carrierName}'),
+                        Text('Phonenummber: ${card.phoneNumber}'),
+
                         Text('countryCode: ${card.countryCode}'),
                         Text('displayName: ${card.displayName}'),
                         Text(

@@ -4,6 +4,7 @@ import android.telecom.CallAudioState
 import com.phone.dialer.dialer_app.helpers.CallManager
 
 class CallActivity {
+
     companion object {
         private var isSpeakerOn = false
         private var isMicrophoneOn = true
@@ -11,6 +12,7 @@ class CallActivity {
 
 
         fun toggleSpeaker() {
+
             isSpeakerOn = !isSpeakerOn
             val newRoute = if (isSpeakerOn) CallAudioState.ROUTE_SPEAKER else CallAudioState.ROUTE_EARPIECE
             CallManager.inCallService?.setAudioRoute(newRoute)

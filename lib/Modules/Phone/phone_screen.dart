@@ -1,5 +1,6 @@
 
 import 'package:call_log/call_log.dart';
+import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
 import 'package:dialer_app/Components/contacts_components.dart';
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
@@ -8,9 +9,13 @@ import 'package:dialer_app/Modules/Contacts/contacts_screen.dart';
 import 'package:dialer_app/Themes/theme_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:intl/intl.dart';
 import 'package:ndialog/ndialog.dart';
+import 'package:shimmer/shimmer.dart';
+import '../../Layout/incall_screen.dart';
+import '../../NativeBridge/native_bridge.dart';
 import '../../Themes/Cubit/cubit.dart';
 import '../../Themes/Cubit/states.dart';
 import 'Cubit/cubit.dart';
@@ -23,102 +28,245 @@ class PhoneScreen extends StatelessWidget {
 
 
     if(PhoneLogsCubit.get(context).PhoneRange == true){
-      PhoneLogsCubit.get(context).CallLogsUpdate(PhoneContactsCubit.get(context).Contacts);
-      PhoneContactsCubit.get(context).Daillerinput();
+      Future.delayed(Duration(milliseconds: 500),(){
+        PhoneLogsCubit.get(context).CallLogsUpdate(PhoneContactsCubit.get(context).Contacts);
+
+      });
+      Future.delayed(Duration(seconds: 1),(){
+        PhoneContactsCubit.get(context).Daillerinput();
+
+      });
+
     }
 
     return  PhoneContactsCubit.get(context).isSearching!=true?
-
     SafeArea(
       child:
-          DefaultTabController(length: 4,
-            child:
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+      DefaultTabController(length: 4,
+        child:
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
 
-                Transform.translate(
-                  offset: Offset(10,-0),
-                  child: Container(
-                    width: MediaQuery.of(context).size.width*0.80,
-                    // height: 50,
-                    child: TabBar(
-                      physics: NeverScrollableScrollPhysics(),
-                      isScrollable: true,
-                      labelStyle: TextStyle(fontSize: 10),
-                    labelColor: Colors.black,
-                    indicatorColor: HexColor("#F07F5C"),
-                    unselectedLabelColor: Colors.black,
-                      indicatorSize: TabBarIndicatorSize.label,
-                    tabs: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5.0),
-                        child: Row(children: [Icon(Icons.apps , size: 19) , SizedBox(width: 2),Text("All")],),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5.0),
-                        child: Row(children: [Icon(Icons.call_missed_outgoing , size: 19) , SizedBox(width: 2),Text("Missed")]),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5.0),
-                        child: Row(children: [Icon(Icons.call_received , size: 19) , SizedBox(width: 2),Text("Recived")]),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 5.0),
-                        child: Row(children: [Icon(Icons.call_made , size: 19) , SizedBox(width: 2),Text("Made")]),
-                      ),
-                    ],),
-                  ),
-                ),
-                SizedBox(height: 15,),
-                Expanded(
-                  child: TabBarView(
-                      physics: NeverScrollableScrollPhysics(),
-                      children: [
+            Transform.translate(
+              offset: Offset(10,-0),
+              child: Container(
+                width: MediaQuery.of(context).size.width*0.80,
+                // height: 50,
+                child: TabBar(
+                  physics: NeverScrollableScrollPhysics(),
+                  isScrollable: true,
+                  labelStyle: TextStyle(fontSize: 10),
+                  labelColor: Colors.black,
+                  indicatorColor: HexColor("#F07F5C"),
+                  unselectedLabelColor: Colors.black,
+                  indicatorSize: TabBarIndicatorSize.label,
+                  tabs: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                      child: Row(children: [Icon(Icons.apps , size: 19) , SizedBox(width: 2),Text("All")],),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                      child: Row(children: [Icon(Icons.call_missed_outgoing , size: 19) , SizedBox(width: 2),Text("Missed")]),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                      child: Row(children: [Icon(Icons.call_received , size: 19) , SizedBox(width: 2),Text("Recived")]),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5.0),
+                      child: Row(children: [Icon(Icons.call_made , size: 19) , SizedBox(width: 2),Text("Made")]),
+                    ),
+                  ],),
+              ),
+            ),
+            SizedBox(height: 15,),
+            Expanded(
+              child: TabBarView(
+                  physics: NeverScrollableScrollPhysics(),
+                  children: [
 
-                        BlocBuilder<PhoneLogsCubit,PhoneLogsStates>(
-                          builder: (context,index)=>ListView.builder(
-                            itemCount: PhoneLogsCubit.get(context).PhoneCallLogs.length,
-                            itemBuilder: (context,index) {
-                              PhoneLogsCubit.get(context).LogAvatarColors();
-                              return AllPhoneLogs(index,context);
+                    ConditionalBuilder(
+                      builder: (context)=>ListView.builder(
+                        itemCount: PhoneLogsCubit.get(context).PhoneCallLogs.length,
+                        itemBuilder: (context,index) {
+                          PhoneLogsCubit.get(context).LogAvatarColors();
+                          return AllPhoneLogs(index,context);
 
-                            },),
-                        ),
-                        BlocBuilder<PhoneLogsCubit,PhoneLogsStates>(
-                          builder: (context,index)=>ListView.builder(
-                            itemCount: PhoneLogsCubit.get(context).PhoneCallMissed.length,
-                            itemBuilder: (context,index) {
-                              PhoneLogsCubit.get(context).LogAvatarColors();
-                              return MissedPhoneLogs(index,context);
+                        },),
+                      condition: PhoneLogsCubit.get(context).PhoneCallLogs.isNotEmpty,
+                      fallback: (context) {
+                        return ListView.builder(
+                          itemCount: 10,
+                          itemBuilder:(context,index)=> ListTile(
+                            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                            title: Row(
+                              children: [
+                                Shimmer.fromColors(
+                                    baseColor:Colors.grey[500]!,
+                                    highlightColor: Colors.grey[300]!,
+                                    period: Duration(seconds: 2),
+                                    child: Container(width:90,height: 13,color:Colors.white)),
+                              ],
+                            ),
+                            subtitle: Row(
+                              children: [
+                                Shimmer.fromColors(
+                                    baseColor:Colors.grey[500]!,
+                                    highlightColor: Colors.grey[300]!,
+                                    period: Duration(seconds: 2),
+                                    child: Container(width:130,height: 13,color:Colors.white)),
+                              ],
+                            ),
+                            leading: Shimmer.fromColors(
+                                baseColor: Colors.grey[500]!,
+                                highlightColor: Colors.grey[300]!,
+                                period: Duration(seconds: 2),
+                                child: CircleAvatar(radius: 30,backgroundColor: Colors.white,)),
+                            trailing: Container(width: 30,height: 10,color: Colors.grey,),
+                          ),
+                        );
+                      },
+                    ),
+                    ConditionalBuilder(
+                      builder: (context)=>ListView.builder(
+                        itemCount: PhoneLogsCubit.get(context).PhoneCallMissed.length,
+                        itemBuilder: (context,index) {
+                          PhoneLogsCubit.get(context).LogAvatarColors();
+                          return MissedPhoneLogs(index,context);
 
-                            },),
-                        ),
-                        BlocBuilder<PhoneLogsCubit,PhoneLogsStates>(
-                          builder: (context,index)=>ListView.builder(
-                            itemCount: PhoneLogsCubit.get(context).PhoneCallInBound.length,
-                            itemBuilder: (context,index) {
-                              PhoneLogsCubit.get(context).LogAvatarColors();
-                              return InBoundPhoneLogs(index,context);
+                        },),
+                      condition: PhoneLogsCubit.get(context).PhoneCallMissed.isNotEmpty,
+                      fallback: (context) {
+                        return ListView.builder(
+                          itemCount: 10,
+                          itemBuilder:(context,index)=> ListTile(
+                            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                            title: Row(
+                              children: [
+                                Shimmer.fromColors(
+                                    baseColor:Colors.grey[500]!,
+                                    highlightColor: Colors.grey[300]!,
+                                    period: Duration(seconds: 2),
+                                    child: Container(width:90,height: 13,color:Colors.white)),
+                              ],
+                            ),
+                            subtitle: Row(
+                              children: [
+                                Shimmer.fromColors(
+                                    baseColor:Colors.grey[500]!,
+                                    highlightColor: Colors.grey[300]!,
+                                    period: Duration(seconds: 2),
+                                    child: Container(width:130,height: 13,color:Colors.white)),
+                              ],
+                            ),
+                            leading: Shimmer.fromColors(
+                                baseColor: Colors.grey[500]!,
+                                highlightColor: Colors.grey[300]!,
+                                period: Duration(seconds: 2),
+                                child: CircleAvatar(radius: 30,backgroundColor: Colors.white,)),
+                            trailing: Container(width: 30,height: 10,color: Colors.grey,),
+                          ),
+                        );
+                      },
+                    ),
+                    ConditionalBuilder(
+                      builder: (context)=>ListView.builder(
+                        itemCount: PhoneLogsCubit.get(context).PhoneCallInBound.length,
+                        itemBuilder: (context,index) {
+                          PhoneLogsCubit.get(context).LogAvatarColors();
+                          return InBoundPhoneLogs(index,context);
 
-                            },),
-                        ),
-                        BlocBuilder<PhoneLogsCubit,PhoneLogsStates>(
-                          builder: (context,index)=>ListView.builder(
-                            itemCount: PhoneLogsCubit.get(context).PhoneCallOutBound.length,
-                            itemBuilder: (context,index) {
-                              PhoneLogsCubit.get(context).LogAvatarColors();
-                              return OutBoundPhoneLogs(index,context);
+                        },),
+                      condition: PhoneLogsCubit.get(context).PhoneCallInBound.isNotEmpty,
+                      fallback: (context) {
+                        return ListView.builder(
+                          itemCount: 10,
+                          itemBuilder:(context,index)=> ListTile(
+                            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                            title: Row(
+                              children: [
+                                Shimmer.fromColors(
+                                    baseColor:Colors.grey[500]!,
+                                    highlightColor: Colors.grey[300]!,
+                                    period: Duration(seconds: 2),
+                                    child: Container(width:90,height: 13,color:Colors.white)),
+                              ],
+                            ),
+                            subtitle: Row(
+                              children: [
+                                Shimmer.fromColors(
+                                    baseColor:Colors.grey[500]!,
+                                    highlightColor: Colors.grey[300]!,
+                                    period: Duration(seconds: 2),
+                                    child: Container(width:130,height: 13,color:Colors.white)),
+                              ],
+                            ),
+                            leading: Shimmer.fromColors(
+                                baseColor: Colors.grey[500]!,
+                                highlightColor: Colors.grey[300]!,
+                                period: Duration(seconds: 2),
+                                child: CircleAvatar(radius: 30,backgroundColor: Colors.white,)),
+                            trailing: Container(width: 30,height: 10,color: Colors.grey,),
+                          ),
+                        );
+                      },
+                    ),
+                    ConditionalBuilder(
+                      builder: (context)=>ListView.builder(
+                        itemCount: PhoneLogsCubit.get(context).PhoneCallOutBound.length,
+                        itemBuilder: (context,index) {
+                          PhoneLogsCubit.get(context).LogAvatarColors();
+                          return OutBoundPhoneLogs(index,context);
 
-                            },),
-                        ),
-                      ]),
-                ),
-              ],
-            ),),
+                        },),
+                      condition: PhoneLogsCubit.get(context).PhoneCallOutBound.isNotEmpty,
+                      fallback: (context) {
+                        return ListView.builder(
+                          itemCount: 10,
+                          itemBuilder:(context,index)=> ListTile(
+                            contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                            title: Row(
+                              children: [
+                                Shimmer.fromColors(
+                                    baseColor:Colors.grey[500]!,
+                                    highlightColor: Colors.grey[300]!,
+                                    period: Duration(seconds: 2),
+                                    child: Container(width:90,height: 13,color:Colors.white)),
+                              ],
+                            ),
+                            subtitle: Row(
+                              children: [
+                                Shimmer.fromColors(
+                                    baseColor:Colors.grey[500]!,
+                                    highlightColor: Colors.grey[300]!,
+                                    period: Duration(seconds: 2),
+                                    child: Container(width:130,height: 13,color:Colors.white)),
+                              ],
+                            ),
+                            leading: Shimmer.fromColors(
+                                baseColor: Colors.grey[500]!,
+                                highlightColor: Colors.grey[300]!,
+                                period: Duration(seconds: 2),
+                                child: CircleAvatar(radius: 30,backgroundColor: Colors.white,)),
+                            trailing: Container(width: 30,height: 10,color: Colors.grey,),
+                          ),
+                        );
+                      },
+                    ),
 
 
-    ):ListView.builder(
+                  ]),
+            ),
+          ],
+        ),),
+
+
+    )
+
+    :
+    ListView.builder(
       itemCount:   PhoneContactsCubit.get(context).FilterdContacts.length,
       itemBuilder: (context, index) {
         AppContact contact = PhoneContactsCubit.get(context).FilterdContacts[index];
@@ -152,7 +300,14 @@ class PhoneScreen extends StatelessWidget {
                           elevation: 10,
                         ),
                       ).show(context , barrierColor: Colors.black.withOpacity(0.20))
-                          :null;
+                          :FlutterPhoneDirectCaller.callNumber(" ${PhoneLogsCubit.get(context).PhoneCallLogs[index]["number"].toString()}").then((value){
+                        PhoneContactsCubit.get(context).isSearching = false;
+                        PhoneContactsCubit.get(context).dialpadShowcontact();
+                        Navigator.pushAndRemoveUntil(context,
+                          MaterialPageRoute(builder: (BuildContext context) => InCallScreen()),
+                              (Route<dynamic>route)=>false,);
+                        NativeBridge.get(context).isRinging = false;
+                      });
                     },
                     title: Transform.translate(
                       offset: Offset(-5,0),
@@ -183,7 +338,6 @@ class PhoneScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-      // //TODO:Something Retarining null at loggerAvatar(Only affected by Android 32)
                     leading: PhoneLogsCubit.get(context).AvatarColor !=null?LoggertAvatar(52, PhoneLogsCubit.get(context).PhoneCallLogs[index]["name"].toString(), PhoneLogsCubit.get(context).PhoneCallLogs[index]["callType"], PhoneLogsCubit.get(context).AvatarColor):Text(""),
                     trailing: Padding(
                       padding: const EdgeInsets.only(right: 8.0),
@@ -293,6 +447,8 @@ class PhoneScreen extends StatelessWidget {
                       ],
                     );
   }
+
+
   Column logDetailsStanderd(BuildContext context, int index) {
     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,

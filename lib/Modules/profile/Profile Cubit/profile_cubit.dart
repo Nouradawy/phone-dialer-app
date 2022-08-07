@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dialer_app/Components/constants.dart';
 import 'package:dialer_app/Models/user_model.dart';
+import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
 import 'package:dialer_app/Modules/profile/Profile%20Cubit/profile_states.dart';
 import 'package:dialer_app/Network/Local/shared_data.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -14,7 +15,7 @@ import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 class ProfileCubit extends Cubit<ProfileStates>{
 ProfileCubit() : super (ProfileStatesInitial());
 static ProfileCubit get(context) => BlocProvider.of(context);
-
+final Stream<DocumentSnapshot> CurrentUserStream = FirebaseFirestore.instance.collection('Users').doc(token).snapshots();
 List<UserModel> ChatContacts =[];
 List<UserModel> CurrentUser = [];
 
@@ -130,14 +131,19 @@ List<UserModel> CurrentUser = [];
   }
 
 
-void GetChatContacts()async{
+void GetChatContacts(List<AppContact> contact)async{
     if(ChatContacts.isEmpty) {
       ChatContacts.clear();
       await FirebaseFirestore.instance.collection("Users").get().then((value) {
         value.docs.forEach((element) {
-          if (element.data()['uId'] != token) {
-            ChatContacts.add(UserModel.fromJson(element.data()));
-          } else {
+          contact.forEach((Contact) {
+            if (element.data()['uId'] != token && Contact.info!.phones.any((e) => e.number.replaceAll(" ", "") == element.data()['phone'])) {
+              ChatContacts.add(UserModel.fromJson(element.data()));
+            }
+
+          });
+          if(element.data()['uId'] == token)
+          {
             CurrentUser.clear();
             CurrentUser.add(UserModel.fromJson(element.data()));
           }

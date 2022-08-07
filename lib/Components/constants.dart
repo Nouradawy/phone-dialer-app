@@ -126,4 +126,10 @@ class RenderBlendMask extends RenderProxyBox {
 }
 
 List<Contact>? contactsfilterd;
+int? NotesPageIndex;
 
+bool proximityValues = false;
+bool  initialState = true;
+int CreateUniqueId(){
+  return DateTime.now().microsecondsSinceEpoch.remainder(100000);
+}

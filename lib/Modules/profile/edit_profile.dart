@@ -9,6 +9,7 @@ import 'package:dialer_app/Network/Local/shared_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../Contacts/Contacts Cubit/contacts_cubit.dart';
 import 'Profile Cubit/profile_states.dart';
 
 
@@ -27,7 +28,7 @@ class EditProfileScreen extends StatelessWidget {
 
 
     return BlocProvider.value(
-      value:ProfileCubit.get(context)..GetChatContacts(),
+      value:ProfileCubit.get(context)..GetChatContacts(PhoneContactsCubit.get(context).Contacts),
       child: BlocConsumer<ProfileCubit,ProfileStates>(
         listener: (contaxt,state){
 

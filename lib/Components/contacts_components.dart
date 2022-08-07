@@ -1,3 +1,4 @@
+import 'package:dialer_app/Components/constants.dart';
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
 import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
@@ -9,9 +10,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_contacts/properties/note.dart';
 import 'package:hexcolor/hexcolor.dart';
 
-Container FavoritesContactsGroups(PhoneContactsCubit Cubit) {
+Container FavoritesContactsGroups(PhoneContactsCubit Cubit,context) {
   return Container(
-    height:120,
+    height:MediaQuery.of(context).size.height*0.15,
     // width: double.infinity,
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(9),
@@ -47,7 +48,7 @@ Container FavoritesContactsGroups(PhoneContactsCubit Cubit) {
               /*Vertical Separator*/
               Container(
                 width:1,
-                height: 40,
+                height: 30,
                 color: HexColor("#5683DE"),
               ),
               Padding(
@@ -88,14 +89,15 @@ Container FavoritesCards( context , Contact) {
                                   shape: BoxShape.circle,
                                   border: Border.all(width: 1.4,color: Colors.white.withOpacity(0.80)),
                                 ),
-                                child: ContactAvatar(Contact, 38)),
+                                child: ContactAvatar(Contact, 34)),
                           ),
-                          Text(Contact.info!.name.last.toString(),style: Theme.of(context).textTheme.subtitle1!.copyWith(color:Colors.white),),
+                          Text(Contact.info!.name.first.toString(),style: Theme.of(context).textTheme.subtitle1!.copyWith(color:Colors.white),),
                           Text(Contact.info!.name.last.toString(),style: Theme.of(context).textTheme.subtitle1!.copyWith(color:Colors.white),),
                         ],
                       ),
                     );
 }
+
 ConstrainedBox ContactsTagsNotes(BuildContext context) {
   return ConstrainedBox(
     constraints: BoxConstraints(
@@ -148,7 +150,7 @@ ConstrainedBox ContactsTagsNotes(BuildContext context) {
   );
 }
 
-ConstrainedBox ContactTagNotes(BuildContext context ,List<Note>? Notes) {
+ConstrainedBox ContactTagNotes(BuildContext context ,Notes) {
   return ConstrainedBox(
     constraints: BoxConstraints(
       maxWidth: MediaQuery.of(context).size.width*0.50,
@@ -156,7 +158,11 @@ ConstrainedBox ContactTagNotes(BuildContext context ,List<Note>? Notes) {
     ),
     child: PageView.builder(
       itemCount: Notes?.length,
-      itemBuilder:(context,index)=> Column(
+
+      itemBuilder:(context,index) {
+        NotesPageIndex = index;
+        print("Page Index : "+NotesPageIndex.toString());
+        return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -174,7 +180,7 @@ ConstrainedBox ContactTagNotes(BuildContext context ,List<Note>? Notes) {
                     ),
                     child:Padding(
                       padding: const EdgeInsets.only(top:9.0,right: 7,left: 7),
-                      child: Text(Notes![index].note,style: Theme.of(context).textTheme.caption,),
+                      child: Text(Notes![index],style: Theme.of(context).textTheme.caption,),
                     )),
               ),
               Container(
@@ -201,7 +207,8 @@ ConstrainedBox ContactTagNotes(BuildContext context ,List<Note>? Notes) {
           ),
 
         ],
-      ),
+      );
+      },
     ),
   );
 }

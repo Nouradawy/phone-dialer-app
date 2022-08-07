@@ -31,7 +31,7 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
   List CallerID = [];
   String? faceImage;
   String? faceProfilelink;
-
+  bool ContactIdExist = true;
 
   bool DNtoggler=false;
   bool PNtoggler=false;
@@ -59,6 +59,8 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
   int AddressTextFormCount=0;
   int EventTextFormCount=0;
   int ChatTextFormCount=0;
+  bool NoteEditting=false;
+  TextEditingController NotesController= TextEditingController();
 
   void TextFormFieldInitialize(List NumbersInAccount , AppContact contact){
 
@@ -215,6 +217,11 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
   // ToAdd =false;
   }
 
+  void AddNote(){
+    NoteEditting = !NoteEditting;
+    emit(DropDownDisplayName());
+  }
+
   void ContactUpdate(AppContact contact,context){
     contact.info?.phones.clear();
     for(int i=0 ; i<PhoneNumberController.length; i++) {
@@ -227,21 +234,23 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
       EmailAddressController[i].text.isNotEmpty?contact.info?.emails.add(Email(EmailAddressController[i].text , label:EmailSideMenuController[i])):null;
 
     }
-    //
+    // //
     contact.info?.addresses.clear();
     for(int i=0 ; i<AddressController.length; i++) {
       AddressController[i].text.isNotEmpty?contact.info?.addresses.add(Address(AddressController[i].text , label: AddressSideMenuController[i])):null;
     }
-    //
+    // //
     contact.info?.events.clear();
     for(int i=0 ; i<EventController.length ; i++) {
       EventController[i].text.isNotEmpty?contact.info?.events.add(Event(year:DateFormat('yMMMd').parse(EventController[i].text).year,month: DateFormat('yMMMd').parse(EventController[i].text).month, day: DateFormat('yMMMd').parse(EventController[i].text).day)):null;
     }
-    //
+    // //
     contact.info?.socialMedias.clear();
-    for(int i=0 ; i<ChatController.length ; i++) {
-      EventController[i].text.isNotEmpty?contact.info?.socialMedias.add(SocialMedia(ChatController[i].text,label:ChatSideMenuController[i] )):null;
-    }
+
+      for (int i = 0; i < ChatController.length; i++) {
+        ChatController[i].text.isNotEmpty? contact.info?.socialMedias.add(SocialMedia(ChatController[i].text, label: ChatSideMenuController[i])) : null;
+      }
+
 
     contact.info?.update();
     Navigator.pop(context);
@@ -343,13 +352,14 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
     Contacts =_contacts;
 
     Contacts.forEach((element) {
+
       element.info!.thumbnail == null?ContactsNoThumb.add(element):null;
       if(element.info?.isStarred == true)
         {
           FavoratesContacts.add(element);
         }
-    });
 
+    });
 
       emit(RawContactsSuccessState());
   }

@@ -1,4 +1,5 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Layout/incall_screen.dart';
 import 'package:dialer_app/Models/user_model.dart';
@@ -312,7 +313,7 @@ AppBar ChatAppBar(BuildContext context, double AppbarSize) => AppBar(
       Transform.translate(
           offset: const Offset(0, -4),
           child: IconButton(onPressed: (){
-            ChatAppCubit.get(context).ScreenUpdate();
+
           }, icon: const Icon(Icons.notifications_none_rounded),color:HexColor("#23036A"),padding: const EdgeInsets.all(1),))
     ],
     // leading: IconButton(onPressed: (){}, icon: Icon(Icons.more_vert,color:AppBarMoreIconColor()),),
@@ -758,7 +759,7 @@ bool DualSIM = false;
               },
               child: Container(
                 width:MediaQuery.of(context).size.width/3,
-                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/7,
+                height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6.5,
                 color: Colors.transparent,
                 child:Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -952,7 +953,7 @@ bool DualSIM = false;
             ),
           ]
       ),
-      SizedBox(height: 17,),
+      SizedBox(height: MediaQuery.of(context).size.height*0.04,),
     ],
 
   );
@@ -982,7 +983,7 @@ Container DialPadButtonLayout(BuildContext context, double AppbarSize , String N
 Container DialPadButtonLayoutInCall(BuildContext context, double AppbarSize , String Numpad , String alpha) {
   return Container(
               width:MediaQuery.of(context).size.width/3,
-              height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/7,
+              height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/6.5,
               child:Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 // crossAxisAlignment: CrossAxisAlignment.center,
@@ -1108,11 +1109,11 @@ Row CallButton(BuildContext context, double AppbarSize , bool DualSIM , TextEdit
              PhoneContactsCubit.get(context).isSearching = false;
              PhoneContactsCubit.get(context).dialpadShowcontact();
              FlutterPhoneDirectCaller.callNumber(dialerController.text);
+
              dialerController.clear();
-             Navigator.pushAndRemoveUntil(context,
-               MaterialPageRoute(builder: (BuildContext context) => InCallScreen()),
-                   (Route<dynamic>route)=>false,);
+
              NativeBridge.get(context).isRinging = false;
+
            },
            child: Container(
             width:55,
@@ -1133,12 +1134,19 @@ Row CallButton(BuildContext context, double AppbarSize , bool DualSIM , TextEdit
 Drawer AppDrawer(BuildContext context , AppbarSize) {
 
   return Drawer(
-    child: Builder(
-            builder: (index){
-              ProfileCubit.get(context)..GetChatContacts();
+    child: StreamBuilder<DocumentSnapshot>(
+      stream: ProfileCubit.get(context).CurrentUserStream,
+            builder: (context,snapshot){
               var Cubit = ProfileCubit.get(context);
               String UserState = "online";
+              if (snapshot.hasError) {
+                return Text('Something went wrong');
+              }
 
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Text("Loading");
+              }
+              final data = snapshot..requireData;
 
               return  Padding(
                 padding:EdgeInsets.only(top:MediaQuery.of(context).padding.top),
@@ -1167,7 +1175,7 @@ Drawer AppDrawer(BuildContext context , AppbarSize) {
                                     },
                                     child: CircleAvatar(
                                       radius: 40,
-                                      backgroundImage: NetworkImage(Cubit.CurrentUser[0].image.toString()),
+                                      backgroundImage: NetworkImage(data.data!["image"]),
                                     ),
                                   ),
                                 ),
@@ -1180,7 +1188,7 @@ Drawer AppDrawer(BuildContext context , AppbarSize) {
                                     SizedBox(height: 5,),
                                     Row(
                                       children: [
-                                        Text(Cubit.CurrentUser[0].name.toString()),
+                                        Text(data.data!["name"]),
                                         SizedBox(width: 5,),
 
                                         FocusedMenuHolder(
@@ -1232,7 +1240,7 @@ Drawer AppDrawer(BuildContext context , AppbarSize) {
 
                                       ],
                                     ),
-                                    Text(Cubit.CurrentUser[0].email.toString()),
+                                    Text(data.data!["email"]),
                                   ],
                                 ),
 

@@ -8,7 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class PhoneLogsCubit extends Cubit<PhoneLogsStates> {
   PhoneLogsCubit() : super(PhoneLogsInitialState());
   static PhoneLogsCubit get(context) => BlocProvider.of(context);
-bool PhoneRange = false;
+  bool PhoneRange = false;
 
   List BaseColors =[
     Colors.green,
@@ -41,6 +41,7 @@ bool PhoneRange = false;
         "name":GetCallerID(entry,contacts),
         "number":entry.number,
         "phoneAccountId":entry.phoneAccountId,
+        "SimName":entry.simDisplayName,
         "duration":entry.duration,
         "callType":entry.callType,
         "Date":DateTime.fromMillisecondsSinceEpoch(entry.timestamp!),
@@ -48,15 +49,15 @@ bool PhoneRange = false;
 
       if(entry.callType ==CallType.outgoing )
       {
-          PhoneCallOutBound.add({
-            "name":GetCallerID(entry,contacts),
-            "number":entry.number,
-            "phoneAccountId":entry.phoneAccountId,
-            "duration":entry.duration,
-            "callType":entry.callType,
-            "Date":DateTime.fromMillisecondsSinceEpoch(entry.timestamp!),
-          });
-        }
+        PhoneCallOutBound.add({
+          "name":GetCallerID(entry,contacts),
+          "number":entry.number,
+          "phoneAccountId":entry.phoneAccountId,
+          "duration":entry.duration,
+          "callType":entry.callType,
+          "Date":DateTime.fromMillisecondsSinceEpoch(entry.timestamp!),
+        });
+      }
 
       if(entry.callType ==CallType.incoming )
       {
@@ -83,17 +84,17 @@ bool PhoneRange = false;
       }
 
     }
+    print("Simname : "+PhoneCallLogs[0]["SimName"]);
 
-
-    }
-List contactCalllog = [];
-    void ContactCallLogs(AppContact contact){
-      contactCalllog.clear();
-      contactCalllog =PhoneCallLogs.toList();
-      contactCalllog.retainWhere((element) {
-        return contact.info!.phones.any((e) => element["number"]==e.number);
-      });
-    }
+  }
+  List contactCalllog = [];
+  void ContactCallLogs(AppContact contact){
+    contactCalllog.clear();
+    contactCalllog =PhoneCallLogs.toList();
+    contactCalllog.retainWhere((element) {
+      return contact.info!.phones.any((e) => element["number"]==e.number);
+    });
+  }
   void CallLogsUpdate (List<AppContact> contacts){
     PhoneCallLogs.clear();
     PhoneCallOutBound.clear();
@@ -144,7 +145,7 @@ List contactCalllog = [];
       CallerIDFetching(entry.number , Contacts);
       return CallerID.isNotEmpty ? CallerID[0]["CallerID"].toString() : "UNKNOWN";
     }
-    else return entry.name;
+    else return entry.name!.isNotEmpty?entry.name:"UNKNOWN";
   }
 
   GetDate(CallLogEntry entry){

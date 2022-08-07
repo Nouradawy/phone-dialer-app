@@ -41,7 +41,7 @@ class ThemeCubit extends Cubit<ThemeStates>{
   Color AppBackGroundColor = Colors.transparent;
 
 
-bool ApplyThemeChanges = false;
+  bool ApplyThemeChanges = false;
   bool AppBackgroundDropdown = false;
   bool SearchTextColorDropDown = false;
   bool TabBarTextColorDropDown = false;
@@ -109,14 +109,14 @@ bool ApplyThemeChanges = false;
 
     DialPadBackgroundFilePicker = await picker.pickImage(source: ImageSource.gallery);
 
-      if(DialPadBackgroundFilePicker !=null ) {
+    if(DialPadBackgroundFilePicker !=null ) {
 
-        final imagePermanent = await SaveImagePermanently(DialPadBackgroundFilePicker.path);
-        DialPadBackGroundImagePicker = imagePermanent;
-        //TODO:Spleting Uploading the image from Profile image Picker Due to the image will be Uploaded without User Concent
+      final imagePermanent = await SaveImagePermanently(DialPadBackgroundFilePicker.path);
+      DialPadBackGroundImagePicker = imagePermanent;
+      //TODO:Spleting Uploading the image from Profile image Picker Due to the image will be Uploaded without User Concent
 
-        emit(BackGroundImagePickedSuccess());
-      } else{
+      emit(BackGroundImagePickedSuccess());
+    } else{
       print("Faild to pick imag");
       emit(BackGroundImagePickedError());
     }
@@ -333,8 +333,8 @@ bool ApplyThemeChanges = false;
                       },
                       child: Row(
                         children: [Icon(
-                          Icons.tab_unselected),
-                        Text("TabBar UnSelected Color")],))
+                            Icons.tab_unselected),
+                          Text("TabBar UnSelected Color")],))
               ),
             ),
             AnimatedSize(
@@ -701,51 +701,51 @@ bool ApplyThemeChanges = false;
     MyThemeData[CurrentThemeEditIndex]=({
       "name": MyThemeData[CurrentThemeEditIndex]["name"],
       "AppBarBackgroundColor":
-          '#${
-            CustomHomePageBackgroundColor.toString()
-                .replaceAll("Color", "")
-                .substring(5)
-                .replaceAll(")", "")
-                .toUpperCase()
-          }',
+      '#${
+          CustomHomePageBackgroundColor.toString()
+              .replaceAll("Color", "")
+              .substring(5)
+              .replaceAll(")", "")
+              .toUpperCase()
+      }',
       "SearchTextColor": '#${
-        SearchTextColor.toString()
-            .replaceAll("Color", "")
-            .substring(5)
-            .replaceAll(")", "")
-            .toUpperCase()}',
+          SearchTextColor.toString()
+              .replaceAll("Color", "")
+              .substring(5)
+              .replaceAll(")", "")
+              .toUpperCase()}',
       "SearchBackgroundColor" : '#${
-            SearchBackground.toString()
-                .replaceAll("Color", "")
-                .substring(5)
-                .replaceAll(")", "")
-                .toUpperCase()
-          }',
+          SearchBackground.toString()
+              .replaceAll("Color", "")
+              .substring(5)
+              .replaceAll(")", "")
+              .toUpperCase()
+      }',
       "TabBarColor": '#${
-            TabBarTextColor.toString()
-                .replaceAll("Color", "")
-                .substring(5)
-                .replaceAll(")", "")
-                .toUpperCase()
-          }',
+          TabBarTextColor.toString()
+              .replaceAll("Color", "")
+              .substring(5)
+              .replaceAll(")", "")
+              .toUpperCase()
+      }',
       "UnSelectedTabBarColor" : '#${
-            UnSelectedTabBarColor.toString()
-                .replaceAll("Color", "")
-                .substring(5)
-                .replaceAll(")", "")
-                .toUpperCase()
-          }',
+          UnSelectedTabBarColor.toString()
+              .replaceAll("Color", "")
+              .substring(5)
+              .replaceAll(")", "")
+              .toUpperCase()
+      }',
       "TabBarIndicatorColor" : "#${TabBarIndicatorColor.toString()
           .replaceAll("Color", "")
           .substring(5)
           .replaceAll(")", "")
           .toUpperCase()}",
       "PhoneLogDiallerColor" : "#${
-        PhoneLogDiallerNameColor.toString()
-            .replaceAll("Color", "")
-            .substring(5)
-            .replaceAll(")", "")
-            .toUpperCase()
+          PhoneLogDiallerNameColor.toString()
+              .replaceAll("Color", "")
+              .substring(5)
+              .replaceAll(")", "")
+              .toUpperCase()
       }",
       "PhoneLogPhoneNumberColor" :'#${PhoneLogPhoneNumberColor.toString()
           .replaceAll("Color", "")
@@ -753,11 +753,11 @@ bool ApplyThemeChanges = false;
           .replaceAll(")", "")
           .toUpperCase()}',
       "AppBackGroundColor" : '#${
-            AppBackGroundColor.toString()
-                .replaceAll("Color", "")
-                .substring(5)
-                .replaceAll(")", "")
-                .toUpperCase()}',
+          AppBackGroundColor.toString()
+              .replaceAll("Color", "")
+              .substring(5)
+              .replaceAll(")", "")
+              .toUpperCase()}',
       "InCallBackgroundHeight": InCallBackgroundHeight.toString(),
       "InCallBackgroundVerticalPadding" : InCallBackgroundVerticalPading.toString(),
       "InCallBackgroundOpacity" : InCallBackgroundOpacity.toString(),

@@ -28,7 +28,7 @@ bool NewTheme = false;
 
 
 
-
+///ToDo:Add permisition handler layout
 Future<void> PermissionHandle() async {
   var status = await Permission.contacts.status;
   if (status.isDenied) {
@@ -37,6 +37,7 @@ Future<void> PermissionHandle() async {
       Permission.contacts,
       Permission.phone,
       Permission.microphone,
+
     ].request();
   }
 

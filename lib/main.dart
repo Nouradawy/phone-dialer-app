@@ -1,12 +1,19 @@
 
+import 'dart:ui';
 
+import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:bg_launcher/bg_launcher.dart';
 import 'package:call_log/call_log.dart';
 
 import 'package:bloc/bloc.dart';
+
+
+
 import 'package:dialer_app/Layout/Cubit/states.dart';
 import 'package:dialer_app/Modules/Chat/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
 import 'package:dialer_app/Modules/profile/Profile%20Cubit/profile_cubit.dart';
+import 'package:dialer_app/NativeBridge/native_states.dart';
 import 'package:dialer_app/Themes/theme_config.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -14,11 +21,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:workmanager/workmanager.dart';
-
 import 'Components/components.dart';
 import 'Components/constants.dart';
 import 'Layout/Cubit/cubit.dart';
+import 'Layout/incall_screen.dart';
 import 'Modules/Login&Register/login_screen.dart';
 import 'Modules/Phone/Cubit/cubit.dart';
 import 'NativeBridge/native_bridge.dart';
@@ -29,51 +35,36 @@ import 'Themes/Cubit/cubit.dart';
 
 import 'home.dart';
 
-void callbackDispatcher() {
-  Workmanager().executeTask((dynamic task, dynamic inputData) async {
-    print('Background Services are Working!');
-    try {
-      final Iterable<CallLogEntry> cLog = await CallLog.get();
-      print('Queried call log entries');
-      for (CallLogEntry entry in cLog) {
-        print('-------------------------------------');
-        print('F. NUMBER  : ${entry.formattedNumber}');
-        print('C.M. NUMBER: ${entry.cachedMatchedNumber}');
-        print('NUMBER     : ${entry.number}');
-        print('NAME       : ${entry.name}');
-        print('TYPE       : ${entry.callType}');
-        print('DATE       : ${DateTime.fromMillisecondsSinceEpoch(entry.timestamp!)}');
-        print('DURATION   : ${entry.duration}');
-        print('ACCOUNT ID : ${entry.phoneAccountId}');
-        print('ACCOUNT ID : ${entry.phoneAccountId}');
-        print('SIM NAME   : ${entry.simDisplayName}');
-        print('-------------------------------------');
-      }
-      return true;
-    } on PlatformException catch (e, s) {
-      print(e);
-      print(s);
-      return true;
-    }
-  });
-}
+
+
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("on BackGround message");
   print("message data: ${message.data}");
+  await Firebase.initializeApp();
+
   showToast(text: 'on BackGround', state: ToastStates.SUCCESS,);
+}
+void backgroundMain() {
+  WidgetsFlutterBinding.ensureInitialized();
+
 }
 
 void main() async {
+
   WidgetsFlutterBinding.ensureInitialized();
+  // Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
   await Firebase.initializeApp();
   DioHelper.dio;
   await CacheHelper.init();
   token = CacheHelper.getData(key: 'token');
 
+  var channel = const MethodChannel('com.example/background_service');
+  var callbackHandle = PluginUtilities.getCallbackHandle(backgroundMain);
+  channel.invokeMethod('startService', callbackHandle?.toRawHandle());
 
-  Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
-  String NotificationToken = FirebaseMessaging.instance.getToken(
-  ).toString();
+
+
+  String NotificationToken = FirebaseMessaging.instance.getToken().toString();
 
 
 
@@ -101,6 +92,7 @@ void main() async {
   });
 
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
 
 
 
@@ -158,22 +150,38 @@ class MyApp extends StatelessWidget {
 
         builder:(context,state)
         {
+
+
           ThemeSharedPref(context);
           if(Themedata.isNotEmpty)
             {
               ThemeCubit.get(context).LoadThemeData();
             }
+
+
                 return MaterialApp(
                   debugShowCheckedModeBanner: false,
                   debugShowMaterialGrid: false,
                   theme: ThemeConfig(),
                   // themeMode: themeSwitch?ThemeMode.light:ThemeMode.dark,
-                  home: MultiBlocProvider(providers: [
-                    BlocProvider.value(
-                        value: ProfileCubit.get(context)..GetChatContacts()),
-                    BlocProvider.value(
-                        value: PhoneLogsCubit.get(context)..getCallLogsInitial(PhoneContactsCubit.get(context).Contacts)),
-                  ], child: homeScreen),
+                  home: WillPopScope(
+                    onWillPop: () async{
+                      if(Navigator.of(context).canPop())
+                        {
+                          return true;
+                        } else {
+                        NativeBridge.get(context).invokeNativeMethod("sendToBackground");
+                        return false;
+                      }
+                    },
+                    child: MultiBlocProvider(providers: [
+                      BlocProvider.value(
+                          value: ProfileCubit.get(context)..GetChatContacts(PhoneContactsCubit.get(context).Contacts)),
+                      BlocProvider.value(
+                          value: PhoneLogsCubit.get(context)..getCallLogsInitial(PhoneContactsCubit.get(context).Contacts)),
+                    ], child:
+                        homeScreen),
+                  ),
                 );
               }),
     );

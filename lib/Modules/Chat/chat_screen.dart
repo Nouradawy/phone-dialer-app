@@ -25,12 +25,16 @@ class ChatScreen extends StatelessWidget {
   Widget build(BuildContext context) {
 
 
-    double AppbarSize = MediaQuery.of(context).size.height * 0.11;
+    double AppbarSize = MediaQuery
+        .of(context)
+        .size
+        .height * 0.11;
     double ProfilePictureSize = 31;
-    double ProfilePictureBackgroundWidth = ProfilePictureSize * 2.90;
+    double ProfilePictureBackgroundWidth = ProfilePictureSize * 2.60;
     double ProfilePictureBackgroundHight = ProfilePictureSize * 2.5;
-    double UserNameFontSize = ProfilePictureBackgroundWidth * 0.12;
-    double MsgBoxWidth = MediaQuery.of(context).size.width - (ProfilePictureBackgroundWidth + 34);
+    double UserNameFontSize = ProfilePictureBackgroundWidth * 0.15;
+    double MsgBoxWidth = MediaQuery.of(context).size
+        .width - (ProfilePictureBackgroundWidth + 34);
 
     double MsgBoxHPadding = 6;
     // Text Msg = Text("i want you to focus on jhin and i will take  ",style: TextStyle(
@@ -38,94 +42,111 @@ class ChatScreen extends StatelessWidget {
     //   height: 1.2,
     //   fontWeight: FontWeight.w600,
     // ));
-    final userModel = FirebaseFirestore.instance.collection("Users").doc(token).withConverter<UserModel>(
+    final userModel = FirebaseFirestore.instance.collection("Users").doc(token).collection("UnSeenChat").withConverter<UserModel>(
         fromFirestore:(snapshots , _)=> UserModel.fromJson(snapshots.data()),
         toFirestore: (UserModel , _) =>UserModel.toMap()
-          );
-          return Scaffold(
-                floatingActionButton: FloatingActionButton.extended(
+    );
+    return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
 
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    onPressed: () {
-                      Navigator.push(context,
-                        MaterialPageRoute(builder:(BuildContext context) => ChatContacts()),
-                      );
-                    },
-                    label:
-                    Row(children: [
-                      Icon(Icons.add),
-                      Text("New Chat"),
-                    ],)
-                ),
-                appBar: ChatAppBar(context, AppbarSize),
-                body: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 12.0),
-                  child: MultiBlocProvider(
-                    providers: [
-                      BlocProvider.value(value: ProfileCubit.get(context)..GetChatContacts),
-                    ],
-                    child:StreamBuilder<DocumentSnapshot<UserModel>>(
-                        stream: userModel.snapshots(),
-                        builder:(context , UserModelsnapshot)
-                        {
-                          final Userdata = UserModelsnapshot.requireData;
-                          // if(Userdata["NewMessage"] ==true)
-                          // {
-                          //
-                          //   // FirebaseFirestore.instance.collection("Users").doc(token).set({"NewMessage":false,},
-                          //   //   SetOptions(merge: true),);
-                          // }
-                          ChatAppCubit.get(context).ListCount();
-                          ChatAppCubit.get(context).ScreenUpdate();
-                          if (UserModelsnapshot.hasError) {
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          onPressed: () {
+            Navigator.push(context,
+              MaterialPageRoute(builder:(BuildContext context) => ChatContacts()),
+            );
+          },
+          label:
+          Row(children: [
+            Icon(Icons.add),
+            Text("New Chat"),
+          ],)
+      ),
+      appBar: ChatAppBar(context, AppbarSize),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 7.0, horizontal: 12.0),
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: ProfileCubit.get(context)..GetChatContacts),
+
+          ],
+          child:StreamBuilder<QuerySnapshot<UserModel>>(
+            stream: userModel.snapshots(),
+            builder:(context , UserModelsnapshot)
+            {
+              if (UserModelsnapshot.hasError ) {
+                return Center(
+                  child: Text(UserModelsnapshot.error.toString()),
+                );
+              }
+
+              if (!UserModelsnapshot.hasData ) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final Userdata = UserModelsnapshot.requireData;
+
+              return BlocBuilder<ChatAppCubit,ChatAppCubitStates>(
+                builder:(context,state)=> ListView.separated(
+                  itemCount:Userdata.docs.length,
+                  separatorBuilder: (context,state)=>SizedBox(height: 2,),
+                  itemBuilder:(context , index) {
+                    //ToDo: add list filtering
+
+                    final messagesRef = FirebaseFirestore.instance
+                        .collection("Users")
+                        .doc(token)
+                        .collection("UnSeenChat")
+                        .doc(Userdata.docs[index].id)
+                        .collection("messages")
+                        .withConverter<MessageModel>(fromFirestore: (snapshots, _) => MessageModel.fromJson(snapshots.data()), toFirestore: (model, _) => ChatAppCubit.get(context).model!.toMap());
+
+
+
+                    return StreamBuilder<QuerySnapshot<MessageModel>>(
+                        stream: messagesRef.snapshots(),
+                        builder:(context , snapshot) {
+                          // ChatAppCubit.get(context).ListCount();
+                          if (snapshot.hasError) {
                             return Center(
                               child: Text(UserModelsnapshot.error.toString()),
                             );
                           }
 
-                          if (!UserModelsnapshot.hasData) {
+                          if (!snapshot.hasData) {
                             return const Center(child: CircularProgressIndicator());
                           }
 
-                          if (ChatAppCubit.get(context).ListUnseenMsgs.isEmpty) {
-                            return const Center(child: CircularProgressIndicator());
-                          }
+                          final data = snapshot.requireData;
 
+                          // return NewMessegesChatList(ProfilePictureSize, ProfilePictureBackgroundWidth, ProfilePictureBackgroundHight, Userdata, index, UserNameFontSize, messagesRef, MsgBoxWidth, MsgBoxHPadding, data);
 
-                          return BlocBuilder<ChatAppCubit,ChatAppCubitStates>(
-                            builder:(context,state)=> ListView.separated(
-                                itemCount:ChatAppCubit.get(context).ListUnseenMsgs.length,
-                                separatorBuilder: (context,state)=>SizedBox(height: 2,),
-                                itemBuilder:(context , index) {
-                                  //ToDo: add list filtering
+                            return NewMessegesChatList(
+                                ProfilePictureSize,
+                                ProfilePictureBackgroundWidth,
+                                ProfilePictureBackgroundHight,
+                                Userdata,
+                                index,
+                                UserNameFontSize,
+                                messagesRef,
+                                MsgBoxWidth,
+                                MsgBoxHPadding,
+                                data);
+                        });
+                  },
+                ),
+              );
 
+            },
+          ),
+        ),
 
-                                    // final messagesRef = FirebaseFirestore.instance.collection("Users").doc(token).collection("chats").doc(Userdata.docs[index].data().uId !=token?Userdata.docs[index].data().uId:Userdata.docs[index+1].data().uId ).collection("messages").withConverter<MessageModel>(fromFirestore: (snapshots, _) => MessageModel.fromJson(snapshots.data()), toFirestore: (model, _) => ChatAppCubit.get(context).model!.toMap());
-                                    //
-                                    //   return StreamBuilder<QuerySnapshot<MessageModel>>(
-                                    //     stream: messagesRef.snapshots(),
-                                    //           builder:(context , snapshot) {
-                                    //
-                                    //
-                                    //             final data = snapshot.requireData;
-                                    //             // return NewMessegesChatList(ProfilePictureSize, ProfilePictureBackgroundWidth, ProfilePictureBackgroundHight, Userdata, index, UserNameFontSize, messagesRef, MsgBoxWidth, MsgBoxHPadding, data);
-                                    //             ///Return new Mesg. on recived if the user didn't see it yet
-                                    //             // if(data.docs[index].data().Seen == false && data.docs[index].data().text!.isNotEmpty && data.docs[index].data().receiverId == token ) {
-
-                                          return NewMessegesChatList(context,ProfilePictureSize, ProfilePictureBackgroundWidth, ProfilePictureBackgroundHight,index, UserNameFontSize, MsgBoxWidth, MsgBoxHPadding);
-                                        // } else return Container();
-                                              }));
-                                },
-                              ),
-                          )
-                      ),
-                  );
+      ),
+    );
 
   }
 
-  Row NewMessegesChatList(context,double ProfilePictureSize, double ProfilePictureBackgroundWidth, double ProfilePictureBackgroundHight, int index, double UserNameFontSize, double MsgBoxWidth, double MsgBoxHPadding ) {
+  Row NewMessegesChatList(double ProfilePictureSize, double ProfilePictureBackgroundWidth, double ProfilePictureBackgroundHight, QuerySnapshot<UserModel> Userdata, int index, double UserNameFontSize, CollectionReference<MessageModel> messagesRef, double MsgBoxWidth, double MsgBoxHPadding ,data) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -157,14 +178,14 @@ class ChatScreen extends StatelessWidget {
                       decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(width: 2, color: HexColor("#57E3A0"))),
                       child: CircleAvatar(
                         radius: ProfilePictureSize,
-                        backgroundImage: NetworkImage(ChatAppCubit.get(context).ListUnseenMsgs[index]["image"]),
+                        backgroundImage: NetworkImage("https://as1.ftcdn.net/v2/jpg/02/68/62/04/1000_F_268620420_raIDjo1HJvtratuDz5z338yZ9QUcr7lZ.jpg" ),
                       ),
                     ),
                     const SizedBox(
                       height: 5,
                     ),
                     Text(
-                      ChatAppCubit.get(context).ListUnseenMsgs[index]["Name"],
+                      data.docs[0].data().SenderName.toString(),
                       style: TextStyle(
                         fontFamily: "Quicksand",
                         fontSize: UserNameFontSize,
@@ -189,7 +210,7 @@ class ChatScreen extends StatelessWidget {
                     color: HexColor("#707070"),
                   ),
                   const SizedBox(
-                    height: 20,
+                    height: 30,
                   ),
                   Container(
                     width: 20,
@@ -254,20 +275,22 @@ class ChatScreen extends StatelessWidget {
                     width: MsgBoxWidth,
                     height: ProfilePictureBackgroundHight - 26.5,
                     child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: MsgBoxHPadding, horizontal: 14),
+                      padding: EdgeInsets.symmetric(vertical: MsgBoxHPadding, horizontal: 13),
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
                           maxHeight: 40,
                         ),
                         child: ListView.builder(
-                          itemCount: int.parse(ChatAppCubit.get(context).ListUnseenMsgs[index]["Length"]),
+                          itemCount:data.docs.length,
                           itemBuilder: (context,i){
-                            return Text(ChatAppCubit.get(context).ListUnseenMsgs[index]["text"][i],style: const TextStyle(
-                              fontFamily: "Cairo",
-                              height: 1.1,
-                              fontWeight: FontWeight.w600,
-                            ));
+                            return Text(data.docs[i].data().text.toString(),
+                                style: const TextStyle(
+                                  fontFamily: "Cairo",
+                                  height: 1.1,
+                                  fontWeight: FontWeight.w600,
+                                ));
                           },
+
                         ),
                       ),
                     ),

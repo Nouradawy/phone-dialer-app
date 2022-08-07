@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dialer_app/Components/components.dart';
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Models/user_model.dart';
@@ -9,6 +10,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hexcolor/hexcolor.dart';
+
+import '../../Network/Local/shared_data.dart';
 
 class ChatContacts extends StatelessWidget {
 
@@ -33,6 +36,7 @@ class ChatContacts extends StatelessWidget {
       height: 1.2,
       fontWeight: FontWeight.w600,
     ));
+
     return Scaffold(
       appBar: ChatAppBar(context, AppbarSize),
       body: BlocProvider.value(
