@@ -23,6 +23,8 @@ class CallActivity {
             CallManager.inCallService?.setMuted(!isMicrophoneOn)
         }
 
+
+
         fun toggleHold(){
             isHold = !isHold
             if(isHold == true)

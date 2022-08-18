@@ -536,12 +536,7 @@ class ContactDetails extends StatelessWidget {
                       child:IconButton(onPressed: (){
                         PhoneContactsCubit.get(context).isSearching = false;
                         PhoneContactsCubit.get(context).dialpadShowcontact();
-                        NativeBridge.get(context).PhoneNumberQuery="${IsPrimery}";
                         FlutterPhoneDirectCaller.callNumber("${IsPrimery}");
-
-                        Navigator.pushAndRemoveUntil(context,
-                          MaterialPageRoute(builder: (BuildContext context) => InCallScreen()),
-                              (Route<dynamic>route)=>false,);
                         NativeBridge.get(context).isRinging = false;
 
                       } , icon:FaIcon(FontAwesomeIcons.phoneAlt, color: HexColor("#28A7D6"),)),
@@ -571,12 +566,7 @@ class ContactDetails extends StatelessWidget {
                       child:IconButton(onPressed: (){
                         PhoneContactsCubit.get(context).isSearching = false;
                         PhoneContactsCubit.get(context).dialpadShowcontact();
-                        NativeBridge.get(context).PhoneNumberQuery="${contact.info?.phones[index].number}";
                         FlutterPhoneDirectCaller.callNumber("${contact.info?.phones[index].number}");
-
-                        Navigator.pushAndRemoveUntil(context,
-                          MaterialPageRoute(builder: (BuildContext context) => InCallScreen()),
-                              (Route<dynamic>route)=>false,);
                         NativeBridge.get(context).isRinging = false;
                       } , icon:FaIcon(FontAwesomeIcons.phoneAlt, color: HexColor("#28A7D6"),)),
                     ),],),

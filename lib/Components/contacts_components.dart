@@ -3,6 +3,7 @@ import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
 import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
 import 'package:dialer_app/Modules/Contacts/contacts_screen.dart';
+import 'package:dialer_app/NativeBridge/native_bridge.dart';
 import 'package:dialer_app/Network/Local/shared_data.dart';
 import 'package:dialer_app/Themes/theme_config.dart';
 import 'package:flutter/cupertino.dart';
@@ -55,10 +56,8 @@ Container FavoritesContactsGroups(PhoneContactsCubit Cubit,context) {
                 padding: const EdgeInsets.all(15.0),
                 child: InkWell(
                     onTap: (){
-                      print(fbList[13].toString());
-                      print(Cubit.Contacts[0].info!.displayName.toString());
-                      Cubit.Contacts[0].info!.name.first = "Ahmed";
-                      Cubit.Contacts[0].info?.update();
+                      // print(fbList[13].toString());
+                      NativeBridge.get(context).invokeNativeMethod("HoldToggle");
                       //TODO: Testing FBLISt at contact screen @Fav icon
                     },
                     child: Image.asset("assets/Images/people_black_24dp.png",scale: 1.4,)),

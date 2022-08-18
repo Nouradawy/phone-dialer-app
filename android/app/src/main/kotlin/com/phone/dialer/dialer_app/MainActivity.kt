@@ -189,6 +189,11 @@ class MainActivity : FlutterActivity() {
 //                    result.success("CallOnHold")
 //                    result.error("unavilable", "faild to Reject", null)
                 }
+            if (states.equals("GetCallList")) {
+                CallManager.getCalls()
+//                    result.success("CallOnHold")
+//                    result.error("unavilable", "faild to Reject", null)
+                }
             if (states.equals("sendToBackground")) {
                 moveTaskToBack(true)
                 result.success(null)
@@ -216,6 +221,21 @@ class MainActivity : FlutterActivity() {
             {
                 powerManager.newWakeLock(RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY,"myapp:Screenon").release()
             }
+            if(states.equals("conference"))
+            {
+                CallManager.CreateConfrence()
+
+            }
+            if(states.equals("Swapconference"))
+            {
+                CallManager.SwapConfrence()
+
+            }
+            if(states.equals("Mergconference"))
+            {
+                CallManager.MergeConfrence()
+
+            }
 
                 else  result.notImplemented()
             }
@@ -238,7 +258,7 @@ class MyStreamHandler(private val context: Context) : EventChannel.StreamHandler
     }
 
 
-    data class PhoneCallEvent(var phoneNumber: String?, val type: String, val state : Int?) {
+    data class PhoneCallEvent(var phoneNumber: String?, val type: String? , val state : Int?) {
         fun toMap(): Map<String, String?> {
             val map = mutableMapOf<String, String?>()
             map["phoneNumber"] = phoneNumber

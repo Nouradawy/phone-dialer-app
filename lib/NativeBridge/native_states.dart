@@ -1,3 +1,5 @@
+import 'package:dialer_app/NativeBridge/native_bridge.dart';
+
 abstract class NativeStates {}
 
 class NativeBridgeInitialState extends NativeStates{
@@ -24,3 +26,5 @@ class CallerIDSuccessState extends NativeStates{}
 class ScreenRefresh extends NativeStates{}
 class NotesEpandeSuccess extends NativeStates{}
 class NewNoteAddedSuccess extends NativeStates{}
+class ContactByidSuccess extends NativeStates{}
+class ContactByidNull extends NativeStates{}

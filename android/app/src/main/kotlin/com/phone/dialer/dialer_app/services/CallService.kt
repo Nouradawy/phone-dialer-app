@@ -1,10 +1,16 @@
 package com.phone.dialer.dialer_app.services
 
+import android.annotation.TargetApi
 import android.app.PendingIntent
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.telecom.Call
+import android.telecom.Call.Details.CAPABILITY_MANAGE_CONFERENCE
+import android.telecom.Call.Details.CAPABILITY_MERGE_CONFERENCE
+import android.telecom.Conference
+import android.telecom.Connection
 import android.telecom.InCallService
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -30,28 +36,35 @@ class CallService : InCallService() {
                                  * or waiting. */
                                 Call.STATE_DISCONNECTED -> {
                                     println("Iam disconnected")
-                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "disconnected", state).toMap())
+                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "false", state).toMap())
                                 }
                                 /** Device call state: Ringing. A new call arrived and is
                                  * ringing or waiting. In the latter case, another call is
                                  * already active.  */
                                 Call.STATE_DIALING -> {
                                     println("DialingState-MainMethod")
-                                    println("accountHandle : " + CallManager.call?.details?.accountHandle.toString())
-                                    println("Extras : " + CallManager.call?.details?.intentExtras?.toString())
-                                    println("state : " + CallManager.call?.state.toString())
-
-                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "inbound", state).toMap())
+                                   
+                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "false", state).toMap())
                                 }
 
                                 Call.STATE_ACTIVE -> {
                                     println("ActiveState-MainMethod")
-                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "inbound", state).toMap())
+                                    println("Confrencelist : " + CallManager.call?.conferenceableCalls?.toString())
+                                    println("calls size : " + CallManager.inCallService?.calls?.size?.toString())
+                                    for(element in CallManager.inCallService!!.calls)
+                                    {
+                                        println("Call caps: " + element.details)
+                                    }
+                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "false", state).toMap())
                                 }
 
                                 Call.STATE_CONNECTING -> {
                                     println("ConnectingState-MainMethod")
-                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "inbound", state).toMap())
+                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "false", state).toMap())
+                                }
+                                Call.STATE_HOLDING -> {
+                                    println("onHold-MainMethod")
+                                  eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "false", state).toMap())
                                 }
 
 
@@ -60,13 +73,15 @@ class CallService : InCallService() {
                     }
 
 
+
+    @TargetApi(Build.VERSION_CODES.M)
     override fun onCallAdded(call: Call) {
 
         super.onCallAdded(call)
         CallManager.call = call
+        CallConnection()
         CallManager.inCallService = this
         CallManager.registerCallback(callListener)
-
 
 
 //        val fullScreenPendingIntent = PendingIntent.getActivity(this,0,getPackageManager().getLaunchIntentForPackage("com.phone.dialer.dialer_app"),PendingIntent.FLAG_UPDATE_CURRENT)
@@ -95,10 +110,16 @@ class CallService : InCallService() {
 
     }
 
+    @TargetApi(Build.VERSION_CODES.M)
     override fun onCallRemoved(call: Call) {
         super.onCallRemoved(call)
-        CallManager.call = null
-        CallManager.inCallService = null
+       println(call.details.disconnectCause.toString())
+
+        if(CallManager.inCallService?.calls?.isNotEmpty() == true)
+        {
+            CallManager.call = CallManager.inCallService?.calls!!.last()
+        }
+
 
     }
 
@@ -124,9 +145,7 @@ class Callcallback {
     companion object {
         fun PhoneRinging(){
             println("it's ringing : " +PhoneID.toString())
-            println("accountHandle : " + CallManager.call?.details?.accountHandle?.toString())
-            println("callproperties : " + CallManager.call?.details?.callProperties?.toString())
-            eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID.toString(), "disconnected", state = Call.STATE_RINGING).toMap())
+            eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID.toString(), if(CallManager.call?.conferenceableCalls?.isEmpty() == true) "false" else "true", state = Call.STATE_RINGING).toMap())
         }
     }
 }

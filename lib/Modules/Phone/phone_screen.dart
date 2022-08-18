@@ -28,6 +28,8 @@ class PhoneScreen extends StatelessWidget {
 
 
     if(PhoneLogsCubit.get(context).PhoneRange == true){
+      NativeBridge.get(context).Calls=[];
+      NativeBridge.get(context).ConferenceCalls=[];
       Future.delayed(Duration(milliseconds: 500),(){
         PhoneLogsCubit.get(context).CallLogsUpdate(PhoneContactsCubit.get(context).Contacts);
 
@@ -303,9 +305,6 @@ class PhoneScreen extends StatelessWidget {
                           :FlutterPhoneDirectCaller.callNumber(" ${PhoneLogsCubit.get(context).PhoneCallLogs[index]["number"].toString()}").then((value){
                         PhoneContactsCubit.get(context).isSearching = false;
                         PhoneContactsCubit.get(context).dialpadShowcontact();
-                        Navigator.pushAndRemoveUntil(context,
-                          MaterialPageRoute(builder: (BuildContext context) => InCallScreen()),
-                              (Route<dynamic>route)=>false,);
                         NativeBridge.get(context).isRinging = false;
                       });
                     },

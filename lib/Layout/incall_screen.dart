@@ -2,9 +2,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
-
-
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dialer_app/Components/components.dart';
 import 'package:dialer_app/Components/constants.dart';
@@ -34,58 +31,105 @@ class InCallScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     var Cubit = NativeBridge.get(context);
 
+
+
     return BlocProvider.value(
-      value:NativeBridge.get(context)..GetCallerID(PhoneContactsCubit.get(context).Contacts)..GetContactByID()..InCallNotes()..listenSensor(),
+      value:NativeBridge.get(context)..listenSensor(),
       child: BlocConsumer<NativeBridge, NativeStates>(
           listener: (context, state) {
-            if(state is PhoneStateDialing)
+            if(state is PhoneStateHolding)
               {
 
+                // NativeBridge.get(context).invokeNativeMethod("SwapConf");
 
               }
+
             if(state is PhoneStateRinging ){
               Cubit.isRinging = true;
+                // NativeBridge.get(context).OnRecivedCallingSession(ProfileCubit.get(context).CurrentUser[0].phone.toString());
+                NativeBridge.get(context).GetCallerID(PhoneContactsCubit.get(context).Contacts);
+
+                NativeBridge.get(context).CallerID.isNotEmpty?NativeBridge.get(context).InCallNotes():null;
+                NativeBridge.get(context).Calls.add({
+                  "PhoneNumber" : NativeBridge.get(context).PhoneNumberQuery,
+                  "DisplayName" : NativeBridge.get(context).CallerID.isNotEmpty?NativeBridge.get(context).CallerID[0]["CallerID"]:"",
+                  "Avatar" : null,
+                  "PhoneState" : PhoneStateRinging,
+                  "Notes" : NativeBridge.get(context).CallerID.isNotEmpty?NativeBridge.get(context).CallNotes:null,
+                });
+                // NativeBridge.get(context).Calls.removeAt(NativeBridge.get(context).CurrentCallIndex==1?0:1);
+              NativeBridge.get(context).CurrentCallIndex=NativeBridge.get(context).Calls.length-1;
 
 
             }
+
             if(state is PhoneStateActive ){
+
               NativeBridge.get(context).isRinging = false;
-             _StopWatchTimer.onExecute.add(StopWatchExecute.start);
-             Cubit.isStopWatchStart = true;
+              NativeBridge.get(context).MergedOrRinging=false;
+              Cubit.OnConference==true?Cubit.ConferenceTimer.onExecute.add(StopWatchExecute.start):Cubit.CallDuration[ Cubit.CurrentCallIndex].onExecute.add(StopWatchExecute.start);
+              Cubit.isStopWatchStart = true;
               // AppCubit.get(context).GetCallerID(Cubit.PhoneNumberQuery,true);
 
             }
-            if(state is PhoneStateDisconnected)
-              {
+            if(state is PhoneStateDisconnected && NativeBridge.get(context).MergedOrRinging==false) {
+              // Cubit.isStopWatchStart =false;
+              // _StopWatchTimer.onExecute.add(StopWatchExecute.reset);
+              // NativeBridge.get(context).contact=null;
+              // Cubit.ClearCallingSession(ProfileCubit.get(context).CurrentUser[0].phone.toString());
 
-                _StopWatchTimer.onExecute.add(StopWatchExecute.reset);
-                Cubit.isStopWatchStart =false;
-                PhoneLogsCubit.get(context).PhoneRange =true;
-                NativeBridge.get(context).contact=null;
-                NativeBridge.get(context).CallNotes.clear();
-                Cubit.ClearCallingSession(ProfileCubit.get(context).CurrentUser[0].phone.toString());
 
+              if (Cubit.Calls.length > 1  || Cubit.ConferenceCalls.isNotEmpty) {
+                if (Cubit.OnConference == true) {
+                  Cubit.ConferenceCalls.clear();
+                  Cubit.OnConference = false;
+                } else {
+                  if (Cubit.ConferenceCalls.isNotEmpty) {
+                    Cubit.OnConference = true;
+                  }
+                  Cubit.CurrentCallIndex = Cubit.CurrentCallIndex == 0 ? 1 : 0;
+                  Cubit.Calls.removeAt(Cubit.CurrentCallIndex == 0 ? 1 : 0);
+
+                }
+              } else {
+                PhoneLogsCubit.get(context).PhoneRange = true;
                 NativeBridge.get(context).streamSubscription.cancel();
                 Navigator.pushAndRemoveUntil(context,
                   MaterialPageRoute(builder: (BuildContext context) => Home()),
-                      (Route<dynamic>route)=>false,);
-
+                      (Route<dynamic> route) => false,
+                );
               }
+            }
 
           },
           builder: (context, state) {
-            if(NativeBridge.get(context).PhoneNumberQuery==null )
+            if(NativeBridge.get(context).Calls.length==2)
             {
-              Future.delayed(Duration(seconds: 5),(){
-                Navigator.pushAndRemoveUntil(context,
-                  MaterialPageRoute(builder: (BuildContext context) => Home()),
-                      (Route<dynamic>route)=>false,);
-              });
+              AddMerge = true;
+              HoldSwap =true;
+            }
+            if(NativeBridge.get(context).Calls.length==1){
 
+              if(NativeBridge.get(context).ConferenceCalls.isNotEmpty){
+                AddMerge = true;
+                HoldSwap =true;
+
+              } else
+              {
+                HoldSwap =false;
+                AddMerge = false;
+              }
+            }
+            if(NativeBridge.get(context).Calls.isEmpty && NativeBridge.get(context).OnConference == true)
+            {
+              HoldSwap =false;
+              AddMerge = false;
             }
             // NativeBridge.get(context).GetCallerID();
             // AppCubit.get(context).GetCallerID();
             return Scaffold(
+              resizeToAvoidBottomInset: false,
+
               backgroundColor: HexColor("#2C087A"),
               body: WillPopScope(
                 onWillPop: () async{
@@ -99,224 +143,81 @@ class InCallScreen extends StatelessWidget {
                 },
                 child: Stack(
                   children: [
-                    ThemeCubit.get(context).InCallBackGroundImagePicker !=null?Padding(
-                  padding:  EdgeInsets.only(top:double.parse(ThemeCubit.get(context).MyThemeData[ActiveTheme]["InCallBackgroundVerticalPading"])),
-                  child: Container(
-                    height: double.parse(ThemeCubit.get(context).MyThemeData[ActiveTheme]["InCallBackgroundHeight"]),
-                    width: double.infinity,
-                    decoration:  BoxDecoration(
-                      image: DecorationImage(
-                        image: ImageSwap(ThemeCubit.get(context).InCallBackGroundImagePicker),
-                        fit: BoxFit.cover,
-                        opacity: double.parse(ThemeCubit.get(context).MyThemeData[ActiveTheme]["InCallBackgroundOpacity"]),
-                      ),
-                    ),
-                  ),
-                ):Container(
-
-                      height: double.parse(ThemeCubit.get(context).MyThemeData[ActiveTheme]["InCallBackgroundHeight"]),
-                      decoration: const BoxDecoration(
-                        image: DecorationImage(
-                          image: AssetImage(
-                              "assets/Images/blue purple wave.png"),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
+                    BackgroundImage(context),
                     Stack(
-                      alignment: AlignmentDirectional.bottomCenter,
+                      alignment: AlignmentDirectional.bottomEnd,
                       children: [
-                        Column(
-
-                          mainAxisSize: MainAxisSize.max,
+                        Cubit.Calls.length==2?Padding(
+                          padding: EdgeInsets.only(top:MediaQuery.of(context).padding.top),
+                          child: Align(
+                              alignment: AlignmentDirectional.topStart,
+                              child: Container(width: double.infinity,height: MediaQuery.of(context).size.height*0.08,color: Colors.black26,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [Text(Cubit.Calls[Cubit.CurrentCallIndex==1?0:1]["PhoneNumber"]), Row(
+                                  children: [
+                                    Icon(Icons.pause),
+                                    Text("onHold"),
+                                  ],
+                                )],),)),
+                        ):Container(),
+                        SingleChildScrollView(child: InCallButtons(context, Cubit.isRinging )),
+                        Cubit.ConferenceManage==false?Column(
+                          // mainAxisSize: MainAxisSize.max,
                             children: [
                               SizedBox(
                                 height: (MediaQuery.of(context).padding.top + MediaQuery.of(context).size.height)*0.11,
                               ),
 
-                              Stack(
-                                  alignment: AlignmentDirectional.center,
-                                  children: [
-                                    Container(
-                                      child: NativeBridge.get(context).contact?.thumbnail != null && NativeBridge.get(context).contact!.thumbnail!.isNotEmpty?CallerPhoto(NativeBridge.get(context).contact?.thumbnail):CircleAvatar(
-                                        backgroundColor: HexColor("#545454"),
-                                        radius: 45,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          width: 2,
-                                          color:
-                                          HexColor("#F8F8F8").withOpacity(0.69),
-                                        ),
-                                      ),
-                                    ),
-                                    NativeBridge.get(context).contact?.thumbnail != null && NativeBridge.get(context).contact!.thumbnail!.isNotEmpty?Container():Icon(
-                                      Icons.person,
-                                      color: HexColor("#D1D1D1"),
-                                      size: 50,
-                                    ),
-                                    OnlineStates(),
-                                  ]),
+                              ContactAvatar(Cubit),
                               const SizedBox(height: 8),
                               CallStatesText(),
                               CallerID(context),
-                              CallerPhoneNumber(context),
-                              StreamBuilder<int>(
-                                stream: _StopWatchTimer.rawTime,
-                                builder: (context,snap) {
-                                  if(NativeBridge.get(context).isStopWatchStart == true)
-                                  {
-                                    final value =snap.data;
-                                    bool? Hours;
-                                    bool? Minutes;
+                              Cubit.OnConference==true?Container():CallerPhoneNumber(context),
+                              NativeBridge.get(context).isStopWatchStart == true?ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxHeight: 50
+                                ),
+                                child: StreamBuilder<int>(
+                                  stream: Cubit.OnConference==true?Cubit.ConferenceTimer.rawTime:Cubit.CallDuration[Cubit.CurrentCallIndex].rawTime,
+                                  builder: (context,snap) {
+                                    if(snap.hasError)
+                                      {
+                                        return Text("something wrong");
+                                      }
+                                      final value =snap.data;
+                                      bool? Hours;
+                                      bool? Minutes;
 
-                                    if (StopWatchTimer.getRawHours(value!) <= 1)
-                                    {
-                                      Hours = false;
-                                    } else Hours=true;
-                                    var displayTime = StopWatchTimer.getDisplayTime(value,hours:Hours,minute: true, milliSecond: false);
-                                    return Cubit.isRinging == false?Text("Duration :"+displayTime , style: TextStyle(height: 0.8),):Text("");
-                                  } else return Text("");
-                                  },
-                              ), //
+                                      if (StopWatchTimer.getRawHours(value!=null?value:0) <= 1)
+                                      {
+                                        Hours = false;
+                                      } else Hours=true;
+                                      var displayTime = StopWatchTimer.getDisplayTime(value!=null?value:0,hours:Hours,minute: true, milliSecond: false);
+                                      return Cubit.isRinging == false?Text("Duration :"+displayTime , style: TextStyle(height: 0.8),):Text("");
+
+                                    },
+                                ),
+                              ):Container(), //
                               // Cubit.isRinging == false?  StopWatchTimer.getDisplayTime(value): Text(""),
                           // MediaQuery:Above Quick Replay Adjust for Diff. Screens
                           SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.02,
+                            height: MediaQuery.of(context).size.height * 0.01,
                           ),
                           // NativeBridge.get(context).isShowen==false?InCallMessages(context):Container(),
-                              StreamBuilder<DocumentSnapshot>(
-                                  stream: CurrentUserStream,
-                                  builder: (context,snapshot) {
-                                    if (snapshot.hasError) {
-                                      return Text('Something went wrong');
-                                    }
+                              NotesAndCallResonBar()
 
-                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                      return Text("Loading");
-                                    }
-                                    final data = snapshot..requireData;
-                                    NativeBridge.get(context).CallerAppID(data.data!["phone"]);
+                        ]):Container(
+                          alignment: AlignmentDirectional.centerStart,
+                          width: double.infinity,child: Column(children: [
+                          SizedBox(
+                            height: (MediaQuery.of(context).padding.top + MediaQuery.of(context).size.height)*0.15,
+                          ),
+                          Text("Edit Conference Name : Conferance 1"),
 
-                                    return Column(children: [
-                                      data.data!["InCallMessage"]!= ""?Row(
-                                        children: [
-                                          Expanded(child: Column(children: [Text("CALL REASON"),Text(data.data?["InCallMessage"],style: TextStyle(fontSize: 15,color: Colors.white),),],)),
-                                        ],
-                                      ):Container(height: MediaQuery.of(context).size.height*0.05,),
-                                      Padding(
-                                        padding:  EdgeInsets.only(right: NativeBridge.get(context).InCallMsg||NativeBridge.get(context).ExpandeNotes?0:19),
-                                        child: Row(
-                                          mainAxisAlignment: NativeBridge.get(context).InCallMsg?MainAxisAlignment.center:MainAxisAlignment.end,
-                                          mainAxisSize: MainAxisSize.max,
-                                          children: [
+                          TextButton(onPressed: (){}, child: Text("close"))
+                        ],),),
 
-                                            NativeBridge.get(context).ExpandeNotes==false?InCallMessages(context):Container(),
-                                            NativeBridge.get(context).ExpandeNotes==false?NativeBridge.get(context).InCallMsg?Container():NativeBridge.get(context).contact!=null?Container(width: 1,height: 30,color: Colors.white,):Container():Container(),
-                                            NativeBridge.get(context).InCallMsg?Container():NativeBridge.get(context).contact!=null?ConstrainedBox(
-                                              constraints: BoxConstraints(
-                                                minHeight: NativeBridge.get(context).ExpandeNotes?MediaQuery.of(context).size.height*0.43:77,
-                                                // maxHeight: NativeBridge.get(context).ExpandeNotes?MediaQuery.of(context).size.height*0.43:77,
-                                              ),
-                                              child: Column(
-                                                mainAxisAlignment: MainAxisAlignment.start,
-                                                children: [
-                                                  IconButton(onPressed: (){
-                                                    //TODO: implement in call NOTES
-
-                                                    NativeBridge.get(context).NotesToggle();
-                                                  }, icon: Icon(Icons.note),iconSize: 28,color: HexColor("#E4E4E4"),),
-                                                  Text("Notes",style: TextStyle(height: 0.6),),
-
-                                                  NativeBridge.get(context).ExpandeNotes?IconButton(onPressed: (){
-                                                    //TODO: implement in call NOTES
-
-                                                    NativeBridge.get(context).AddNewNote();
-                                                  }, icon: Icon(Icons.note_add),iconSize: 28,color: HexColor("#E4E4E4"),):Container(),
-                                                  NativeBridge.get(context).ExpandeNotes?Text("Add",style: TextStyle(height: 0.6),):Container(),
-                                                ],
-                                              ),
-                                            ):Container(),
-
-                                            NativeBridge.get(context).InCallMsg?Container():NativeBridge.get(context).contact!=null?AnimatedSize(
-                                                curve:Curves.easeIn,
-                                                duration: Duration(seconds: 1),
-                                                child: Container(
-                                                    width: NativeBridge.get(context).ExpandeNotes?MediaQuery.of(context).size.width*0.83:0,height: NativeBridge.get(context).ExpandeNotes?MediaQuery.of(context).size.height*0.43:0,color:Colors.white.withOpacity(0.50) ,
-                                                    child:NativeBridge.get(context).NewNote?Padding(
-                                                      padding: const EdgeInsets.only(right:15.0,left:15.0,top: 8.0),
-                                                      child: Column(
-                                                        children: [
-                                                          Container(
-                                                            height: MediaQuery.of(context).size.height*0.34,
-                                                            child: TextFormField(
-                                                              maxLines: null,
-                                                              keyboardType: TextInputType.multiline,
-                                                              style: TextStyle(
-                                                                fontFamily: "OpenSans",
-                                                                fontSize: 12,
-                                                              ),
-                                                              controller: PhoneContactsCubit.get(context).NotesController,
-                                                              textAlign:TextAlign.start,
-                                                              textAlignVertical: TextAlignVertical.center,
-
-                                                              decoration: InputDecoration(
-                                                                border:InputBorder.none,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                          Row(
-                                                            mainAxisAlignment: MainAxisAlignment.end,
-                                                            children: [
-                                                              IconButton(onPressed: (){
-
-                                                              }, icon: Icon(Icons.delete),iconSize: 28,color: HexColor("#E4E4E4"),),
-                                                              IconButton(
-                                                                onPressed: (){
-                                                                  NativeBridge.get(context).CallNotes.add(PhoneContactsCubit.get(context).NotesController.text.trim());
-                                                                  print(NativeBridge.get(context).CallNotes);
-                                                                  ContactNotes.forEach((element) {
-                                                                    if(element["id"] == NativeBridge.get(context).CallerID[0]["id"]){
-
-                                                                      element["Notes"]=NativeBridge.get(context).CallNotes.toString();
-                                                                    }
-                                                                  });
-                                                                  CacheHelper.saveData(key: "Notes", value: json.encode(ContactNotes));
-                                                                  NativeBridge.get(context).CallNotesUpdate.add(NativeBridge.get(context).CallerID[0]["id"]);
-                                                                  NativeBridge.get(context).AddNewNote();
-                                                                }, icon: Icon(Icons.task_alt),iconSize: 28,color: HexColor("#E4E4E4"),),
-
-                                                            ],)
-                                                        ],
-                                                      ),
-                                                    ):Container(child:ListView.builder(
-                                                        shrinkWrap: true,
-                                                        itemCount:NativeBridge.get(context).CallNotes.length ,
-                                                        itemBuilder: (context,index) {
-                                                          return ListTile(
-                                                            title:Text(NativeBridge.get(context).CallNotes[index].toString()),
-                                                          );
-                                                        })))):Container(),
-                                            // Column(
-                                            //   children: [
-                                            //     IconButton(onPressed: (){
-                                            //       //TODO: implement in call Recording
-                                            //     }, icon: Icon(Icons.keyboard_voice,),iconSize: 28,color: HexColor("#E4E4E4"),),
-                                            //     Text("Record",style: TextStyle(height: 0.6),),
-                                            //   ],
-                                            // ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],);
-                                  }
-                              )
-
-                        ]),
-                        WidgetsBinding.instance.window.viewInsets.bottom > 0.0?Container():SingleChildScrollView(
-                            physics: NeverScrollableScrollPhysics(),
-                            child: InCallButtons(context, Cubit.isRinging)),
                       ],
                     ),
                   ],
@@ -327,17 +228,235 @@ class InCallScreen extends StatelessWidget {
     );
   }
 
+  StreamBuilder<DocumentSnapshot<Object?>> NotesAndCallResonBar() {
+    return StreamBuilder<DocumentSnapshot>(
+                                stream: CurrentUserStream,
+                                builder: (context,snapshot) {
+                                  if (snapshot.hasError) {
+                                    return Text('Something went wrong');
+                                  }
+
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    return Text("Loading");
+                                  }
+                                  final data = snapshot..requireData;
+                                  NativeBridge.get(context).CallerAppID(data.data!["phone"]);
+
+                                  return Column(children: [
+                                    data.data!["InCallMessage"]!= ""?Row(
+                                      children: [
+                                        Expanded(child: Column(children: [Text("CALL REASON"),Text(data.data?["InCallMessage"],style: TextStyle(fontSize: 15,color: Colors.white),),],)),
+                                      ],
+                                    ):Container(height: MediaQuery.of(context).size.height*0.02,),
+                                    Padding(
+                                      padding:  EdgeInsets.only(right: NativeBridge.get(context).InCallMsg||NativeBridge.get(context).ExpandeNotes?0:19),
+                                      child: Row(
+                                        mainAxisAlignment: NativeBridge.get(context).InCallMsg?MainAxisAlignment.center:MainAxisAlignment.end,
+                                        mainAxisSize: MainAxisSize.max,
+                                        children: [
+
+                                          NativeBridge.get(context).ExpandeNotes==false?InCallMessages(context):Container(),
+                                          NativeBridge.get(context).ExpandeNotes==false?NativeBridge.get(context).InCallMsg?Container():NativeBridge.get(context).contact!=null?Container(width: 1,height: 30,color: Colors.white,):Container():Container(),
+                                          NativeBridge.get(context).InCallMsg?Container():NativeBridge.get(context).contact!=null?ConstrainedBox(
+                                            constraints: BoxConstraints(
+                                              minHeight: NativeBridge.get(context).ExpandeNotes?MediaQuery.of(context).size.height*0.43:77,
+                                              // maxHeight: NativeBridge.get(context).ExpandeNotes?MediaQuery.of(context).size.height*0.43:77,
+                                            ),
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              children: [
+                                                IconButton(onPressed: (){
+                                                  //TODO: implement in call NOTES
+
+                                                  NativeBridge.get(context).NotesToggle();
+                                                }, icon: Icon(Icons.note),iconSize: 28,color: HexColor("#E4E4E4"),),
+                                                Text("Notes",style: TextStyle(height: 0.6),),
+
+                                                NativeBridge.get(context).ExpandeNotes?IconButton(onPressed: (){
+                                                  //TODO: implement in call NOTES
+
+                                                  NativeBridge.get(context).AddNewNote();
+                                                }, icon: Icon(Icons.note_add),iconSize: 28,color: HexColor("#E4E4E4"),):Container(),
+                                                NativeBridge.get(context).ExpandeNotes?Text("Add",style: TextStyle(height: 0.6),):Container(),
+                                              ],
+                                            ),
+                                          ):Container(),
+
+                                          NativeBridge.get(context).InCallMsg?Container():NativeBridge.get(context).contact!=null?AnimatedSize(
+                                              curve:Curves.easeIn,
+                                              duration: Duration(seconds: 1),
+                                              child: Container(
+                                                  width: NativeBridge.get(context).ExpandeNotes?MediaQuery.of(context).size.width*0.83:0,height: NativeBridge.get(context).ExpandeNotes?MediaQuery.of(context).size.height*0.43:0,color:Colors.white.withOpacity(0.50) ,
+                                                  child:NativeBridge.get(context).NewNote?Padding(
+                                                    padding: const EdgeInsets.only(right:15.0,left:15.0,top: 8.0),
+                                                    child: Column(
+                                                      children: [
+                                                        Container(
+                                                          height: MediaQuery.of(context).size.height*0.34,
+                                                          child: TextFormField(
+                                                            maxLines: null,
+                                                            keyboardType: TextInputType.multiline,
+                                                            style: TextStyle(
+                                                              fontFamily: "OpenSans",
+                                                              fontSize: 12,
+                                                            ),
+                                                            controller: PhoneContactsCubit.get(context).NotesController,
+                                                            textAlign:TextAlign.start,
+                                                            textAlignVertical: TextAlignVertical.center,
+
+                                                            decoration: InputDecoration(
+                                                              border:InputBorder.none,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Row(
+                                                          mainAxisAlignment: MainAxisAlignment.end,
+                                                          children: [
+                                                            IconButton(onPressed: (){
+
+                                                            }, icon: Icon(Icons.delete),iconSize: 28,color: HexColor("#E4E4E4"),),
+                                                            IconButton(
+                                                              onPressed: (){
+                                                                NativeBridge.get(context).CallNotes.add(PhoneContactsCubit.get(context).NotesController.text.trim());
+                                                                print(NativeBridge.get(context).CallNotes);
+                                                                ContactNotes.forEach((element) {
+                                                                  if(element["id"] == NativeBridge.get(context).CallerID[0]["id"]){
+
+                                                                    element["Notes"]=NativeBridge.get(context).CallNotes.toString();
+                                                                  }
+                                                                });
+                                                                CacheHelper.saveData(key: "Notes", value: json.encode(ContactNotes));
+                                                                NativeBridge.get(context).CallNotesUpdate.add(NativeBridge.get(context).CallerID[0]["id"]);
+                                                                NativeBridge.get(context).AddNewNote();
+                                                              }, icon: Icon(Icons.task_alt),iconSize: 28,color: HexColor("#E4E4E4"),),
+
+                                                          ],)
+                                                      ],
+                                                    ),
+                                                  ):Container(child:ListView.builder(
+                                                      shrinkWrap: true,
+                                                      itemCount:NativeBridge.get(context).CallNotes.length ,
+                                                      itemBuilder: (context,index) {
+                                                        return ListTile(
+                                                          title:Text(NativeBridge.get(context).CallNotes[index].toString()),
+                                                        );
+                                                      })))):Container(),
+                                          // Column(
+                                          //   children: [
+                                          //     IconButton(onPressed: (){
+                                          //       //TODO: implement in call Recording
+                                          //     }, icon: Icon(Icons.keyboard_voice,),iconSize: 28,color: HexColor("#E4E4E4"),),
+                                          //     Text("Record",style: TextStyle(height: 0.6),),
+                                          //   ],
+                                          // ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],);
+                                }
+                            );
+  }
+
+  Widget BackgroundImage(BuildContext context) {
+    return ThemeCubit.get(context).InCallBackGroundImagePicker !=null?Padding(
+      padding:  EdgeInsets.only(top:double.parse(ThemeCubit.get(context).MyThemeData[ActiveTheme]["InCallBackgroundVerticalPading"])),
+      child: Container(
+        height: double.parse(ThemeCubit.get(context).MyThemeData[ActiveTheme]["InCallBackgroundHeight"]),
+        width: double.infinity,
+        decoration:  BoxDecoration(
+          image: DecorationImage(
+            image: ImageSwap(ThemeCubit.get(context).InCallBackGroundImagePicker),
+            fit: BoxFit.cover,
+            opacity: double.parse(ThemeCubit.get(context).MyThemeData[ActiveTheme]["InCallBackgroundOpacity"]),
+          ),
+        ),
+      ),
+    ):Container(
+
+      height: double.parse(ThemeCubit.get(context).MyThemeData[ActiveTheme]["InCallBackgroundHeight"]),
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage(
+              "assets/Images/blue purple wave.png"),
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
+
+  Stack ContactAvatar(NativeBridge Cubit) {
+    if(Cubit.OnConference ==true){
+     return Stack(
+          alignment: AlignmentDirectional.center,
+          children: [
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Container(
+                alignment: AlignmentDirectional.centerStart,
+                color: Colors.white,
+                width: 90,
+                child: TextButton(
+                  onPressed: (){},
+                  child: Row(children: [Icon(Icons.manage_accounts),SizedBox(width: 5,) , Text("Mange")]),
+                ),
+              ),
+            ),
+            Container(
+              child: CircleAvatar(
+                backgroundColor: HexColor("#545454"),
+                radius: 45,
+              ),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  width: 2,
+                  color:
+                  HexColor("#F8F8F8").withOpacity(0.69),
+                ),
+              ),
+            ),
+            Icon(
+              Icons.groups,
+              color: HexColor("#D1D1D1"),
+              size: 50,
+            ),
+            OnlineStates(),
+          ]);
+    }else{
+     return Stack(
+          alignment: AlignmentDirectional.center,
+          children: [
+
+            Container(
+              child: Cubit.Calls[Cubit.CurrentCallIndex]["Avatar"]!= null?CallerPhoto(Cubit.Calls[Cubit.CurrentCallIndex]["Avatar"]):CircleAvatar(
+                backgroundColor: HexColor("#545454"),
+                radius: 45,
+              ),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  width: 2,
+                  color:
+                  HexColor("#F8F8F8").withOpacity(0.69),
+                ),
+              ),
+            ),
+            Cubit.Calls[Cubit.CurrentCallIndex]["Avatar"]!= null?Container():Icon(
+              Icons.person,
+              color: HexColor("#D1D1D1"),
+              size: 50,
+            ),
+            OnlineStates(),
+          ]);
+    }
+
+  }
+
   CircleAvatar CallerPhoto(Uint8List? avatar) => CircleAvatar(backgroundImage:MemoryImage(avatar!),radius: 45,);
 
 
 
- final  StopWatchTimer _StopWatchTimer = StopWatchTimer(
-   mode: StopWatchMode.countUp,
-   presetMillisecond: StopWatchTimer.getMilliSecFromMinute(0), // millisecond => minute.
-   // onChange: (value) => ),
-   // onChangeRawSecond: (value) => print('onChangeRawSecond $value'),
-   // onChangeRawMinute: (value) => print('onChangeRawMinute $value'),
- );
+
 
 
 
@@ -433,26 +552,44 @@ class InCallScreen extends StatelessWidget {
 
 
   Row CallerID(context) {
-    return Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(top: 4.0),
-                            child: Text(NativeBridge.get(context).CallerID.isNotEmpty?NativeBridge.get(context).CallerID[0]["CallerID"].toString():"",
-                                style: TextStyle(
-                                  fontFamily: "ZenKurenaido-Regular",
-                                  color: HexColor("#F5F5F5"),
-                                  fontSize: 25,
-                                )),
-                          ),
-                        ],
-                      );
+    if(NativeBridge.get(context).OnConference ==false){
+      return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 4.0),
+          child: Text(NativeBridge.get(context).Calls[NativeBridge.get(context).CurrentCallIndex]["DisplayName"]!=null?NativeBridge.get(context).Calls[NativeBridge.get(context).CurrentCallIndex]["DisplayName"].toString():"",
+              style: TextStyle(
+                fontFamily: "ZenKurenaido-Regular",
+                color: HexColor("#F5F5F5"),
+                fontSize: 25,
+              )),
+        ),
+      ],
+    );
+    }else{
+      return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 4.0),
+          child: Text("Conferance 1",
+              style: TextStyle(
+                fontFamily: "ZenKurenaido-Regular",
+                color: HexColor("#F5F5F5"),
+                fontSize: 25,
+              )),
+        ),
+      ],
+    );
+    }
+
   }
 
   Center CallerPhoneNumber(context) {
     return Center(
                           child: Text(
-                              NativeBridge.get(context).PhoneNumberQuery.toString(),
+                              NativeBridge.get(context).Calls[NativeBridge.get(context).CurrentCallIndex]["PhoneNumber"].toString(),
                               style: TextStyle(
                                 fontFamily: "Cairo",
                                 fontWeight: FontWeight.w300,
@@ -534,8 +671,37 @@ class InCallScreen extends StatelessWidget {
                       InkWell(
                         customBorder: CircleBorder(),
                         onTap: () {
+                          NativeBridge.get(context).MergedOrRinging=true;
                           NativeBridge.get(context).isRinging = false;
-                          NativeBridge.get(context).invokeNativeMethod("AcceptCall",null);
+                          if(NativeBridge.get(context).ConferenceCalls.isNotEmpty && NativeBridge.get(context).Calls.length==2)
+                            {
+
+                              if(NativeBridge.get(context).OnConference==true)
+                                {
+
+                                  NativeBridge.get(context).invokeNativeMethod("AcceptCall",null);
+                                  NativeBridge.get(context).Calls.removeWhere((element) => element["PhoneState"]==PhoneStateHolding);
+                                  NativeBridge.get(context).ConferenceCalls.forEach((element)=> element["PhoneState"]=PhoneStateHolding);
+                                  NativeBridge.get(context).OnConference = false;
+
+
+                                } else{
+
+                                NativeBridge.get(context).invokeNativeMethod("AcceptCall",null);
+                                NativeBridge.get(context).ConferenceCalls=[];
+                                NativeBridge.get(context).Calls[0]["PhoneState"] = PhoneStateHolding;
+
+                              }
+
+                            }
+                          if(NativeBridge.get(context).Calls.length==3 && NativeBridge.get(context).OnConference==false)
+                            {
+                              NativeBridge.get(context).invokeNativeMethod("AcceptCall",null);
+                              NativeBridge.get(context).Calls.removeWhere((element) => element["PhoneState"]==PhoneStateHolding);
+                              NativeBridge.get(context).Calls[NativeBridge.get(context).CurrentCallIndex]["PhoneState"] = PhoneStateHolding;
+                            }
+
+
                         },
                         child: CircleAvatar(
                           backgroundColor: HexColor("#2AD181"),
@@ -628,11 +794,51 @@ class InCallScreen extends StatelessWidget {
                           backgroundColor: HexColor("#464646"),
                             radius: 31,
                             child: IconButton(onPressed: (){
-                              NativeBridge.get(context)
-                                  .invokeNativeMethod("HoldToggle",null);
-                            }, icon: Icon(Icons.pause),iconSize: 37,color: HexColor("#E4E4E4"),)),
+                             if(NativeBridge.get(context).Calls.length ==2)
+                               {
+
+                                 NativeBridge.get(context).Calls[NativeBridge.get(context).CurrentCallIndex]["PhoneState"] =PhoneStateHolding;
+                                 NativeBridge.get(context).CurrentCallIndex=NativeBridge.get(context).CurrentCallIndex==1?0:1;
+                                 NativeBridge.get(context).Calls[NativeBridge.get(context).CurrentCallIndex]["PhoneState"] =PhoneStateActive;
+                                 NativeBridge.get(context).invokeNativeMethod("HoldToggle");
+
+
+                               }
+                             if(NativeBridge.get(context).Calls.isEmpty)
+                               {
+                                 NativeBridge.get(context).invokeNativeMethod("HoldToggle");
+                                 NativeBridge.get(context).ConferenceCalls.forEach((element) {
+                                   element["PhoneState"]=element["PhoneState"]==PhoneStateHolding?PhoneStateActive:PhoneStateHolding;
+                                 });
+                               }
+
+                             if(NativeBridge.get(context).Calls.length ==1)
+                               {
+
+                                 if(NativeBridge.get(context).ConferenceCalls.isNotEmpty)
+                                   {
+                                     if(NativeBridge.get(context).OnConference==true){
+                                       NativeBridge.get(context).invokeNativeMethod("Swapconference");
+                                       NativeBridge.get(context).ConferenceCalls.forEach((element) => element["PhoneState"]=PhoneStateHolding);
+                                       NativeBridge.get(context).Calls[0]["PhoneState"] =PhoneStateActive;
+                                     }else{
+                                       NativeBridge.get(context).invokeNativeMethod("HoldToggle");
+                                       NativeBridge.get(context).ConferenceCalls.forEach((element) => element["PhoneState"]=PhoneStateActive);
+                                       NativeBridge.get(context).Calls[0]["PhoneState"] =PhoneStateHolding;
+                                     }
+                                     NativeBridge.get(context).OnConference = !NativeBridge.get(context).OnConference!;
+                                     NativeBridge.get(context).CurrentCallIndex=0;
+                                     ////swap conferance here
+                                   }else
+                                     {
+                                       NativeBridge.get(context).invokeNativeMethod("HoldToggle");
+                                       NativeBridge.get(context).Calls[0]["PhoneState"] =NativeBridge.get(context).Calls[0]["PhoneState"]==PhoneStateHolding?PhoneStateActive:PhoneStateHolding;
+                                     }
+
+                               }
+                            }, icon: Icon(HoldSwap==true?Icons.swap_calls:Icons.pause),iconSize: 37,color: HexColor("#E4E4E4"),)),
                       ),
-                      Text("Hold",),
+                      Text(HoldSwap==true?"Swap":"Hold",),
                     ],
                   ),
 
@@ -685,10 +891,51 @@ class InCallScreen extends StatelessWidget {
                             child: CircleAvatar(
                               backgroundColor: HexColor("#464646"),
                                 radius: 31,
-                                child: IconButton(onPressed: (){}, icon: Icon(Icons.person_add),iconSize: 37,color: HexColor("#E4E4E4"),)),
+                                child: IconButton(onPressed: (){
+                                if(NativeBridge.get(context).Calls.length==2)
+                                  {
+                                    AddMerge = true;
+                                  }
+                                if(NativeBridge.get(context).Calls.length==2 && AddMerge ==true)
+                                  {
+                                    NativeBridge.get(context).invokeNativeMethod("conference").then((value)
+                                    {
+                                      if(NativeBridge.get(context).OnConference ==true){
+                                        NativeBridge.get(context).ConferenceCalls = NativeBridge.get(context).Calls;
+                                        NativeBridge.get(context).Calls.clear();
+                                        NativeBridge.get(context).CallDuration.clear();
+                                        NativeBridge.get(context).ConferenceTimer.onExecute.add(StopWatchExecute.start);
+                                        NativeBridge.get(context).isStopWatchStart = false;
+                                        AddMerge = false;
+                                      }
+                                    });
+                                  }
+                                if(NativeBridge.get(context).Calls.length==1){
+                                  if(NativeBridge.get(context).ConferenceCalls.isNotEmpty){
+                                    if(NativeBridge.get(context).OnConference ==false)
+                                      {
+                                        NativeBridge.get(context).invokeNativeMethod("HoldToggle");
+                                      }
+                                    NativeBridge.get(context).invokeNativeMethod("Mergconference");
+                                      NativeBridge.get(context).ConferenceCalls.add(NativeBridge.get(context).Calls[0]);
+                                      NativeBridge.get(context).OnConference=true;
+                                      NativeBridge.get(context).Calls.clear();
+
+                                  } else
+                                  {
+                                    Navigator.push(context,
+                                      MaterialPageRoute(builder: (BuildContext context) => Home()));
+                                  }
+                                }
+                                if(NativeBridge.get(context).Calls.isEmpty && NativeBridge.get(context).OnConference == true)
+                                {
+                                  Navigator.push(context,
+                                      MaterialPageRoute(builder: (BuildContext context) => Home()));
+                                }
+                                }, icon: Icon(AddMerge == true?Icons.call_merge:Icons.add_call),iconSize: 37,color: HexColor("#E4E4E4"),)),
                           ),
                         ),
-                        Text("Add",),
+                        Text(AddMerge == true?"Merge":"Add",),
                       ],
                     ),
                     Column(
@@ -696,6 +943,7 @@ class InCallScreen extends StatelessWidget {
                         InkWell(
                           splashColor: Colors.blue,
                           onTap:(){
+
                             NativeBridge.get(context)
                                 .invokeNativeMethod("RejectCall",null);
                           },
@@ -743,5 +991,7 @@ class InCallScreen extends StatelessWidget {
   }
 }
 
+bool? HoldSwap ;
+bool? AddMerge ;
 
 
