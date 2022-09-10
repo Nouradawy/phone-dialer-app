@@ -41,10 +41,10 @@ class PhoneLogsCubit extends Cubit<PhoneLogsStates> {
         "name":GetCallerID(entry,contacts),
         "number":entry.number,
         "phoneAccountId":entry.phoneAccountId,
-        "SimName":entry.simDisplayName,
         "duration":entry.duration,
         "callType":entry.callType,
         "Date":DateTime.fromMillisecondsSinceEpoch(entry.timestamp!),
+
       });
 
       if(entry.callType ==CallType.outgoing )
@@ -84,7 +84,6 @@ class PhoneLogsCubit extends Cubit<PhoneLogsStates> {
       }
 
     }
-    print("Simname : "+PhoneCallLogs[0]["SimName"]);
 
   }
   List contactCalllog = [];
@@ -116,8 +115,10 @@ class PhoneLogsCubit extends Cubit<PhoneLogsStates> {
 
   List SearchableCallerIDList = [];
   List CallerID = [];
+  String? ContactID ;
 
   void CallerIDFetching(PhoneNumberQuery , List<AppContact> Contacts) {
+    CallerID.clear();
     SearchableCallerIDList.clear();
     Contacts.map((element){
       SearchableCallerIDList.add({
@@ -126,7 +127,7 @@ class PhoneLogsCubit extends Cubit<PhoneLogsStates> {
         element.info?.phones.map((e) {
           return e.number.replaceAll(' ', '');
         }),
-
+        "id": element.info?.id,
       });
     }).toList();
 
@@ -138,15 +139,18 @@ class PhoneLogsCubit extends Cubit<PhoneLogsStates> {
 
   }
 
-  GetCallerID(CallLogEntry entry,List<AppContact> Contacts){
 
+  GetCallerID(CallLogEntry entry,List<AppContact> Contacts){
     if(entry.name ==null)
     {
       CallerIDFetching(entry.number , Contacts);
       return CallerID.isNotEmpty ? CallerID[0]["CallerID"].toString() : "UNKNOWN";
     }
-    else return entry.name!.isNotEmpty?entry.name:"UNKNOWN";
+    else
+      return entry.name!.isNotEmpty ? entry.name : "UNKNOWN";
+
   }
+
 
   GetDate(CallLogEntry entry){
     return DateTime.fromMillisecondsSinceEpoch(entry.timestamp!);

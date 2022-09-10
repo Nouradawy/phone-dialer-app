@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_contacts/properties/address.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:hexcolor/hexcolor.dart';
 import 'package:intl/intl.dart';
@@ -21,7 +22,8 @@ import 'contacts_states.dart';
 class PhoneContactsCubit extends Cubit<PhoneContactStates>{
   PhoneContactsCubit() : super(ContactsInitialState());
   static PhoneContactsCubit get(context) => BlocProvider.of(context);
-
+  bool isFabExtended = true;
+  int DefaultPhoneAccountIndex = 0;
   List<AppContact> Contacts = [];
   List<AppContact> ContactsNoThumb = [];
   List<AppContact> FavoratesContacts = [];
@@ -329,6 +331,8 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
     return (await NetworkAssetBundle(Uri.parse(URL)).load(URL)).buffer.asUint8List();
   }
 
+  final List DefaultPhoneAccounts=[];
+
   Future<void> GetRawContacts() async {
     List colors = [
       Colors.green,
@@ -359,8 +363,20 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
           FavoratesContacts.add(element);
         }
 
-    });
+      element.info?.accounts.forEach((e) {
+        if(e.type.isNotEmpty || e.name.isNotEmpty) {
+          DefaultPhoneAccounts.add({
+            "AccountType": e.type,
+            "AccountName": e.name,
+          });
+        }
+      });
 
+    });
+    final ids = DefaultPhoneAccounts.map((e) => e["AccountName"]).toSet();
+    DefaultPhoneAccounts.retainWhere((element) => ids.remove(element["AccountName"]));
+    Contacts.first.PhoneAccounts = DefaultPhoneAccounts;
+    print("Default PhoneAccounts = ${Contacts.first.PhoneAccounts}");
       emit(RawContactsSuccessState());
   }
 
@@ -388,7 +404,7 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
 
 
 
-  bool? isSearching;
+  bool isSearching =false;
 
 
   List<AppContact> FilterdContacts = [];
@@ -414,6 +430,7 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
     emit(SearchContactsFinished());
   }
   bool isShowen = false;
+
   void dialpadShowcontact(){
     isShowen =! isShowen;
 
@@ -494,7 +511,55 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
     emit(dialPadSearchSuccessState());
   }
 
+List WhatsappContacts =[];
+List PhoneAccounts =[];
+int SelectedPhoneAccountIndex = 0;
+void FilterContactsByAccount(AppContact contact){
+  PhoneAccounts.clear();
+  WhatsappContacts.clear();
+  contact.info?.phones.forEach((element) {
+    if(element.AccountType == "com.whatsapp")
+      {
+        WhatsappContacts.add(element.number);
+      }
+    else {
+        PhoneAccounts.add({
+          "AccountName": element.AccountName,
+          "AccountType": element.AccountType,
+        });
+      }
+    });
+  final ids = PhoneAccounts.map((e) => e["AccountName"]).toSet();
+  PhoneAccounts.retainWhere((element) => ids.remove(element["AccountName"]));
+  SelectedPhoneAccountIndex = DefaultPhoneAccountIndex;
+      print("Final Phone Accounts : $PhoneAccounts");
+  print(WhatsappContacts);
+}
 
+  Text AccountTitle(AccountType) {
+    if(AccountType?.contains("google")==true)
+      return Text("Google");
+    if(AccountType == "com.whatsapp")
+      return Text("Whatsapp");
+    if(AccountType == "com.whatsapp.w4b")
+      return Text("Whatsapp Business");
+    if(AccountType == "org.telegram.messenger")
+      return Text("Telegram");
+    if(AccountType == "com.oppo.contacts.device")
+      return Text("Phone");
+    else
+      return Text("Other");
+  }
 
+  FaIcon AccountIcon(String? AccountType) {
+    if(AccountType?.contains("google")==true)
+      return FaIcon(FontAwesomeIcons.googlePlusSquare,size:30);
+    if(AccountType == "com.whatsapp" ||AccountType == "com.whatsapp.w4b" )
+      return FaIcon(FontAwesomeIcons.whatsappSquare,size:30);
+    if(AccountType == "org.telegram.messenger" )
+      return FaIcon(FontAwesomeIcons.telegram,size:30);
+    else
+      return FaIcon(FontAwesomeIcons.circleQuestion);
+  }
 }
 

@@ -4,9 +4,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dialer_app/Components/components.dart';
-import 'package:dialer_app/Components/constants.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
-import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
 import 'package:dialer_app/Modules/Phone/Cubit/cubit.dart';
 import 'package:dialer_app/NativeBridge/native_bridge.dart';
 import 'package:dialer_app/NativeBridge/native_states.dart';
@@ -14,14 +12,11 @@ import 'package:dialer_app/Network/Local/shared_data.dart';
 import 'package:dialer_app/Themes/Cubit/cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:hexcolor/hexcolor.dart';
-import 'package:proximity_sensor/proximity_sensor.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
 import '../Modules/profile/Profile Cubit/profile_cubit.dart';
 import '../Network/Local/cache_helper.dart';
 import '../home.dart';
-import '../main.dart';
 import 'Cubit/cubit.dart';
 
 
@@ -34,19 +29,19 @@ class InCallScreen extends StatelessWidget {
 
 
     return BlocProvider.value(
-      value:NativeBridge.get(context)..listenSensor(),
+      value:NativeBridge.get(context)..listenSensor()..CallerAppID(ProfileCubit.get(context).CurrentUser[0].phone.toString()),
       child: BlocConsumer<NativeBridge, NativeStates>(
           listener: (context, state) {
             if(state is PhoneStateHolding)
               {
 
-                // NativeBridge.get(context).invokeNativeMethod("SwapConf");
 
               }
 
             if(state is PhoneStateRinging ){
+              Cubit.CheckInternetConnection();
               Cubit.isRinging = true;
-                // NativeBridge.get(context).OnRecivedCallingSession(ProfileCubit.get(context).CurrentUser[0].phone.toString());
+              Cubit.InternetisConnected==true?Cubit.OnRecivedCallingSession(ProfileCubit.get(context).CurrentUser[0].phone.toString()):null;
                 NativeBridge.get(context).GetCallerID(PhoneContactsCubit.get(context).Contacts);
 
                 NativeBridge.get(context).CallerID.isNotEmpty?NativeBridge.get(context).InCallNotes():null;
@@ -56,10 +51,19 @@ class InCallScreen extends StatelessWidget {
                   "Avatar" : null,
                   "PhoneState" : PhoneStateRinging,
                   "Notes" : NativeBridge.get(context).CallerID.isNotEmpty?NativeBridge.get(context).CallNotes:null,
+                  "CallerAppID" : null,
                 });
                 // NativeBridge.get(context).Calls.removeAt(NativeBridge.get(context).CurrentCallIndex==1?0:1);
-              NativeBridge.get(context).CurrentCallIndex=NativeBridge.get(context).Calls.length-1;
+              Cubit.CurrentCallIndex=NativeBridge.get(context).Calls.length-1;
 
+              Cubit.CallDuration.add(StopWatchTimer(
+                mode: StopWatchMode.countUp,
+                presetMillisecond: StopWatchTimer.getMilliSecFromMinute(0),
+                // millisecond => minute.
+                // onChange: (value) => ),
+                // onChangeRawSecond: (value) => print('onChangeRawSecond $value'),
+                // onChangeRawMinute: (value) => print('onChangeRawMinute $value'),
+              ));
 
             }
 
@@ -69,6 +73,7 @@ class InCallScreen extends StatelessWidget {
               NativeBridge.get(context).MergedOrRinging=false;
               Cubit.OnConference==true?Cubit.ConferenceTimer.onExecute.add(StopWatchExecute.start):Cubit.CallDuration[ Cubit.CurrentCallIndex].onExecute.add(StopWatchExecute.start);
               Cubit.isStopWatchStart = true;
+              print("Calls from ActiveState : " + Cubit.Calls.toString());
               // AppCubit.get(context).GetCallerID(Cubit.PhoneNumberQuery,true);
 
             }
@@ -76,24 +81,30 @@ class InCallScreen extends StatelessWidget {
               // Cubit.isStopWatchStart =false;
               // _StopWatchTimer.onExecute.add(StopWatchExecute.reset);
               // NativeBridge.get(context).contact=null;
-              // Cubit.ClearCallingSession(ProfileCubit.get(context).CurrentUser[0].phone.toString());
+
 
 
               if (Cubit.Calls.length > 1  || Cubit.ConferenceCalls.isNotEmpty) {
                 if (Cubit.OnConference == true) {
                   Cubit.ConferenceCalls.clear();
                   Cubit.OnConference = false;
+                  Cubit.ConferenceTimer.onExecute.add(StopWatchExecute.reset);
                 } else {
                   if (Cubit.ConferenceCalls.isNotEmpty) {
                     Cubit.OnConference = true;
                   }
+                  Cubit.ClearCallingSession(ProfileCubit.get(context).CurrentUser[0].phone.toString());
                   Cubit.CurrentCallIndex = Cubit.CurrentCallIndex == 0 ? 1 : 0;
                   Cubit.Calls.removeAt(Cubit.CurrentCallIndex == 0 ? 1 : 0);
+                  Cubit.CallDuration.removeAt(Cubit.CurrentCallIndex == 0 ? 1 : 0);
+
 
                 }
               } else {
                 PhoneLogsCubit.get(context).PhoneRange = true;
                 NativeBridge.get(context).streamSubscription.cancel();
+                Cubit.ClearCallingSession(ProfileCubit.get(context).CurrentUser[0].phone.toString());
+
                 Navigator.pushAndRemoveUntil(context,
                   MaterialPageRoute(builder: (BuildContext context) => Home()),
                       (Route<dynamic> route) => false,
@@ -125,8 +136,6 @@ class InCallScreen extends StatelessWidget {
               HoldSwap =false;
               AddMerge = false;
             }
-            // NativeBridge.get(context).GetCallerID();
-            // AppCubit.get(context).GetCallerID();
             return Scaffold(
               resizeToAvoidBottomInset: false,
 
@@ -141,27 +150,15 @@ class InCallScreen extends StatelessWidget {
                     return false;
                   }
                 },
+
                 child: Stack(
                   children: [
                     BackgroundImage(context),
                     Stack(
                       alignment: AlignmentDirectional.bottomEnd,
                       children: [
-                        Cubit.Calls.length==2?Padding(
-                          padding: EdgeInsets.only(top:MediaQuery.of(context).padding.top),
-                          child: Align(
-                              alignment: AlignmentDirectional.topStart,
-                              child: Container(width: double.infinity,height: MediaQuery.of(context).size.height*0.08,color: Colors.black26,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [Text(Cubit.Calls[Cubit.CurrentCallIndex==1?0:1]["PhoneNumber"]), Row(
-                                  children: [
-                                    Icon(Icons.pause),
-                                    Text("onHold"),
-                                  ],
-                                )],),)),
-                        ):Container(),
-                        SingleChildScrollView(child: InCallButtons(context, Cubit.isRinging )),
+                        OnHoldBanner(Cubit ,context),
+                        SingleChildScrollView(child: InCallButtons(context, Cubit.isRinging ,Cubit)),
                         Cubit.ConferenceManage==false?Column(
                           // mainAxisSize: MainAxisSize.max,
                             children: [
@@ -172,8 +169,8 @@ class InCallScreen extends StatelessWidget {
                               ContactAvatar(Cubit),
                               const SizedBox(height: 8),
                               CallStatesText(),
-                              CallerID(context),
-                              Cubit.OnConference==true?Container():CallerPhoneNumber(context),
+                              CallerID(context,Cubit),
+                              Cubit.OnConference==true?Container():CallerPhoneNumber(context,Cubit),
                               NativeBridge.get(context).isStopWatchStart == true?ConstrainedBox(
                                 constraints: BoxConstraints(
                                   maxHeight: 50
@@ -199,13 +196,11 @@ class InCallScreen extends StatelessWidget {
                                     },
                                 ),
                               ):Container(), //
-                              // Cubit.isRinging == false?  StopWatchTimer.getDisplayTime(value): Text(""),
-                          // MediaQuery:Above Quick Replay Adjust for Diff. Screens
+
                           SizedBox(
                             height: MediaQuery.of(context).size.height * 0.01,
                           ),
-                          // NativeBridge.get(context).isShowen==false?InCallMessages(context):Container(),
-                              NotesAndCallResonBar()
+                              NotesAndCallResonBar(Cubit)
 
                         ]):Container(
                           alignment: AlignmentDirectional.centerStart,
@@ -228,7 +223,7 @@ class InCallScreen extends StatelessWidget {
     );
   }
 
-  StreamBuilder<DocumentSnapshot<Object?>> NotesAndCallResonBar() {
+  StreamBuilder<DocumentSnapshot<Object?>> NotesAndCallResonBar(Cubit) {
     return StreamBuilder<DocumentSnapshot>(
                                 stream: CurrentUserStream,
                                 builder: (context,snapshot) {
@@ -240,7 +235,6 @@ class InCallScreen extends StatelessWidget {
                                     return Text("Loading");
                                   }
                                   final data = snapshot..requireData;
-                                  NativeBridge.get(context).CallerAppID(data.data!["phone"]);
 
                                   return Column(children: [
                                     data.data!["InCallMessage"]!= ""?Row(
@@ -255,12 +249,12 @@ class InCallScreen extends StatelessWidget {
                                         mainAxisSize: MainAxisSize.max,
                                         children: [
 
-                                          NativeBridge.get(context).ExpandeNotes==false?InCallMessages(context):Container(),
-                                          NativeBridge.get(context).ExpandeNotes==false?NativeBridge.get(context).InCallMsg?Container():NativeBridge.get(context).contact!=null?Container(width: 1,height: 30,color: Colors.white,):Container():Container(),
-                                          NativeBridge.get(context).InCallMsg?Container():NativeBridge.get(context).contact!=null?ConstrainedBox(
+                                          Cubit.ExpandeNotes==false && Cubit.Calls[Cubit.CurrentCallIndex]["CallerAppID"]!=null?InCallMessages(context,Cubit):Container(),
+                                          Cubit.ExpandeNotes==false?Cubit.InCallMsg?Container():Cubit.contact!=null?Container(width: 1,height: 30,color: Colors.white,):Container():Container(),
+                                          Cubit.InCallMsg?Container():Cubit.contact!=null?ConstrainedBox(
                                             constraints: BoxConstraints(
-                                              minHeight: NativeBridge.get(context).ExpandeNotes?MediaQuery.of(context).size.height*0.43:77,
-                                              // maxHeight: NativeBridge.get(context).ExpandeNotes?MediaQuery.of(context).size.height*0.43:77,
+                                              minHeight: Cubit.ExpandeNotes?MediaQuery.of(context).size.height*0.43:77,
+                                              // maxHeight: Cubit.ExpandeNotes?MediaQuery.of(context).size.height*0.43:77,
                                             ),
                                             child: Column(
                                               mainAxisAlignment: MainAxisAlignment.start,
@@ -268,26 +262,26 @@ class InCallScreen extends StatelessWidget {
                                                 IconButton(onPressed: (){
                                                   //TODO: implement in call NOTES
 
-                                                  NativeBridge.get(context).NotesToggle();
+                                                  Cubit.NotesToggle();
                                                 }, icon: Icon(Icons.note),iconSize: 28,color: HexColor("#E4E4E4"),),
                                                 Text("Notes",style: TextStyle(height: 0.6),),
 
-                                                NativeBridge.get(context).ExpandeNotes?IconButton(onPressed: (){
+                                                Cubit.ExpandeNotes?IconButton(onPressed: (){
                                                   //TODO: implement in call NOTES
 
-                                                  NativeBridge.get(context).AddNewNote();
+                                                  Cubit.AddNewNote();
                                                 }, icon: Icon(Icons.note_add),iconSize: 28,color: HexColor("#E4E4E4"),):Container(),
-                                                NativeBridge.get(context).ExpandeNotes?Text("Add",style: TextStyle(height: 0.6),):Container(),
+                                                Cubit.ExpandeNotes?Text("Add",style: TextStyle(height: 0.6),):Container(),
                                               ],
                                             ),
                                           ):Container(),
 
-                                          NativeBridge.get(context).InCallMsg?Container():NativeBridge.get(context).contact!=null?AnimatedSize(
+                                          Cubit.InCallMsg?Container():Cubit.contact!=null?AnimatedSize(
                                               curve:Curves.easeIn,
                                               duration: Duration(seconds: 1),
                                               child: Container(
-                                                  width: NativeBridge.get(context).ExpandeNotes?MediaQuery.of(context).size.width*0.83:0,height: NativeBridge.get(context).ExpandeNotes?MediaQuery.of(context).size.height*0.43:0,color:Colors.white.withOpacity(0.50) ,
-                                                  child:NativeBridge.get(context).NewNote?Padding(
+                                                  width: Cubit.ExpandeNotes?MediaQuery.of(context).size.width*0.83:0,height: Cubit.ExpandeNotes?MediaQuery.of(context).size.height*0.43:0,color:Colors.white.withOpacity(0.50) ,
+                                                  child:Cubit.NewNote?Padding(
                                                     padding: const EdgeInsets.only(right:15.0,left:15.0,top: 8.0),
                                                     child: Column(
                                                       children: [
@@ -317,17 +311,17 @@ class InCallScreen extends StatelessWidget {
                                                             }, icon: Icon(Icons.delete),iconSize: 28,color: HexColor("#E4E4E4"),),
                                                             IconButton(
                                                               onPressed: (){
-                                                                NativeBridge.get(context).CallNotes.add(PhoneContactsCubit.get(context).NotesController.text.trim());
-                                                                print(NativeBridge.get(context).CallNotes);
+                                                                Cubit.CallNotes.add(PhoneContactsCubit.get(context).NotesController.text.trim());
+                                                                print(Cubit.CallNotes);
                                                                 ContactNotes.forEach((element) {
-                                                                  if(element["id"] == NativeBridge.get(context).CallerID[0]["id"]){
+                                                                  if(element["id"] == Cubit.CallerID[0]["id"]){
 
-                                                                    element["Notes"]=NativeBridge.get(context).CallNotes.toString();
+                                                                    element["Notes"]=Cubit.CallNotes.toString();
                                                                   }
                                                                 });
                                                                 CacheHelper.saveData(key: "Notes", value: json.encode(ContactNotes));
-                                                                NativeBridge.get(context).CallNotesUpdate.add(NativeBridge.get(context).CallerID[0]["id"]);
-                                                                NativeBridge.get(context).AddNewNote();
+                                                                Cubit.CallNotesUpdate.add(Cubit.CallerID[0]["id"]);
+                                                                Cubit.AddNewNote();
                                                               }, icon: Icon(Icons.task_alt),iconSize: 28,color: HexColor("#E4E4E4"),),
 
                                                           ],)
@@ -335,10 +329,10 @@ class InCallScreen extends StatelessWidget {
                                                     ),
                                                   ):Container(child:ListView.builder(
                                                       shrinkWrap: true,
-                                                      itemCount:NativeBridge.get(context).CallNotes.length ,
+                                                      itemCount:Cubit.CallNotes.length ,
                                                       itemBuilder: (context,index) {
                                                         return ListTile(
-                                                          title:Text(NativeBridge.get(context).CallNotes[index].toString()),
+                                                          title:Text(Cubit.CallNotes[index].toString()),
                                                         );
                                                       })))):Container(),
                                           // Column(
@@ -452,7 +446,7 @@ class InCallScreen extends StatelessWidget {
 
   }
 
-  CircleAvatar CallerPhoto(Uint8List? avatar) => CircleAvatar(backgroundImage:MemoryImage(avatar!),radius: 45,);
+  CircleAvatar CallerPhoto(Uint8List avatar) => CircleAvatar(backgroundImage:MemoryImage(avatar),radius: 45,);
 
 
 
@@ -462,18 +456,18 @@ class InCallScreen extends StatelessWidget {
 
 
   final Stream<DocumentSnapshot> CurrentUserStream = FirebaseFirestore.instance.collection('Users').doc(token).snapshots();
-  Widget InCallMessages(context) {
+  Widget InCallMessages(context,Cubit) {
     return Stack(
       alignment: AlignmentDirectional.centerEnd,
       children: [
 
-        NativeBridge.get(context).InCallMsg?Container():Padding(
+        Cubit.InCallMsg?Container():Padding(
           padding: const EdgeInsets.only(right: 8.0,bottom: 21),
           child: Column(
             children: [
               IconButton(
                 onPressed: (){
-                NativeBridge.get(context).ActivateInCallMsg();
+                Cubit.ActivateInCallMsg();
               },
                 icon: Icon(Icons.perm_phone_msg,size: 30,),
 
@@ -489,7 +483,7 @@ class InCallScreen extends StatelessWidget {
           duration: const Duration(seconds: 2),
           child: Container(
             clipBehavior: Clip.antiAliasWithSaveLayer,
-            width: NativeBridge.get(context).InCallMsg?MediaQuery.of(context).size.width-70:0,
+            width: Cubit.InCallMsg?MediaQuery.of(context).size.width-70:0,
             height: 51,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
@@ -504,7 +498,7 @@ class InCallScreen extends StatelessWidget {
                     left: 0.0, top: 5, right: 2),
                 child: IconButton(
                   onPressed: (){
-                    NativeBridge.get(context).ActivateInCallMsg();
+                    Cubit.ActivateInCallMsg();
                   },
                   icon: Icon(Icons.perm_phone_msg,size: 30,),
 
@@ -520,11 +514,11 @@ class InCallScreen extends StatelessWidget {
               ),
               Expanded(
                   child: TextField(
-                    controller: NativeBridge.get(context).CallReasonController,
+                    controller: Cubit.CallReasonController,
                     onSubmitted: (value){
-                      NativeBridge.get(context).SendInCallMsg(value);
-                      NativeBridge.get(context).CallReasonController.clear();
-                      NativeBridge.get(context).proximity();
+                      Cubit.SendInCallMsg(value);
+                      Cubit.CallReasonController.clear();
+                      Cubit.proximity();
                     },
                   )),
                   Container(
@@ -536,9 +530,9 @@ class InCallScreen extends StatelessWidget {
                       child: IconButton(
 
                         highlightColor:Colors.red ,onPressed: (){
-                        NativeBridge.get(context).SendInCallMsg(NativeBridge.get(context).CallReasonController.text);
-                        NativeBridge.get(context).CallReasonController.clear();
-                        NativeBridge.get(context).proximity();
+                        Cubit.SendInCallMsg(Cubit.CallReasonController.text);
+                        Cubit.CallReasonController.clear();
+                        Cubit.proximity();
                       }, icon: Transform.rotate(
                           angle:-95,
                           child: Icon(Icons.send_rounded,)),)),
@@ -551,14 +545,14 @@ class InCallScreen extends StatelessWidget {
   }
 
 
-  Row CallerID(context) {
-    if(NativeBridge.get(context).OnConference ==false){
+  Row CallerID(context,Cubit) {
+    if(Cubit.OnConference ==false){
       return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 4.0),
-          child: Text(NativeBridge.get(context).Calls[NativeBridge.get(context).CurrentCallIndex]["DisplayName"]!=null?NativeBridge.get(context).Calls[NativeBridge.get(context).CurrentCallIndex]["DisplayName"].toString():"",
+          child: Text(Cubit.Calls[Cubit.CurrentCallIndex]["DisplayName"]!=null?Cubit.Calls[Cubit.CurrentCallIndex]["DisplayName"].toString():"",
               style: TextStyle(
                 fontFamily: "ZenKurenaido-Regular",
                 color: HexColor("#F5F5F5"),
@@ -586,10 +580,10 @@ class InCallScreen extends StatelessWidget {
 
   }
 
-  Center CallerPhoneNumber(context) {
+  Center CallerPhoneNumber(context,Cubit) {
     return Center(
                           child: Text(
-                              NativeBridge.get(context).Calls[NativeBridge.get(context).CurrentCallIndex]["PhoneNumber"].toString(),
+                              Cubit.Calls[Cubit.CurrentCallIndex]["PhoneNumber"].toString(),
                               style: TextStyle(
                                 fontFamily: "Cairo",
                                 fontWeight: FontWeight.w300,
@@ -646,7 +640,7 @@ class InCallScreen extends StatelessWidget {
                             );
   }
 
-  Column InCallButtons(BuildContext context  , isRinging ) {
+  Column InCallButtons(BuildContext context  , isRinging ,Cubit) {
     return isRinging?Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -656,7 +650,7 @@ class InCallScreen extends StatelessWidget {
                       InkWell(
                         // customBorder: CircleBorder(),
                         onTap: () {
-                          NativeBridge.get(context).invokeNativeMethod("RejectCall",null);
+                          Cubit.invokeNativeMethod("RejectCall",null);
 
                         },
                         child: CircleAvatar(
@@ -671,34 +665,38 @@ class InCallScreen extends StatelessWidget {
                       InkWell(
                         customBorder: CircleBorder(),
                         onTap: () {
-                          NativeBridge.get(context).MergedOrRinging=true;
-                          NativeBridge.get(context).isRinging = false;
-                          if(NativeBridge.get(context).ConferenceCalls.isNotEmpty && NativeBridge.get(context).Calls.length==2)
+                          Cubit.MergedOrRinging=true;
+                          Cubit.isRinging = false;
+                          if(Cubit.Calls.length==1)
+                            {
+                              Cubit.invokeNativeMethod("AcceptCall",null);
+                            }
+                          if(Cubit.ConferenceCalls.isNotEmpty && Cubit.Calls.length==2)
                             {
 
-                              if(NativeBridge.get(context).OnConference==true)
+                              if(Cubit.OnConference==true)
                                 {
 
-                                  NativeBridge.get(context).invokeNativeMethod("AcceptCall",null);
-                                  NativeBridge.get(context).Calls.removeWhere((element) => element["PhoneState"]==PhoneStateHolding);
-                                  NativeBridge.get(context).ConferenceCalls.forEach((element)=> element["PhoneState"]=PhoneStateHolding);
-                                  NativeBridge.get(context).OnConference = false;
+                                  Cubit.invokeNativeMethod("AcceptCall",null);
+                                  Cubit.Calls.removeWhere((element) => element["PhoneState"]==PhoneStateHolding);
+                                  Cubit.ConferenceCalls.forEach((element)=> element["PhoneState"]=PhoneStateHolding);
+                                  Cubit.OnConference = false;
 
 
                                 } else{
 
-                                NativeBridge.get(context).invokeNativeMethod("AcceptCall",null);
-                                NativeBridge.get(context).ConferenceCalls=[];
-                                NativeBridge.get(context).Calls[0]["PhoneState"] = PhoneStateHolding;
+                                Cubit.invokeNativeMethod("AcceptCall",null);
+                                Cubit.ConferenceCalls=[];
+                                Cubit.Calls[0]["PhoneState"] = PhoneStateHolding;
 
                               }
 
                             }
-                          if(NativeBridge.get(context).Calls.length==3 && NativeBridge.get(context).OnConference==false)
+                          if(Cubit.Calls.length==3 && Cubit.OnConference==false)
                             {
-                              NativeBridge.get(context).invokeNativeMethod("AcceptCall",null);
-                              NativeBridge.get(context).Calls.removeWhere((element) => element["PhoneState"]==PhoneStateHolding);
-                              NativeBridge.get(context).Calls[NativeBridge.get(context).CurrentCallIndex]["PhoneState"] = PhoneStateHolding;
+                              Cubit.invokeNativeMethod("AcceptCall",null);
+                              Cubit.Calls.removeWhere((element) => element["PhoneState"]==PhoneStateHolding);
+                              Cubit.Calls[Cubit.CurrentCallIndex]["PhoneState"] = PhoneStateHolding;
                             }
 
 
@@ -736,12 +734,10 @@ class InCallScreen extends StatelessWidget {
             color: HexColor("#B4B4B4").withOpacity(0.49)),
       ],
     ):
-    NativeBridge.get(context).isShowen?InCallDialpad(context, 0 , AppCubit.get(context).dialerController):Column(
+    Cubit.isShowen?InCallDialpad(context, 0 , AppCubit.get(context).dialerController):Column(
       mainAxisAlignment: MainAxisAlignment.start,
           children: [
-
-
-            NativeBridge.get(context).ExpandeNotes==false?Padding(
+            Cubit.ExpandeNotes==false?Padding(
               padding: const EdgeInsets.only(bottom: 15.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -750,16 +746,10 @@ class InCallScreen extends StatelessWidget {
                   Column(
                     children: [
                       Container(
-                        decoration:BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(width:1,color:HexColor("#FFFFFF"),),
-                        ) ,
-                        child: CircleAvatar(
-                          backgroundColor: HexColor("#464646"),
-                            radius: 31,
-                            child: IconButton(onPressed: (){
-                              NativeBridge.get(context).invokeNativeMethod("SpeakerToggle",null);
-                            }, icon: Icon(Icons.volume_up),iconSize: 37,color: HexColor("#E4E4E4"),)),
+                        child: IconButton(onPressed: (){
+                          Cubit.invokeNativeMethod("SpeakerToggle",null);
+
+                        }, icon: Icon(Icons.volume_up_rounded),iconSize: 40,color: HexColor("#E4E4E4"),),
                       ),
                       Text("Speaker",),
                     ],
@@ -767,20 +757,12 @@ class InCallScreen extends StatelessWidget {
                   Column(
                     children: [
                       Container(
-                        decoration:BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(width:1,color:HexColor("#FFFFFF"),),
-                        ) ,
-                        child: CircleAvatar(
-                          backgroundColor: HexColor("#464646"),
-                            radius: 31,
-                            child: IconButton(onPressed: (){
-                              NativeBridge.get(context)
-                                  .invokeNativeMethod("MicToggle",null);
-
-                            }, icon: Icon(Icons.volume_mute),iconSize: 37,color: HexColor("#E4E4E4"),)),
+                        child: IconButton(onPressed: (){
+                          Cubit.invokeNativeMethod("MicToggle",null);
+                          Cubit.isMuted =! Cubit.isMuted;
+                        }, icon: Icon(Cubit.isMuted ==false?Icons.mic:Icons.mic_off),iconSize: 40,color: HexColor("#E4E4E4"),),
                       ),
-                      Text("Mute",),
+                      Text(Cubit.isMuted ==false?"Mute":"Un mute",),
                     ],
                   ),
                   Column(
@@ -794,45 +776,45 @@ class InCallScreen extends StatelessWidget {
                           backgroundColor: HexColor("#464646"),
                             radius: 31,
                             child: IconButton(onPressed: (){
-                             if(NativeBridge.get(context).Calls.length ==2)
+                             if(Cubit.Calls.length ==2)
                                {
 
-                                 NativeBridge.get(context).Calls[NativeBridge.get(context).CurrentCallIndex]["PhoneState"] =PhoneStateHolding;
-                                 NativeBridge.get(context).CurrentCallIndex=NativeBridge.get(context).CurrentCallIndex==1?0:1;
-                                 NativeBridge.get(context).Calls[NativeBridge.get(context).CurrentCallIndex]["PhoneState"] =PhoneStateActive;
-                                 NativeBridge.get(context).invokeNativeMethod("HoldToggle");
+                                 Cubit.Calls[Cubit.CurrentCallIndex]["PhoneState"] =PhoneStateHolding;
+                                 Cubit.CurrentCallIndex=Cubit.CurrentCallIndex==1?0:1;
+                                 Cubit.Calls[Cubit.CurrentCallIndex]["PhoneState"] =PhoneStateActive;
+                                 Cubit.invokeNativeMethod("HoldToggle");
 
 
                                }
-                             if(NativeBridge.get(context).Calls.isEmpty)
+                             if(Cubit.Calls.isEmpty)
                                {
-                                 NativeBridge.get(context).invokeNativeMethod("HoldToggle");
-                                 NativeBridge.get(context).ConferenceCalls.forEach((element) {
+                                 Cubit.invokeNativeMethod("HoldToggle");
+                                 Cubit.ConferenceCalls.forEach((element) {
                                    element["PhoneState"]=element["PhoneState"]==PhoneStateHolding?PhoneStateActive:PhoneStateHolding;
                                  });
                                }
 
-                             if(NativeBridge.get(context).Calls.length ==1)
+                             if(Cubit.Calls.length ==1)
                                {
 
-                                 if(NativeBridge.get(context).ConferenceCalls.isNotEmpty)
+                                 if(Cubit.ConferenceCalls.isNotEmpty)
                                    {
-                                     if(NativeBridge.get(context).OnConference==true){
-                                       NativeBridge.get(context).invokeNativeMethod("Swapconference");
-                                       NativeBridge.get(context).ConferenceCalls.forEach((element) => element["PhoneState"]=PhoneStateHolding);
-                                       NativeBridge.get(context).Calls[0]["PhoneState"] =PhoneStateActive;
+                                     if(Cubit.OnConference==true){
+                                       Cubit.invokeNativeMethod("Swapconference");
+                                       Cubit.ConferenceCalls.forEach((element) => element["PhoneState"]=PhoneStateHolding);
+                                       Cubit.Calls[0]["PhoneState"] =PhoneStateActive;
                                      }else{
-                                       NativeBridge.get(context).invokeNativeMethod("HoldToggle");
-                                       NativeBridge.get(context).ConferenceCalls.forEach((element) => element["PhoneState"]=PhoneStateActive);
-                                       NativeBridge.get(context).Calls[0]["PhoneState"] =PhoneStateHolding;
+                                       Cubit.invokeNativeMethod("HoldToggle");
+                                       Cubit.ConferenceCalls.forEach((element) => element["PhoneState"]=PhoneStateActive);
+                                       Cubit.Calls[0]["PhoneState"] =PhoneStateHolding;
                                      }
-                                     NativeBridge.get(context).OnConference = !NativeBridge.get(context).OnConference!;
-                                     NativeBridge.get(context).CurrentCallIndex=0;
+                                     Cubit.OnConference = !Cubit.OnConference!;
+                                     Cubit.CurrentCallIndex=0;
                                      ////swap conferance here
                                    }else
                                      {
-                                       NativeBridge.get(context).invokeNativeMethod("HoldToggle");
-                                       NativeBridge.get(context).Calls[0]["PhoneState"] =NativeBridge.get(context).Calls[0]["PhoneState"]==PhoneStateHolding?PhoneStateActive:PhoneStateHolding;
+                                       Cubit.invokeNativeMethod("HoldToggle");
+                                       Cubit.Calls[0]["PhoneState"] =Cubit.Calls[0]["PhoneState"]==PhoneStateHolding?PhoneStateActive:PhoneStateHolding;
                                      }
 
                                }
@@ -846,7 +828,7 @@ class InCallScreen extends StatelessWidget {
                 ],
               ),
             ):Container(),
-            NativeBridge.get(context).ExpandeNotes==false?Column(
+            Cubit.ExpandeNotes==false?Column(
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -859,7 +841,7 @@ class InCallScreen extends StatelessWidget {
                           splashColor: Colors.red,
                           borderRadius: BorderRadius.circular(20),
                           onTap: (){
-                            NativeBridge.get(context).inCallDialerToggle();
+                            Cubit.inCallDialerToggle();
                           },
                           child: Container(
                             decoration:BoxDecoration(
@@ -892,34 +874,34 @@ class InCallScreen extends StatelessWidget {
                               backgroundColor: HexColor("#464646"),
                                 radius: 31,
                                 child: IconButton(onPressed: (){
-                                if(NativeBridge.get(context).Calls.length==2)
+                                if(Cubit.Calls.length==2)
                                   {
                                     AddMerge = true;
                                   }
-                                if(NativeBridge.get(context).Calls.length==2 && AddMerge ==true)
+                                if(Cubit.Calls.length==2 && AddMerge ==true)
                                   {
-                                    NativeBridge.get(context).invokeNativeMethod("conference").then((value)
+                                    Cubit.invokeNativeMethod("conference").then((value)
                                     {
-                                      if(NativeBridge.get(context).OnConference ==true){
-                                        NativeBridge.get(context).ConferenceCalls = NativeBridge.get(context).Calls;
-                                        NativeBridge.get(context).Calls.clear();
-                                        NativeBridge.get(context).CallDuration.clear();
-                                        NativeBridge.get(context).ConferenceTimer.onExecute.add(StopWatchExecute.start);
-                                        NativeBridge.get(context).isStopWatchStart = false;
+                                      if(Cubit.OnConference ==true){
+                                        Cubit.ConferenceCalls = Cubit.Calls;
+                                        Cubit.Calls.clear();
+                                        Cubit.CallDuration.clear();
+                                        Cubit.ConferenceTimer.onExecute.add(StopWatchExecute.start);
+                                        Cubit.isStopWatchStart = false;
                                         AddMerge = false;
                                       }
                                     });
                                   }
-                                if(NativeBridge.get(context).Calls.length==1){
-                                  if(NativeBridge.get(context).ConferenceCalls.isNotEmpty){
-                                    if(NativeBridge.get(context).OnConference ==false)
+                                if(Cubit.Calls.length==1){
+                                  if(Cubit.ConferenceCalls.isNotEmpty){
+                                    if(Cubit.OnConference ==false)
                                       {
-                                        NativeBridge.get(context).invokeNativeMethod("HoldToggle");
+                                        Cubit.invokeNativeMethod("HoldToggle");
                                       }
-                                    NativeBridge.get(context).invokeNativeMethod("Mergconference");
-                                      NativeBridge.get(context).ConferenceCalls.add(NativeBridge.get(context).Calls[0]);
-                                      NativeBridge.get(context).OnConference=true;
-                                      NativeBridge.get(context).Calls.clear();
+                                    Cubit.invokeNativeMethod("Mergconference");
+                                      Cubit.ConferenceCalls.add(Cubit.Calls[0]);
+                                      Cubit.OnConference=true;
+                                      Cubit.Calls.clear();
 
                                   } else
                                   {
@@ -927,7 +909,7 @@ class InCallScreen extends StatelessWidget {
                                       MaterialPageRoute(builder: (BuildContext context) => Home()));
                                   }
                                 }
-                                if(NativeBridge.get(context).Calls.isEmpty && NativeBridge.get(context).OnConference == true)
+                                if(Cubit.Calls.isEmpty && Cubit.OnConference == true)
                                 {
                                   Navigator.push(context,
                                       MaterialPageRoute(builder: (BuildContext context) => Home()));
@@ -944,7 +926,7 @@ class InCallScreen extends StatelessWidget {
                           splashColor: Colors.blue,
                           onTap:(){
 
-                            NativeBridge.get(context)
+                            Cubit
                                 .invokeNativeMethod("RejectCall",null);
                           },
                           child: CircleAvatar(
@@ -968,8 +950,8 @@ class InCallScreen extends StatelessWidget {
                 ),
                 TextButton(
                   onPressed: (){
-                    // Cubit.UpdateCallerID();
-                    print(NativeBridge.get(context).contact?.name.toString());
+
+                    print(Cubit.Calls[Cubit.CurrentCallIndex]["CallerAppID"]);
                   },
                   child: Text(
                     "Swipe up to Send message",
@@ -990,7 +972,22 @@ class InCallScreen extends StatelessWidget {
         );
   }
 }
-
+Widget OnHoldBanner(Cubit ,context){
+  return Cubit.Calls.length==2?Padding(
+    padding: EdgeInsets.only(top:MediaQuery.of(context).padding.top),
+    child: Align(
+        alignment: AlignmentDirectional.topStart,
+        child: Container(width: double.infinity,height: MediaQuery.of(context).size.height*0.08,color: Colors.black26,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [Text(Cubit.Calls[Cubit.CurrentCallIndex==1?0:1]["PhoneNumber"]), Row(
+              children: [
+                Icon(Icons.pause),
+                Text("onHold"),
+              ],
+            )],),)),
+  ):Container();
+}
 bool? HoldSwap ;
 bool? AddMerge ;
 

@@ -1,5 +1,6 @@
 
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:bloc/bloc.dart';
 import 'package:call_log/call_log.dart';
@@ -16,18 +17,22 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_contacts/contact.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:proximity_sensor/proximity_sensor.dart';
 import 'package:stop_watch_timer/stop_watch_timer.dart';
 
 import '../Models/user_model.dart';
 
 class NativeBridge extends Cubit<NativeStates> {
+  bool? InternetisConnected;
   String? PhoneNumberQuery;
   String? CallerappID;
   bool? ConferenceManage =false;
   bool? OnConference =false;
+  bool isMuted =false;
   bool? MergedOrRinging = false;
   bool isShowen = false;
+  bool isHold = false;
   bool ExpandeNotes = false;
   bool NewNote = false;
   bool _isNear = false;
@@ -47,7 +52,7 @@ class NativeBridge extends Cubit<NativeStates> {
 
   late StreamSubscription<dynamic> streamSubscription;
   static NativeBridge get(context) => BlocProvider.of(context);
-  Contact? contact;
+  AppContact? contact;
   bool? isRinging= false;
   TextEditingController CallReasonController = TextEditingController();
   bool? Dialing = false;
@@ -84,6 +89,10 @@ class NativeBridge extends Cubit<NativeStates> {
   void inCallDialerToggle() {
     isShowen = !isShowen;
     emit(ScreenRefresh());
+  }
+
+  Future<void> CheckInternetConnection()async{
+    InternetisConnected = await InternetConnectionCheckerPlus().hasConnection;
   }
 
   void proximity() {
@@ -161,6 +170,7 @@ class NativeBridge extends Cubit<NativeStates> {
           return e.number.replaceAll(' ', '');
         }),
         "id": element.info?.id,
+        "Contact" : element,
       });
     }).toList();
 
@@ -169,17 +179,17 @@ class NativeBridge extends Cubit<NativeStates> {
       String SearchIN = element["PhoneNumber"].toString();
       return SearchIN.contains(PhoneNumberQuery.toString().replaceAll(" ", ""));
     }).toList() : [];
-    print("Caller id:"+CallerID.toString());
-    GetContactByID();
+
+    // GetContactByID();
   }
 
   Future<void> GetContactByID() async {
+    print("Calls from Native : " + Calls.toString());
     if (CallerID.isNotEmpty && CallerID[0]["id"] != [] ) {
-      contact = await FlutterContacts.getContact(CallerID[0]["id"]);
-      Calls[CurrentCallIndex]["Avatar"] = contact?.photoOrThumbnail;
+      contact = CallerID[0]["Contact"];
+      Calls[CurrentCallIndex]["Avatar"] = contact?.info?.photoOrThumbnail;
       emit(ContactByidSuccess());
     }
-    emit(ContactByidNull());
   }
 
   List CallNotes = [];
@@ -323,20 +333,31 @@ class NativeBridge extends Cubit<NativeStates> {
     FirebaseFirestore.instance
         .collection("CallingSession")
         .doc(UserPhoneNumber.replaceAll(" ", "") + "-" +
-        PhoneNumberQuery!.replaceAll(" ", "").replaceAll("+", ""))
-        .delete();
+        Calls[CurrentCallIndex]["PhoneNumber"]!.replaceAll(" ", "").replaceAll("+", "")).get().then((docs) {
+          if(docs.exists){
+            FirebaseFirestore.instance
+                .collection("CallingSession")
+                .doc(UserPhoneNumber.replaceAll(" ", "") + "-" +
+                Calls[CurrentCallIndex]["PhoneNumber"]!.replaceAll(" ", "").replaceAll("+", "")).delete();
+          }
+    });
 
-    FirebaseFirestore.instance
-        .collection("CallingSession")
-        .doc(PhoneNumberQuery!.replaceAll(" ", "").replaceAll("+", "") + "-" +UserPhoneNumber.replaceAll(" ", "")
-        )
-        .delete();
-    SendInCallMsg("");
+
+    FirebaseFirestore.instance.collection("CallingSession")
+        .doc(Calls[CurrentCallIndex]["PhoneNumber"]!.replaceAll(" ", "").replaceAll("+", "") + "-" +UserPhoneNumber.replaceAll(" ", "")
+        ).get().then((docs) {
+      if(docs.exists){
+        FirebaseFirestore.instance.collection("CallingSession")
+            .doc(Calls[CurrentCallIndex]["PhoneNumber"]!.replaceAll(" ", "").replaceAll("+", "") + "-" +UserPhoneNumber.replaceAll(" ", "")
+        ).delete();
+      }
+    });
+    // SendInCallMsg("");
   }
 
 
-  void CallerAppID(UserPhoneNumber) {
-    FirebaseFirestore.instance
+  Future<void> CallerAppID(UserPhoneNumber) async {
+    await FirebaseFirestore.instance
         .collection("CallingSession")
         .doc(UserPhoneNumber.replaceAll(" ", "") + "-" +
         PhoneNumberQuery!.replaceAll(" ", "").replaceAll("+", ""))
@@ -344,8 +365,8 @@ class NativeBridge extends Cubit<NativeStates> {
         .listen((event) {
 
       CallerappID = event.data()?["recipientToken"];
-
-
+      Calls[CurrentCallIndex]["CallerAppID"] = CallerappID;
+      emit(ScreenRefresh());
     });
   }
 

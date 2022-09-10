@@ -25,6 +25,7 @@ import 'package:hexcolor/hexcolor.dart';
 import 'package:ndialog/ndialog.dart';
 
 import '../Modules/Chat/Cubit/cubit.dart';
+import '../Modules/Settings/Settings.dart';
 import '../Themes/theme_edittor.dart';
 
 import 'constants.dart';
@@ -46,37 +47,40 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
             padding: EdgeInsets.only(left:MediaQuery.of(context).size.width*0.55*0.01),
             child: Icon(Icons.search,color: SearchIconColor(),size: 25,),
           ),
-          TextField(
-            style: TextStyle(
-          fontFamily: "OpenSans",
-          fontSize: 12,
-          color: HexColor(ThemeCubit.get(context).MyThemeData[ActiveTheme]["SearchTextColor"]),
-          ),
-            controller: Searchcontroller,
-            textAlign:TextAlign.center,
-            textAlignVertical: TextAlignVertical.center,
-            onChanged: (value){
-              PhoneContactsCubit.get(context).SearchContacts(Searchcontroller , PhoneContactsCubit.get(context).Contacts);
-              if(AppCubit.get(context).searchController.text.isEmpty)
-                {
-                  PhoneContactsCubit.get(context).isSearching = false;
-                } else {
-                PhoneContactsCubit.get(context).isSearching = true;
-              }
-            },
-            decoration: InputDecoration(
-              hintText: "Search among ${PhoneContactsCubit.get(context).Contacts.length} contact(s)",
-              // contentPadding: EdgeInsets.all(0),
-              // alignLabelWithHint: true,
-              // labelText:"Search",
-              hintStyle:TextStyle(
-                fontFamily: "OpenSans",
-                fontSize: 12,
-                color: HexColor(ThemeCubit.get(context).MyThemeData[ActiveTheme]["SearchTextColor"]),
+          MediaQuery(
+            data:MediaQuery.of(context).copyWith(textScaleFactor: 1),
+            child: TextField(
+              style: TextStyle(
+            fontFamily: "OpenSans",
+            fontSize: 12,
+            color: HexColor(ThemeCubit.get(context).MyThemeData[ActiveTheme]["SearchTextColor"]),
+            ),
+              controller: Searchcontroller,
+              textAlign:TextAlign.center,
+              textAlignVertical: TextAlignVertical.center,
+              onChanged: (value){
+                PhoneContactsCubit.get(context).SearchContacts(Searchcontroller , PhoneContactsCubit.get(context).Contacts);
+                if(AppCubit.get(context).searchController.text.isEmpty)
+                  {
+                    PhoneContactsCubit.get(context).isSearching = false;
+                  } else {
+                  PhoneContactsCubit.get(context).isSearching = true;
+                }
+              },
+              decoration: InputDecoration(
+                hintText: "Search among ${PhoneContactsCubit.get(context).Contacts.length} contact(s)",
+                // contentPadding: EdgeInsets.all(0),
+                // alignLabelWithHint: true,
+                // labelText:"Search",
+                hintStyle:TextStyle(
+                  fontFamily: "OpenSans",
+                  fontSize: 12,
+                  color: HexColor(ThemeCubit.get(context).MyThemeData[ActiveTheme]["SearchTextColor"]),
+                ),
+                // isCollapsed: true,
+                border:InputBorder.none,
+                // fillColor: SearchBackgroundColor(),
               ),
-              // isCollapsed: true,
-              border:InputBorder.none,
-              // fillColor: SearchBackgroundColor(),
             ),
           ),
         ],
@@ -151,10 +155,21 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
       unselectedLabelColor: TabBarUnselectedlabelColor(context),
       indicatorSize: TabBarIndicatorSize.label,
       labelStyle:Theme.of(context).textTheme.headline1,
-      tabs: const [
-        Tab(text:"Phone"),
-        Tab(text:"Contacts"),
+      tabs:  [
+        MediaQuery(
+            data: MediaQuery.of(context).copyWith(textScaleFactor: 1),
+            child: Tab(text:"Phone")),
+        MediaQuery(
+            data: MediaQuery.of(context).copyWith(textScaleFactor: 1),
+            child: Tab(text:"Contacts")),
       ],),
+    leading: Builder(
+      builder:(BuildContext context){
+        return IconButton(onPressed: (){
+          Scaffold.of(context).openDrawer();
+        }, icon: Icon(Icons.more_vert));
+      }
+    ),
   );
 }
 AppBar MainAppBarEditor(BuildContext context, double AppbarSize,TextEditingController Searchcontroller ) {
@@ -715,12 +730,15 @@ bool DualSIM = false;
     mainAxisSize: MainAxisSize.min,
     mainAxisAlignment: MainAxisAlignment.end,
     children:[
-      Padding(
-        padding: const EdgeInsets.only(top:8.0),
-        child: Container(
-          width: 30,
-          height: 1,
-          color:Colors.grey,),
+      MediaQuery(
+        data:MediaQuery.of(context).copyWith(textScaleFactor: 1),
+        child: Padding(
+          padding: const EdgeInsets.only(top:8.0),
+          child: Container(
+            width: 30,
+            height: 1,
+            color:Colors.grey,),
+        ),
       ),
 
       //Show or Hide TextFormField above the dialer if it is empty hide if not show
@@ -1153,8 +1171,19 @@ Drawer AppDrawer(BuildContext context , AppbarSize) {
                 child: Column(
 
                     children: [
-                      Container(height: MediaQuery.of(context).size.height*0.20,
-                          color:Colors.amber,
+                      Container(
+                          height: MediaQuery.of(context).size.height*0.20,
+
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(colors:[
+                              Colors.purple,
+                              Colors.blue],begin: Alignment.topRight,end: Alignment.bottomLeft),
+                            image:DecorationImage(
+                              opacity: 0.30,
+                                image: NetworkImage(data.data!["cover"]),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
                           child:Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -1163,8 +1192,9 @@ Drawer AppDrawer(BuildContext context , AppbarSize) {
                                 padding: const EdgeInsets.only(left: 15.0,top: 3),
                                 child: Container(
                                   decoration: BoxDecoration(
+
                                       shape: BoxShape.circle,
-                                      border:Border.all(width: 1.5)
+                                      border:Border.all(width: 2,color: Colors.white)
                                   ),
                                   child: InkWell(
                                     onLongPress: (){
@@ -1188,7 +1218,7 @@ Drawer AppDrawer(BuildContext context , AppbarSize) {
                                     SizedBox(height: 5,),
                                     Row(
                                       children: [
-                                        Text(data.data!["name"]),
+                                        Text(data.data!["name"],textScaleFactor: 1,style: TextStyle(color:Colors.white),),
                                         SizedBox(width: 5,),
 
                                         FocusedMenuHolder(
@@ -1240,7 +1270,7 @@ Drawer AppDrawer(BuildContext context , AppbarSize) {
 
                                       ],
                                     ),
-                                    Text(data.data!["email"]),
+                                    Text(data.data!["email"],textScaleFactor: 1,style: TextStyle(color: Colors.white),),
                                   ],
                                 ),
 
@@ -1263,7 +1293,10 @@ Drawer AppDrawer(BuildContext context , AppbarSize) {
                       ),
                       Text("System Settings"),
                       ListTile(
-                        onTap: (){},
+                        onTap: (){
+                          Navigator.push(context,
+                            MaterialPageRoute(builder: (BuildContext context) => Settings_Screen()),);
+                        },
                         leading: Icon(Icons.settings),
                         title:Text("Settings"),
                       ),

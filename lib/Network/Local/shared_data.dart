@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:dialer_app/Themes/Cubit/cubit.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -18,6 +17,7 @@ String? ContactsLength;
 List FavoratesContactids=[];
 List fbList = [];
 List ContactNotes = [];
+List TagsNotes = [];
 String? Notes;
 
 
@@ -30,6 +30,7 @@ Map ShardData =
 };
 
 Future<void> ThemeSharedPref (context)   async {
+
   // ThemeSwitch = CacheHelper.getData(key: 'ThemeSwitch')==null?ThemeSwitch:CacheHelper.getData(key: 'ThemeSwitch');
 
     if(CacheHelper.getData(key:'ThemeList') !=null) {

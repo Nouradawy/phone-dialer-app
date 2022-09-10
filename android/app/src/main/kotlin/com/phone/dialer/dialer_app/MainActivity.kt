@@ -10,6 +10,7 @@ import android.content.Intent
 import android.os.PowerManager
 import android.os.PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK
 import android.os.PowerManager.RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY
+import android.provider.ContactsContract.Settings.ACTION_SET_DEFAULT_ACCOUNT
 import android.telecom.Call
 import android.telephony.TelephonyManager
 import androidx.annotation.NonNull
@@ -65,6 +66,7 @@ class MainActivity : FlutterActivity() {
         val binaryMessenger = flutterEngine.dartExecutor.binaryMessenger
         val tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+
 
 //        if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_NUMBERS) != PackageManager.PERMISSION_GRANTED) {
 //            // Permission is not granted
@@ -213,6 +215,11 @@ class MainActivity : FlutterActivity() {
                 }
 
             }
+//            if(states.equals("PhoneAccounts"))
+//            {
+//                startActivityForResult(Intent(android.provider.ContactsContract.Settings.ACTION_SET_DEFAULT_ACCOUNT),0)
+//            }
+
             if(states.equals("ScreenOff"))
                 {
                     powerManager.newWakeLock(PROXIMITY_SCREEN_OFF_WAKE_LOCK,"myapp:Screenon").acquire()

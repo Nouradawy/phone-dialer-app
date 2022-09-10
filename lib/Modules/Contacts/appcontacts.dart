@@ -12,6 +12,7 @@ class AppContact extends ISuspensionBean {
   Contact? info;
   String? FBimgURL;
   List<Contact>? GooglePhones;
+  List? PhoneAccounts =[];
   List? Notes = <String>[''];
 
 
@@ -22,6 +23,7 @@ class AppContact extends ISuspensionBean {
     this.tag,
     this.FBimgURL,
     this.GooglePhones,
+    this.PhoneAccounts,
     this.Notes,
   });
 

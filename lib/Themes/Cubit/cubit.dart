@@ -810,7 +810,7 @@ class ThemeCubit extends Cubit<ThemeStates>{
   List MyThemeData =[ {
     "name" : 'LightTheme',
     "AppBarBackgroundColor" : '#EAE6F2',
-    "SearchTextColor" : '#FFFFFF',
+    "SearchTextColor" : "#A1A1A1",
     "SearchBackgroundColor" : '#FFFFFF',
     "TabBarColor" : '#00B5EE',
     "UnSelectedTabBarColor" : '#A5A5A5',

@@ -124,15 +124,30 @@ TextStyle PhoneTypeTextStyle() {
 
   );
 }
-TextStyle PhoneLogDate() {
+TextStyle PhoneLogDateTextStyle() {
   return TextStyle(
     fontFamily: "Roboto",
     fontSize: 10,
     fontWeight: FontWeight.w400,
-    color: Colors.black
+    color: Colors.black,
   );
 }
 
+TextStyle ContactNameTextStyle(){
+  return TextStyle(
+    fontFamily: "Cairo",
+    fontSize: 15.2,
+    height: 1,
+    color:HexColor("#292929"),
+  );
+
+}TextStyle ContactNumberTextStyle(){
+  return TextStyle(
+    fontSize: 13.5,
+    fontFamily: "Cairo",
+    color:HexColor("#8E8E8E"));
+
+}
 
 
 ////////////////////////////////////////////////Colors///////////////////////////////////////////////////

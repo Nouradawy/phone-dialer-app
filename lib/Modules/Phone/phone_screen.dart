@@ -1,6 +1,7 @@
 
 import 'package:call_log/call_log.dart';
 import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
+
 import 'package:dialer_app/Components/contacts_components.dart';
 import 'package:dialer_app/Layout/Cubit/cubit.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
@@ -9,6 +10,7 @@ import 'package:dialer_app/Modules/Contacts/contacts_screen.dart';
 import 'package:dialer_app/Themes/theme_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_contacts/contact.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:intl/intl.dart';
@@ -26,11 +28,12 @@ class PhoneScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-
     if(PhoneLogsCubit.get(context).PhoneRange == true){
-      NativeBridge.get(context).Calls=[];
-      NativeBridge.get(context).ConferenceCalls=[];
+
       Future.delayed(Duration(milliseconds: 500),(){
+        NativeBridge.get(context).CallDuration=[];
+        NativeBridge.get(context).Calls=[];
+        NativeBridge.get(context).ConferenceCalls=[];
         PhoneLogsCubit.get(context).CallLogsUpdate(PhoneContactsCubit.get(context).Contacts);
 
       });
@@ -70,15 +73,15 @@ class PhoneScreen extends StatelessWidget {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 5.0),
-                      child: Row(children: [Icon(Icons.call_missed_outgoing , size: 19) , SizedBox(width: 2),Text("Missed")]),
+                      child: Row(children: [Icon(Icons.call_missed_outgoing , size: 19) , SizedBox(width: 2),Text("Missed",textScaleFactor: 1,)]),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 5.0),
-                      child: Row(children: [Icon(Icons.call_received , size: 19) , SizedBox(width: 2),Text("Recived")]),
+                      child: Row(children: [Icon(Icons.call_received , size: 19) , SizedBox(width: 2),Text("Recived",textScaleFactor: 1,)]),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 5.0),
-                      child: Row(children: [Icon(Icons.call_made , size: 19) , SizedBox(width: 2),Text("Made")]),
+                      child: Row(children: [Icon(Icons.call_made , size: 19) , SizedBox(width: 2),Text("Made",textScaleFactor: 1,)]),
                     ),
                   ],),
               ),
@@ -302,16 +305,25 @@ class PhoneScreen extends StatelessWidget {
                           elevation: 10,
                         ),
                       ).show(context , barrierColor: Colors.black.withOpacity(0.20))
-                          :FlutterPhoneDirectCaller.callNumber(" ${PhoneLogsCubit.get(context).PhoneCallLogs[index]["number"].toString()}").then((value){
-                        PhoneContactsCubit.get(context).isSearching = false;
-                        PhoneContactsCubit.get(context).dialpadShowcontact();
-                        NativeBridge.get(context).isRinging = false;
-                      });
+                          :NativeBridge.get(context).PhoneNumberQuery =" ${PhoneLogsCubit.get(context).PhoneCallLogs[index]["number"].toString()}";
+                      NativeBridge.get(context).GetCallerID(PhoneContactsCubit.get(context).Contacts);
+
+                      NativeBridge.get(context).CallerID.isNotEmpty?Navigator.of(context).push(MaterialPageRoute(
+                          builder: (BuildContext context) => ContactDetails(
+                            NativeBridge.get(context).CallerID[0]["Contact"],
+                            onContactDelete: (AppContact _contact) {
+                              PhoneContactsCubit.get(context).GetRawContacts();
+                              Navigator.of(context).pop();
+                            },
+                            onContactUpdate: (AppContact _contact) {
+                              PhoneContactsCubit.get(context).GetRawContacts();
+                            },)
+                      )):null;
                     },
                     title: Transform.translate(
                       offset: Offset(-5,0),
                       child: Text(
-                        PhoneLogsCubit.get(context).PhoneCallLogs[index]["name"].toString(),
+                        PhoneLogsCubit.get(context).PhoneCallLogs[index]["name"].toString(),textScaleFactor: MediaQuery.of(context).textScaleFactor>1.2?1.2:MediaQuery.of(context).textScaleFactor,
                         style:  TextStyle(
                           fontFamily: "Cairo",
                           fontSize: 15,
@@ -328,6 +340,7 @@ class PhoneScreen extends StatelessWidget {
                       Image.asset(PhoneLogsCubit.get(context).PhoneCallLogs.first["phoneAccountId"] == PhoneLogsCubit.get(context).PhoneCallLogs[index]["phoneAccountId"]?"assets/Images/sim1.png" :"assets/Images/sim2.png",scale: 1.3),
                           Text(
                             " ${PhoneLogsCubit.get(context).PhoneCallLogs[index]["number"].toString()}",
+                              textScaleFactor: MediaQuery.of(context).textScaleFactor>1.2?1.2:MediaQuery.of(context).textScaleFactor,
                             style:  TextStyle(
                               fontSize: 12,
                               fontFamily: "Cairo",
@@ -480,7 +493,7 @@ class PhoneScreen extends StatelessWidget {
                                           )
                                         ),
                                         child:Center(
-                                          child: Text(calculateDifference(PhoneLogsCubit.get(context).PhoneCallLogs[index]["Date"]),style: PhoneLogDate(),),
+                                          child: Text(calculateDifference(PhoneLogsCubit.get(context).PhoneCallLogs[index]["Date"]),textScaleFactor: 1,style: PhoneLogDateTextStyle(),),
                                         ),
                                       ),
                                     ],
@@ -504,13 +517,13 @@ class PhoneScreen extends StatelessWidget {
                                         SizedBox(height: 5),
                                         Padding(
                                           padding: const EdgeInsets.only(right:8.0),
-                                          child: Text(DateFormat.jm().format(PhoneLogsCubit.get(context).PhoneCallLogs[index]["Date"]).toString(),style: CallTimeTextStyle(),),
+                                          child: Text(DateFormat.jm().format(PhoneLogsCubit.get(context).PhoneCallLogs[index]["Date"]).toString(),textScaleFactor: MediaQuery.of(context).textScaleFactor>1.05?1.05:MediaQuery.of(context).textScaleFactor,style: CallTimeTextStyle(),),
                                         ),
                                         Align(
                                           alignment: PhoneLogsCubit.get(context).PhoneCallLogs[index]["callType"]==CallType.incoming||PhoneLogsCubit.get(context).PhoneCallLogs[index]["callType"]==CallType.outgoing?AlignmentDirectional.center:AlignmentDirectional.centerEnd,
                                           child: Padding(
                                             padding: EdgeInsets.only(right: PhoneLogsCubit.get(context).PhoneCallLogs[index]["callType"]==CallType.incoming||PhoneLogsCubit.get(context).PhoneCallLogs[index]["callType"]==CallType.outgoing?0:8,),
-                                            child: Text("${PhoneLogsCubit.get(context).PhoneCallLogs[index]["callType"].toString().replaceAll("CallType.", "")}  ${DurationFormat(PhoneLogsCubit.get(context).PhoneCallLogs[index]["duration"], PhoneLogsCubit.get(context).PhoneCallLogs[index]["callType"]).toString()}", style: PhoneTypeTextStyle(),),
+                                            child: Text("${PhoneLogsCubit.get(context).PhoneCallLogs[index]["callType"].toString().replaceAll("CallType.", "")}  ${DurationFormat(PhoneLogsCubit.get(context).PhoneCallLogs[index]["duration"], PhoneLogsCubit.get(context).PhoneCallLogs[index]["callType"]).toString()}",textScaleFactor: MediaQuery.of(context).textScaleFactor>1.05?1.05:MediaQuery.of(context).textScaleFactor, style: PhoneTypeTextStyle(),),
                                           ),
                                         ),
                                       ],
@@ -941,7 +954,7 @@ class PhoneScreen extends StatelessWidget {
                       style: Theme.of(context).textTheme.bodyText2,
                     ),
                     leading: ContactAvatar(contact, 45),
-                    trailing: ContactsTagsNotes(context),
+                    trailing: ContactsTagsNotes(context , contact),
                   );
   }
 }
