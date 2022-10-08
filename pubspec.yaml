@@ -36,14 +36,14 @@ dependencies:
   intl: ^0.17.0
   cupertino_icons: ^1.0.2
   flutter_contacts: ^1.1.5
-
-
+  lottie: ^1.4.2
   font_awesome_flutter: ^10.1.0
   bloc: ^8.0.3
   flutter_bloc: ^8.0.1
   shimmer: ^2.0.0
   hexcolor: ^2.0.7
-  stop_watch_timer: ^1.5.0
+  stop_watch_timer: ^2.0.0
+  internet_connection_checker_plus: ^1.0.1
   permission_handler: ^10.0.0
   flutter_phone_direct_caller: ^2.1.1
   path_provider: ^2.0.11
@@ -54,7 +54,7 @@ dependencies:
   firebase_core: ^1.20.0
   firebase_auth: ^3.5.1
 
-  cloud_firestore: ^3.4.1
+  cloud_firestore: ^3.4.9
   focused_menu: ^1.0.5
   proximity_sensor: ^1.0.2
   awesome_notifications: ^0.6.21
@@ -62,8 +62,9 @@ dependencies:
   firebase_messaging: ^12.0.1
 
   ndialog: ^4.1.1
-
-
+  action_slider: ^0.6.0
+  string_similarity: ^2.0.0
+  flutter_svg: ^1.1.5
   flex_color_picker: ^2.5.0
   cached_network_image: ^3.2.1
   call_log: ^4.0.0
@@ -77,6 +78,8 @@ dependencies:
   conditional_builder_null_safety: ^0.0.6
 #  workmanager: ^0.5.0
   bg_launcher: 0.0.1
+  url_launcher: ^6.1.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -100,6 +103,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/Images/
+    - assets/
 
 
   # To add assets to your application, add an assets section, like this:

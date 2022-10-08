@@ -68,7 +68,16 @@ class CallManager {
 
                 }
             }
-            eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID.toString(), if(call?.conferenceableCalls?.isEmpty() == true) "false" else "true", Call.STATE_NEW).toMap())
+
+            for(element in inCallService!!.calls)
+            {
+
+                if(element.details.hasProperty(PROPERTY_CONFERENCE))
+                {
+                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID.toString(), if(call?.conferenceableCalls?.isEmpty() == true) "false" else "true", Call.STATE_NEW).toMap())
+                }
+            }
+
 
         }
 

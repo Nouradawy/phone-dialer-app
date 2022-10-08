@@ -16,6 +16,8 @@ import android.telephony.TelephonyManager
 import androidx.annotation.NonNull
 import com.phone.dialer.dialer_app.activities.CallActivity
 import com.phone.dialer.dialer_app.helpers.CallManager
+import com.phone.dialer.dialer_app.services.BLockList
+import com.phone.dialer.dialer_app.services.MyCallScreeningService
 import com.phone.dialer.dialer_app.services.PhoneID
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -67,32 +69,15 @@ class MainActivity : FlutterActivity() {
         val tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
 
-
-//        if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_NUMBERS) != PackageManager.PERMISSION_GRANTED) {
-//            // Permission is not granted
-//            // Ask for permision
-//            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-//                            android.Manifest.permission.READ_PHONE_NUMBERS)) {
-//
-//
-//            } else {
-//                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_PHONE_NUMBERS), 1)
-//            }
-//        }
-//        else {
-//// Permission has already been granted
-//        }
-
-//        createNotificationChannel()
-
         MethodChannel(binaryMessenger, "com.example/background_service").apply {
             setMethodCallHandler { method, result ->
                 if (method.method == "startService") {
-
                     val callbackRawHandle = method.arguments as Long
                     BackgroundService.startService(this@MainActivity, callbackRawHandle)
                     result.success(null)
-                } else {
+                }
+
+                else {
                     result.notImplemented()
                 }
             }
@@ -243,6 +228,15 @@ class MainActivity : FlutterActivity() {
                 CallManager.MergeConfrence()
 
             }
+
+            if(states.equals("BlackListUpdate"))
+            {
+                var number: MutableList<String> = call.arguments as MutableList<String>
+                BLockList = number
+                println(BLockList)
+
+            }
+
 
                 else  result.notImplemented()
             }

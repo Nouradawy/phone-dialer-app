@@ -68,7 +68,8 @@ class _WebpageState extends State<Webpage> {
               await controller.goBack();
             } else {
               // ignore: deprecated_member_use
-              Scaffold.of(context).showSnackBar(
+              ///TODO:ShowSnackBar Issue
+              ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('No back history item')),
               );
             }
@@ -86,7 +87,8 @@ class _WebpageState extends State<Webpage> {
               await controller.goForward();
             } else {
               // ignore: deprecated_member_use
-              Scaffold.of(context).showSnackBar(
+              ///TODO:ShowSnackBar Issue
+              ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('No forward history item')),
               );
             }
@@ -267,7 +269,8 @@ class _WebpageState extends State<Webpage> {
         name: 'Toaster',
         onMessageReceived: (JavascriptMessage message) {
           // ignore: deprecated_member_use
-          Scaffold.of(context).showSnackBar(
+          ///TODO:ShowSnackBar Issue
+          ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(message.message)),
           );
         });

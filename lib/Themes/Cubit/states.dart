@@ -12,3 +12,6 @@ class BackGroundImagePickedError extends ThemeStates{}
 class ThemeApplyChangesSuccess extends ThemeStates{}
 
 class DeleteThemeChangeSuccess extends ThemeStates{}
+
+class ThemeUpdateStarted extends ThemeStates{}
+class ThemeUpdateFinished extends ThemeStates{}

@@ -36,3 +36,6 @@ class ContactUpdateSucessState extends PhoneContactStates{}
 class Contactstatechange extends PhoneContactStates{}
 class isShowenSuccessState extends PhoneContactStates{}
 class dailerInputSuccessstate extends PhoneContactStates{}
+
+class ContactPicturePickedSuccess extends PhoneContactStates{}
+class ContactPicturePickedError extends PhoneContactStates{}

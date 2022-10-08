@@ -66,7 +66,7 @@ class _Faceebook_FetcherState extends State<Faceebook_Fetcher> with TickerProvid
               await controller.goBack();
             } else {
               // ignore: deprecated_member_use
-              Scaffold.of(context).showSnackBar(
+              ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('No back history item')),
               );
             }
@@ -84,7 +84,7 @@ class _Faceebook_FetcherState extends State<Faceebook_Fetcher> with TickerProvid
               await controller.goForward();
             } else {
               // ignore: deprecated_member_use
-              Scaffold.of(context).showSnackBar(
+              ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('No forward history item')),
               );
             }
@@ -285,7 +285,7 @@ class _Faceebook_FetcherState extends State<Faceebook_Fetcher> with TickerProvid
         name: 'Toaster',
         onMessageReceived: (JavascriptMessage message) {
           // ignore: deprecated_member_use
-          Scaffold.of(context).showSnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(message.message)),
           );
         });

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 import 'package:bloc/bloc.dart';
+import 'package:dialer_app/NativeBridge/native_bridge.dart';
 import 'package:dialer_app/Network/Local/cache_helper.dart';
 import 'package:dialer_app/Network/Local/shared_data.dart';
 import 'package:dialer_app/Themes/Cubit/states.dart';
@@ -12,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../theme_config.dart';
@@ -25,8 +27,12 @@ class ThemeCubit extends Cubit<ThemeStates>{
   Color dialogPickerColor = Colors.red; // Material red.
   Color dialogSelectColor = const Color(0xFFA239CA); // Color for picker using color select dialog.
   bool ThemeEditorIsActive = false;
+  bool ThemeSwitcherStarted = false;
+  bool ThemeSwitcherProgressIndicator = false;
+  bool DialPadBackgroundImageAdjust =false;
   int BottomNavIndex=0;
-
+  bool AddSplitter =false;
+  bool DialpadBackgroundColor =false;
 
 
   Color CustomHomePageBackgroundColor =HexColor("#EAE6F2");
@@ -39,8 +45,14 @@ class ThemeCubit extends Cubit<ThemeStates>{
   Color PhoneLogDiallerNameColor = HexColor("#292929");
   Color PhoneLogPhoneNumberColor = HexColor("#8E8E8E");
   Color AppBackGroundColor = Colors.transparent;
+  Color DialPadNumColor = HexColor("#9E9E9E");
+  Color DialPadAlphaColor = HexColor("#9E9E9E");
+  Color DialPadSpliteColor =HexColor("00FFFFFF");
+  Color DialPadBackgroundColor =HexColor("#F9F9F9");
+  Color InCallButtonsActiveColor =HexColor("#4BE3B5");
+  Color InCallButtonsNotactiveColor =HexColor("#E4E4E4");
 
-
+  bool InCallButtonReColorActive = false;
   bool ApplyThemeChanges = false;
   bool AppBackgroundDropdown = false;
   bool SearchTextColorDropDown = false;
@@ -54,6 +66,8 @@ class ThemeCubit extends Cubit<ThemeStates>{
   bool MultipleThemeEdit = false;
 
   double InCallBackgroundHeight=400;
+  double InCallBackgroundOffsetdx=0;
+  double InCallBackgroundRotate=0;
   double InCallBackgroundVerticalPading = 0;
   double InCallBackgroundOpacity = 1;
   Color InCallBackgroundColor = HexColor("#2C087A");
@@ -66,6 +80,13 @@ class ThemeCubit extends Cubit<ThemeStates>{
 
   int CurrentThemeEditIndex =0;
 
+  bool dialPadIsShowen = false;
+
+  void dialPadSwitch(){
+    dialPadIsShowen =! dialPadIsShowen;
+    emit(ThemeUpdateState());
+  }
+
   void SaveThemeList()
   {
     // ThemeSwitch = !ThemeSwitch;
@@ -76,7 +97,29 @@ class ThemeCubit extends Cubit<ThemeStates>{
     emit(ThemeUpdateState());
   }
 
-  void ThemeEditorChangeindex()
+  Future<void> ThemeSwitcher(index) async {
+    ThemeSwitcherStarted=true;
+    ThemeSwitcherProgressIndicator=true;
+    emit(ThemeUpdateStarted());
+    ActiveTheme = index;
+    ThemeEditorIsActive = false;
+    if (MyThemeData[ActiveTheme]["DialPadBackground"] != "null") {
+      final imagePermanent = await SaveImagePermanently(MyThemeData[ActiveTheme]["DialPadBackground"]);
+      DialPadBackGroundImagePicker = imagePermanent;
+    } else {
+      DialPadBackGroundImagePicker = null;
+    }
+    if (MyThemeData[ActiveTheme]["InCallBackground"] != "null") {
+      final imagePermanent = await SaveImagePermanently(MyThemeData[ActiveTheme]["InCallBackground"]);
+      InCallBackGroundImagePicker = imagePermanent;
+    } else {
+      InCallBackGroundImagePicker = null;
+    }
+    ThemeSwitcherStarted=false;
+    emit(ThemeUpdateFinished());
+  }
+
+  void ThemeUpdating()
   {
     emit(ThemeUpdateState());
   }
@@ -143,12 +186,13 @@ class ThemeCubit extends Cubit<ThemeStates>{
               child: Text("AppBar Recolor "),
             ),
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding:  const EdgeInsets.all(8.0),
               child: Container(
                   child:InkWell(
                       onTap: (){
                         AppBackgroundDropdown =! AppBackgroundDropdown;
                         emit(PopUpMenuUpdate());
+
                       },
                       child: Row(children: [Icon(
                         Icons.web_asset,
@@ -192,7 +236,6 @@ class ThemeCubit extends Cubit<ThemeStates>{
                   child:InkWell(
                       onTap: (){
                         SearchTextColorDropDown =! SearchTextColorDropDown;
-
                         emit(PopUpMenuUpdate());
                       },
                       child: Row(children: [Icon(
@@ -693,10 +736,19 @@ class ThemeCubit extends Cubit<ThemeStates>{
       "DialPadBackground":DialPadBackgroundFilePicker!=null?DialPadBackgroundFilePicker.path:"null",
       "InCallBackground":InCallBackgroundFilePicker!=null?InCallBackgroundFilePicker.path:"null",
       "InCallBackgroundHeight" : InCallBackgroundHeight.toString(),
+      "InCallBackgroundOffsetdx" : InCallBackgroundOffsetdx.toString(),
       "InCallBackgroundVerticalPading" : InCallBackgroundVerticalPading.toString(),
+      "InCallBackgroundRotate" : InCallBackgroundRotate.toString(),
       "InCallBackgroundOpacity" :InCallBackgroundOpacity.toString(),
+      "DialPadNumColor":'#${DialPadNumColor.toString().replaceAll("Color", "").substring(5).replaceAll(")", "").toUpperCase()}',
+      "DialPadAlphabetColor": '#${DialPadAlphaColor.toString().replaceAll("Color", "").substring(5).replaceAll(")", "").toUpperCase()}',
+      "DialPadSpliteColor": '#${DialPadSpliteColor.toString().replaceAll("Color", "").substring(5).replaceAll(")", "").toUpperCase()}',
+      "DialPadBackgroundColor": '#${DialPadBackgroundColor.toString().replaceAll("Color", "").substring(5).replaceAll(")", "").toUpperCase()}',
+      "InCallButtonsActiveColor":'#${InCallButtonsActiveColor.toString().replaceAll("Color", "").substring(5).replaceAll(")", "").toUpperCase()}',
+      "InCallButtonsNotactiveColor":'#${InCallButtonsNotactiveColor.toString().replaceAll("Color", "").substring(5).replaceAll(")", "").toUpperCase()}',
     });
   }
+
   void ThemeEditData() {
     MyThemeData[CurrentThemeEditIndex]=({
       "name": MyThemeData[CurrentThemeEditIndex]["name"],
@@ -759,6 +811,7 @@ class ThemeCubit extends Cubit<ThemeStates>{
               .replaceAll(")", "")
               .toUpperCase()}',
       "InCallBackgroundHeight": InCallBackgroundHeight.toString(),
+      "InCallBackgroundOffsetdx": InCallBackgroundOffsetdx.toString(),
       "InCallBackgroundVerticalPadding" : InCallBackgroundVerticalPading.toString(),
       "InCallBackgroundOpacity" : InCallBackgroundOpacity.toString(),
       "InCallBackgroundColor" : '#${InCallBackgroundColor.toString()
@@ -788,11 +841,18 @@ class ThemeCubit extends Cubit<ThemeStates>{
       "InCallBackground":InCallBackgroundFilePicker!=null?InCallBackgroundFilePicker.path:"null",
       "InCallBackgroundHeight" : InCallBackgroundHeight.toString(),
       "InCallBackgroundVerticalPading" : InCallBackgroundVerticalPading.toString(),
+      "InCallBackgroundRotate" : InCallBackgroundRotate.toString(),
       "InCallBackgroundOpacity" :InCallBackgroundOpacity.toString(),
+      "DialPadNumColor":'#${DialPadNumColor.toString().replaceAll("Color", "").substring(5).replaceAll(")", "").toUpperCase()}',
+      "DialPadAlphabetColor":'#${DialPadAlphaColor.toString().replaceAll("Color", "").substring(5).replaceAll(")", "").toUpperCase()}',
+      "DialPadSpliteColor":'#${DialPadSpliteColor.toString().replaceAll("Color", "").substring(5).replaceAll(")", "").toUpperCase()}',
+      "DialPadBackgroundColor": '#${DialPadBackgroundColor.toString().replaceAll("Color", "").substring(5).replaceAll(")", "").toUpperCase()}',
+      "InCallButtonsActiveColor":'#${InCallButtonsActiveColor.toString().replaceAll("Color", "").substring(5).replaceAll(")", "").toUpperCase()}',
+      "InCallButtonsNotactiveColor":'#${InCallButtonsNotactiveColor.toString().replaceAll("Color", "").substring(5).replaceAll(")", "").toUpperCase()}',
     });
   }
 
-
+///Not Used
   void defaultThemevalues() {
     DefaultThemeValues.add({
       "name" : ThemeName.text,
@@ -831,8 +891,17 @@ class ThemeCubit extends Cubit<ThemeStates>{
     "DialPadBackground":"null",
     "InCallBackground":"null",
     "InCallBackgroundHeight":"400",
+    "InCallBackgroundOffsetdx":"0",
     "InCallBackgroundVerticalPading":"0",
-    "InCallBackgroundOpacity":"1"
+    "InCallBackgroundRotate":"0",
+    "InCallBackgroundOpacity":"1",
+    "DialPadNumColor":"#9E9E9E",
+    "DialPadAlphabetColor":"#9E9E9E",
+    "DialPadSpliteColor":"00FFFFFF",
+    "DialPadBackgroundColor":"#F9F9F9",
+    "InCallButtonsActiveColor":"#4BE3B5",
+    "InCallButtonsNotactiveColor":"#E4E4E4",
+
   },
     {
       "name" : 'DarkTheme',
@@ -858,8 +927,17 @@ class ThemeCubit extends Cubit<ThemeStates>{
       "DialPadBackground":"null",
       "InCallBackground":"null",
       "InCallBackgroundHeight":"400",
+      "InCallBackgroundOffsetdx":"0",
       "InCallBackgroundVerticalPading":"0",
-      "InCallBackgroundOpacity":"1"
+      "InCallBackgroundRotate":"0",
+      "InCallBackgroundOpacity":"1",
+      "DialPadNumColor":"#9E9E9E",
+      "DialPadAlphabetColor":"#9E9E9E",
+      "DialPadSpliteColor":"00FFFFFF",
+      "DialPadBackgroundColor":"#F9F9F9",
+      "InCallButtonsActiveColor":"#4BE3B5",
+      "InCallButtonsNotactiveColor":"#E4E4E4",
+
     }
 
   ];

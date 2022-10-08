@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../home.dart';
+import '../Contacts/Contacts Cubit/contacts_cubit.dart';
+import '../profile/Profile Cubit/profile_cubit.dart';
 import 'Cubit/cubit.dart';
 import 'Cubit/states.dart';
 
@@ -32,6 +34,7 @@ class LoginScreen extends StatelessWidget {
             }
             if(state is DialerLoginSuccessState)
             {
+              ProfileCubit.get(context).GetChatContacts(PhoneContactsCubit.get(context).Contacts);
               Navigator.pushAndRemoveUntil(context,
                   MaterialPageRoute(builder:(BuildContext context) => Home()),
                       (Route<dynamic>route) => false);
@@ -89,21 +92,34 @@ class LoginScreen extends StatelessWidget {
                               preIcon: Icons.lock_open_outlined,
                             ),
                             const SizedBox(height: 30.0,),
-                            ConditionalBuilder(
-                              builder: (BuildContext context) => defaultButton(
-                                function: () {
-                                  if (formKey.currentState!.validate()) {
-                                    LoginCubit.get(context).userLogin(
-                                        email: EmailController.text,
-                                        password: PasswordController.text);
-                                  }
-                                },
-                                text: 'login',
-                                isUpperCase: true,
-                              ),
-                              condition: state is! DialerLoginLoadingState,
-                              fallback: (context) =>
-                                  Center(child: CircularProgressIndicator()),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                ConditionalBuilder(
+                                  builder: (BuildContext context) => defaultButton(
+                                    onPressed: () {
+                                      if (formKey.currentState!.validate()) {
+                                        LoginCubit.get(context).userLogin(
+                                            email: EmailController.text,
+                                            password: PasswordController.text);
+                                      }
+                                    },
+                                    Title: 'login',
+                                    isUpperCase: true,
+                                    background:Colors.black26,
+                                    width: MediaQuery.of(context).size.width*0.50
+                                  ),
+                                  condition: state is! DialerLoginLoadingState,
+                                  fallback: (context) =>
+                                      Center(child: CircularProgressIndicator()),
+                                ),
+                                TextButton(onPressed: (){
+                                  Navigator.pushAndRemoveUntil(context,
+                                      MaterialPageRoute(builder:(BuildContext context) => Home()),
+                                          (Route<dynamic>route) => false);
+                                  isGuest = true;
+                                }, child: Text("Continue as guest"))
+                              ],
                             ),
                             MaterialButton(onPressed: () {
                               LoginCubit.get(context).signInWithFacebook();

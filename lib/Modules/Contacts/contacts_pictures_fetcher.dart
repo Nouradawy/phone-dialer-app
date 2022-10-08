@@ -135,8 +135,8 @@ class ContactsFetcher extends StatelessWidget {
                                                   String UserName = fbList[index]["UserName"];
                                                   return ListTile(
                                                       onTap:() async {
-                                                        Contact.info?.photo = await PhoneContactsCubit.get(context).ToUint8List(Image.replaceAll('"', ''));
-                                                        Contact.info?.thumbnail = await PhoneContactsCubit.get(context).ToUint8List(Image.replaceAll('"', ''));
+                                                        Contact.info?.photo = await PhoneContactsCubit.get(context).NetworkToUint8List(Image.replaceAll('"', ''));
+                                                        Contact.info?.thumbnail = await PhoneContactsCubit.get(context).NetworkToUint8List(Image.replaceAll('"', ''));
                                                         Contact.info?.socialMedias=[SocialMedia("Facebook: ${UserName.replaceAll('"', '')} | UID: ${fbList[index]["UID"]} ",label:SocialMediaLabel.other,customLabel:'facebook')];
                                                         await Contact.info?.update();
                                                       },

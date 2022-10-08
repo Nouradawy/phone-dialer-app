@@ -55,6 +55,7 @@ class BackgroundService : Service(), LifecycleDetector.Listener {
     }
 
     private fun startFlutterNativeView() {
+        println("BackgroundService just started now")
         if (flutterEngine != null) return
 
         Log.i("BackgroundService", "Starting FlutterEngine")
@@ -76,6 +77,7 @@ class BackgroundService : Service(), LifecycleDetector.Listener {
     }
 
     private fun stopFlutterNativeView() {
+        println("BackgroundService Stoped working")
         Log.i("BackgroundService", "Stopping FlutterEngine")
         flutterEngine?.destroy()
         flutterEngine = null

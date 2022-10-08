@@ -157,16 +157,21 @@ TextStyle DialPadNumbersColor(context) =>TextStyle(
     // fontWeight: FontWeight.w300,
     fontSize: 35,
     // height: 0.5,
-    color:Colors.black.withOpacity(0.50)
+    color: ThemeCubit.get(context).ThemeEditorIsActive?ThemeCubit.get(context).DialPadNumColor:HexColor(ThemeCubit.get(context).MyThemeData[ActiveTheme]["DialPadNumColor"])
 );
 TextStyle DialPadAlphabetColor(context) =>TextStyle(
     fontFamily: "Roboto",
     fontSize: 10,
-    color:HexColor("#8F8F8F").withOpacity(0.6)
+    color:ThemeCubit.get(context).ThemeEditorIsActive?ThemeCubit.get(context).DialPadAlphaColor:HexColor(ThemeCubit.get(context).MyThemeData[ActiveTheme]["DialPadAlphabetColor"])
 );
-Color DialPadVoiceSymbolColor(context) => Colors.black.withOpacity(0.50);
-HexColor DialPadBorderColor(context) => HexColor("#8F00B9");
+Color DialPadVoiceSymbolColor(context) => ThemeCubit.get(context).ThemeEditorIsActive?ThemeCubit.get(context).DialPadAlphaColor:HexColor(ThemeCubit.get(context).MyThemeData[ActiveTheme]["DialPadAlphabetColor"]);
+Color DialPadBorderColor(context) => ThemeCubit.get(context).ThemeEditorIsActive?ThemeCubit.get(context).DialPadSpliteColor:HexColor(ThemeCubit.get(context).MyThemeData[ActiveTheme]["DialPadSpliteColor"]);
+Color DialPadBackgroundColor(context)=>ThemeCubit.get(context).ThemeEditorIsActive?ThemeCubit.get(context).DialPadBackgroundColor:HexColor(ThemeCubit.get(context).MyThemeData[ActiveTheme]["DialPadBackgroundColor"]);
 
+
+////////////////////InCall///////////////////////////
+
+Color ActiveButton(context)=>ThemeCubit.get(context).ThemeEditorIsActive?ThemeCubit.get(context).InCallButtonsNotactiveColor:HexColor(ThemeCubit.get(context).MyThemeData[ActiveTheme]["InCallButtonsNotactiveColor"]);
 //////////////CallLogScreen///////////////////////////
 HexColor CallLogDetailsBackStrip() =>HexColor("#8F00B9");
 // HexColor CallLogDetailsBackStrip() => ThemeSwitch?HexColor("#8F00B9"):HexColor("#8F00B9");

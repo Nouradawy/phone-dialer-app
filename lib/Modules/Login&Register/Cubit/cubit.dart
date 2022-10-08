@@ -13,6 +13,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import '../../../Components/constants.dart';
+
 
 
 class LoginCubit extends Cubit<LoginCubitStates>
@@ -40,7 +42,7 @@ class LoginCubit extends Cubit<LoginCubitStates>
       CacheHelper.saveData(key: 'token', value: value.user?.uid);
       token=value.user?.uid;
       saveTokenToDatabase();
-
+      isGuest = false;
       emit(DialerLoginSuccessState(value.user!.uid));
     }
     ).catchError((error){

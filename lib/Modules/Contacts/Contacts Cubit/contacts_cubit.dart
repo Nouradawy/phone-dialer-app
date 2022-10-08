@@ -1,28 +1,23 @@
 
-import 'dart:typed_data';
-import 'dart:ui';
 
-import 'package:bloc/bloc.dart';
 import 'package:call_log/call_log.dart';
-import 'package:dialer_app/Components/constants.dart';
 import 'package:dialer_app/Network/Local/shared_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
-import 'package:flutter_contacts/properties/address.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-
 import 'package:hexcolor/hexcolor.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-
 import '../appcontacts.dart';
 import 'contacts_states.dart';
 
 class PhoneContactsCubit extends Cubit<PhoneContactStates>{
   PhoneContactsCubit() : super(ContactsInitialState());
   static PhoneContactsCubit get(context) => BlocProvider.of(context);
-  bool isFabExtended = true;
+  bool BlockWarning =false;
+
   int DefaultPhoneAccountIndex = 0;
   List<AppContact> Contacts = [];
   List<AppContact> ContactsNoThumb = [];
@@ -34,10 +29,10 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
   String? faceImage;
   String? faceProfilelink;
   bool ContactIdExist = true;
-
+  bool ContactEdit=false;
   bool DNtoggler=false;
   bool PNtoggler=false;
-  List<PhoneLabel> PhoneSideMenu = <PhoneLabel>[PhoneLabel.mobile,PhoneLabel.home,PhoneLabel.work,PhoneLabel.faxWork,PhoneLabel.faxHome,PhoneLabel.pager,PhoneLabel.other,PhoneLabel.custom];
+  List<PhoneLabel> phoneSideMenu = <PhoneLabel>[PhoneLabel.mobile,PhoneLabel.home,PhoneLabel.work,PhoneLabel.faxWork,PhoneLabel.faxHome,PhoneLabel.pager,PhoneLabel.other,PhoneLabel.custom];
   List<EmailLabel> EmailSideMenu = <EmailLabel>[EmailLabel.home,EmailLabel.work,EmailLabel.other,EmailLabel.custom];
   List<EventLabel> EventSideMenu = <EventLabel>[EventLabel.birthday,EventLabel.anniversary,EventLabel.other,EventLabel.custom];
   List<AddressLabel> AddressSideMenu = <AddressLabel>[AddressLabel.home,AddressLabel.work,AddressLabel.school,AddressLabel.other,AddressLabel.other,AddressLabel.custom];
@@ -70,7 +65,7 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
     {
       PhoneNumberTextFormCount = NumbersInAccount.length;
       NumbersInAccount.add({
-        "label": PhoneSideMenu.first,
+        "label": phoneSideMenu.first,
         "number": "",
       });
 
@@ -81,7 +76,7 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
       }
     } else {
       PhoneNumberController.add(TextEditingController());
-      PhoneSideMenuController.add(PhoneSideMenu.first);
+      PhoneSideMenuController.add(phoneSideMenu.first);
     }
   if(contact.info!.emails.isNotEmpty)
   {
@@ -143,7 +138,7 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
   {
       PhoneNumberTextFormCount++;
       PhoneNumberController.add(TextEditingController());
-      PhoneSideMenuController.add(PhoneSideMenu.first);
+      PhoneSideMenuController.add(phoneSideMenu.first);
     } else {
     PhoneNumberTextFormCount--;
     PhoneNumberController.removeLast();
@@ -289,8 +284,6 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
     HexColor("#2C087A"),
     HexColor("#C6C972"),
   ];
-  Color? FavoratesItemColor ;
-  int ColorIndex =0;
 
 
 
@@ -306,30 +299,44 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
   void SideMenuUpdater(){
     emit(SideMenuUpdated());
   }
-  // void GetShardPrefrancesData(){
-  //
-  //   if(FavoratesContactids.isNotEmpty && FavoratesContacts.isEmpty )
-  //   {
-  //     FavoratesContactsID = FavoratesContactids;
-  //     FavoratesContactsID.forEach((id) {
-  //       Contacts.forEach((element) {
-  //         if (id == element.info?.id)
-  //           FavoratesContacts.add(element);
-  //       });
-  //     });
-  //   }
-  //   }
 
 
-  void FavoratesItemColors(){
-    FavoratesItemColor = BaseColors[ColorIndex];
-    ColorIndex == BaseColors.length-1?ColorIndex = 0:ColorIndex++;
 
+  void FavoratesItemColors(FavLenght,bool isInitial){
+
+    if(isInitial==true)
+    {
+      int FavLengthRem = FavLenght~/4;
+      for (var i = 0; i <= FavLengthRem; i++) {
+        BaseColors.addAll([
+          HexColor("#515150"),
+          HexColor("#FF4B76"),
+          HexColor("#2C087A"),
+          HexColor("#C6C972"),
+        ]);
+
+      }
+
+    }
+    else
+      {
+        if(FavLenght-1 < BaseColors.length)
+          {
+            BaseColors.addAll([
+              HexColor("#515150"),
+              HexColor("#FF4B76"),
+              HexColor("#2C087A"),
+              HexColor("#C6C972"),
+            ]);
+          }
+      }
   }
 
-  Future<Uint8List> ToUint8List(URL) async {
+  Future<Uint8List> NetworkToUint8List(URL) async {
     return (await NetworkAssetBundle(Uri.parse(URL)).load(URL)).buffer.asUint8List();
   }
+
+
 
   final List DefaultPhoneAccounts=[];
 
@@ -349,8 +356,16 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
       if (colorIndex == colors.length) {
         colorIndex = 0;
       }
+      List? baseNotes=[];
 
-      return AppContact(info: contact, color: baseColor , tag:contact.displayName[0].toUpperCase());
+      ContactNotes.forEach((element) {
+        if(contact.id == element["id"])
+          {
+            baseNotes = element["Notes"].replaceAll("[","").replaceAll("]","").split(',');
+          }
+      });
+
+      return AppContact(info: contact, color: baseColor , tag:contact.displayName[0].toUpperCase(),Notes:baseNotes);
     }).toList();
 
     Contacts =_contacts;
@@ -373,6 +388,9 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
       });
 
     });
+
+    FavoratesItemColors(FavoratesContacts.length,true);
+
     final ids = DefaultPhoneAccounts.map((e) => e["AccountName"]).toSet();
     DefaultPhoneAccounts.retainWhere((element) => ids.remove(element["AccountName"]));
     Contacts.first.PhoneAccounts = DefaultPhoneAccounts;
@@ -509,6 +527,31 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
    }
 
     emit(dialPadSearchSuccessState());
+  }
+
+
+  var picker = ImagePicker();
+  var ContactFilePicker;
+
+  Future ContactPicturePicker(Contact) async
+  {
+
+    ContactFilePicker = await picker.pickImage(source: ImageSource.gallery);
+
+    if(ContactFilePicker !=null ) {
+
+      final imagePermanent = await SaveImagePermanently(ContactFilePicker.path);
+      ContactFilePicker = imagePermanent;
+      Contact.info?.photo = await imagePermanent.readAsBytes();
+      Contact.info?.thumbnail =  await imagePermanent.readAsBytes();
+      await Contact.info?.update();
+      //TODO:Spleting Uploading the image from Profile image Picker Due to the image will be Uploaded without User Concent
+
+      emit(ContactPicturePickedSuccess());
+    } else{
+      print("Faild to pick imag");
+      emit(ContactPicturePickedError());
+    }
   }
 
 List WhatsappContacts =[];

@@ -13,7 +13,7 @@ import 'package:dialer_app/Network/Local/shared_data.dart';
 import 'package:dialer_app/Themes/Cubit/cubit.dart';
 import 'package:dialer_app/Themes/Cubit/states.dart';
 import 'package:dialer_app/Themes/theme_config.dart';
-import 'package:dialer_app/Themes/Cubit/multiple_themes_view.dart';
+import 'package:dialer_app/Themes/multiple_themes_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
@@ -175,48 +175,32 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
 AppBar MainAppBarEditor(BuildContext context, double AppbarSize,TextEditingController Searchcontroller ) {
   return AppBar(
     // automaticallyImplyLeading: false,
-    title:Container(
-      height: 28,
-      width:MediaQuery.of(context).size.width*0.55,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadiusDirectional.circular(3),
-        color:ThemeCubit.get(context).SearchBackground,
-      ),
-      child:
-
-         InkWell(
-          onTap: (){
-
-            NDialog(
-              content:BlocBuilder<ThemeCubit,ThemeStates>(
-                  builder:(context,states)=> ThemeCubit.get(context).HomePageBackgroundColorPicker()),
-              dialogStyle: DialogStyle(
-                elevation: 10,
-              ),
-            ).show(context , barrierColor: Colors.black.withOpacity(0.20));
-          },
-          child: Row (
-            children: [
-              Padding(
-                padding: EdgeInsets.only(left:MediaQuery.of(context).size.width*0.55*0.01),
-                child: Icon(Icons.search,color: SearchIconColor(),size: 25,),
-              ),
-              Text("Search among ${PhoneContactsCubit.get(context).Contacts.length} contact(s)",style: Theme.of(context).textTheme.headline2!.copyWith(color: ThemeCubit.get(context).SearchTextColor),),
-
-            ],
-          ),
+    title:IgnorePointer(
+      child: Container(
+        height: 28,
+        width:MediaQuery.of(context).size.width*0.55,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadiusDirectional.circular(3),
+          color:ThemeCubit.get(context).SearchBackground,
         ),
+        child:
+
+           Row (
+             children: [
+               Padding(
+                 padding: EdgeInsets.only(left:MediaQuery.of(context).size.width*0.55*0.01),
+                 child: Icon(Icons.search,color: SearchIconColor(),size: 25,),
+               ),
+               Text("Search among ${PhoneContactsCubit.get(context).Contacts.length} contact(s)",style: Theme.of(context).textTheme.headline2!.copyWith(color: ThemeCubit.get(context).SearchTextColor),),
+
+             ],
+           ),
+      ),
     ),
     actions: [
-      Padding(
-        padding: const EdgeInsets.only(top:16.0,right:15),
-        child: InkWell(
-          onTap:(){
-            NDialog(
-              content:ThemeCubit.get(context).HomePageBackgroundColorPicker(),
-              dialogStyle: DialogStyle(),
-            ).show(context);
-          },
+      IgnorePointer(
+        child: Padding(
+          padding: const EdgeInsets.only(top:16.0,right:15),
           child: Stack(
             children: [
               Container(
@@ -247,9 +231,12 @@ AppBar MainAppBarEditor(BuildContext context, double AppbarSize,TextEditingContr
       child: InkWell(
         onTap: (){
           NDialog(
-            content:ThemeCubit.get(context).HomePageBackgroundColorPicker(),
-            dialogStyle: DialogStyle(),
-          ).show(context);
+            content:BlocBuilder<ThemeCubit,ThemeStates>(
+                builder:(context,states)=> ThemeCubit.get(context).HomePageBackgroundColorPicker()),
+            dialogStyle: DialogStyle(
+              elevation: 10,
+            ),
+          ).show(context , barrierColor: Colors.black.withOpacity(0.20));
         },
         child: ClipPath(
           child: Stack(
@@ -676,46 +663,54 @@ bool DualSIM = false;
               ]
           ),
           SizedBox(height: 7,),
-          Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                InkWell(
-                  borderRadius: BorderRadius.circular(5),
-                  onTap: (){
-                    PhoneContactsCubit.get(context).dialpadShowcontact();
-                  },
-                  child: Container(
-                    width:MediaQuery.of(context).size.width*0.07,
-                    height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/9,
-                    child:Image.asset("assets/Images/dialpad.png",scale:1.7),
+          Container(
+            color: Colors.transparent,
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  InkWell(
+                    borderRadius: BorderRadius.circular(5),
+                    onTap: (){
+                      if(ThemeCubit.get(context).ThemeEditorIsActive == true)
+                        {
+                          ThemeCubit.get(context).dialPadSwitch();
+                        }
+                      else
+                      PhoneContactsCubit.get(context).dialpadShowcontact();
+                    },
+                    child: Container(
+                      width:MediaQuery.of(context).size.width*0.07,
+                      height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/9,
+                      child:Image.asset("assets/Images/dialpad.png",scale:1.7),
+                    ),
                   ),
-                ),
 
-                CallButton(context, AppbarSize , DualSIM , dialerController),
+                  CallButton(context, AppbarSize , DualSIM , dialerController),
 
-                InkWell(
-                  onTap: (){
-                    dialerController.text = dialerController.text.isNotEmpty ? dialerController.text.substring(0,dialerController.text.length-1) : dialerController.text;
-                    if(dialerController.text.isEmpty){
-                      PhoneContactsCubit.get(context).Daillerinput();
+                  InkWell(
+                    onTap: (){
+                      dialerController.text = dialerController.text.isNotEmpty ? dialerController.text.substring(0,dialerController.text.length-1) : dialerController.text;
+                      if(dialerController.text.isEmpty){
+                        PhoneContactsCubit.get(context).Daillerinput();
+                        PhoneContactsCubit.get(context).isSearching = false;
+                      }
+
+                    },
+                    onLongPress: (){
+                      dialerController.clear();
+                      if(dialerController.text.isEmpty){
+                        PhoneContactsCubit.get(context).Daillerinput();
+                      }
                       PhoneContactsCubit.get(context).isSearching = false;
-                    }
-
-                  },
-                  onLongPress: (){
-                    dialerController.clear();
-                    if(dialerController.text.isEmpty){
-                      PhoneContactsCubit.get(context).Daillerinput();
-                    }
-                    PhoneContactsCubit.get(context).isSearching = false;
-                  },
-                  child: Container(
-                    width:MediaQuery.of(context).size.width*0.08,
-                    height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/9,
-                    child:Image.asset("assets/Images/backspace.png",scale:1.4,),
+                    },
+                    child: Container(
+                      width:MediaQuery.of(context).size.width*0.08,
+                      height: ((MediaQuery.of(context).size.height-AppbarSize)/2)/9,
+                      child:Image.asset("assets/Images/backspace.png",scale:1.4,),
+                    ),
                   ),
-                ),
-              ]
+                ]
+            ),
           ),
           SizedBox(height: 17,),
         ],
@@ -1151,178 +1146,198 @@ Row CallButton(BuildContext context, double AppbarSize , bool DualSIM , TextEdit
 
 Drawer AppDrawer(BuildContext context , AppbarSize) {
 
+  String UserState = "online";
   return Drawer(
-    child: StreamBuilder<DocumentSnapshot>(
-      stream: ProfileCubit.get(context).CurrentUserStream,
-            builder: (context,snapshot){
-              var Cubit = ProfileCubit.get(context);
-              String UserState = "online";
-              if (snapshot.hasError) {
-                return Text('Something went wrong');
-              }
+    child: Padding(
+      padding:EdgeInsets.only(top:MediaQuery.of(context).padding.top),
+      child: Column(
+        children: [
+          isGuest==false?Container(
+              height: MediaQuery.of(context).size.height*0.20,
 
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Text("Loading");
-              }
-              final data = snapshot..requireData;
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors:[
+                  Colors.purple,
+                  Colors.blue],begin: Alignment.topRight,end: Alignment.bottomLeft),
+                image:DecorationImage(
+                  opacity: 0.30,
+                  image: NetworkImage(ProfileCubit.get(context).CurrentUser.first.cover.toString()),
+                  fit: BoxFit.cover,
+                ),
+              ),
+              child:Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: MediaQuery.of(context).size.height*0.01,),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 15.0,top: 3),
+                    child: Container(
+                      decoration: BoxDecoration(
 
-              return  Padding(
-                padding:EdgeInsets.only(top:MediaQuery.of(context).padding.top),
-                child: Column(
+                          shape: BoxShape.circle,
+                          border:Border.all(width: 2,color: Colors.white)
+                      ),
+                      child: InkWell(
+                        onLongPress: (){
+                          signOut(context);
+                        },
+                        onTap: (){
+                          Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=>ProfilePage(),));
+                        },
+                        child: CircleAvatar(
+                          radius: 40,
+                          backgroundImage: NetworkImage(ProfileCubit.get(context).CurrentUser.first.image.toString()),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(left:15.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 5,),
+                        Row(
+                          children: [
+                            Text(ProfileCubit.get(context).CurrentUser.first.name.toString(),textScaleFactor: 1,style: TextStyle(color:Colors.white),),
+                            SizedBox(width: 5,),
 
-                    children: [
-                      Container(
-                          height: MediaQuery.of(context).size.height*0.20,
+                            FocusedMenuHolder(
+                              menuOffset: 5,
+                              menuItems: [
+                                FocusedMenuItem(
+                                    title: Text("online"),
+                                    trailingIcon: Icon(Icons.circle ,size:12 , color: Colors.green,),
+                                    onPressed: (){
+                                      UserState = "online";
+                                    }),
+                                FocusedMenuItem(
+                                    title: Text("Away"),
+                                    trailingIcon: Icon(Icons.circle ,size:12 , color: Colors.red,),
+                                    onPressed: (){
+                                      UserState = "Away";
+                                    }),
+                              ],
+                              onPressed: (){},
+                              menuWidth: 80,
+                              openWithTap: true,
+                              child: Container(
 
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(colors:[
-                              Colors.purple,
-                              Colors.blue],begin: Alignment.topRight,end: Alignment.bottomLeft),
-                            image:DecorationImage(
-                              opacity: 0.30,
-                                image: NetworkImage(data.data!["cover"]),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          child:Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              SizedBox(height: MediaQuery.of(context).size.height*0.01,),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 15.0,top: 3),
-                                child: Container(
-                                  decoration: BoxDecoration(
-
-                                      shape: BoxShape.circle,
-                                      border:Border.all(width: 2,color: Colors.white)
-                                  ),
-                                  child: InkWell(
-                                    onLongPress: (){
-                                      signOut(context);
-                                    },
-                                    onTap: (){
-                                      Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=>ProfilePage(),));
-                                    },
-                                    child: CircleAvatar(
-                                      radius: 40,
-                                      backgroundImage: NetworkImage(data.data!["image"]),
-                                    ),
-                                  ),
+                                decoration: BoxDecoration(
+                                    color:Colors.white,
+                                    borderRadius: BorderRadius.circular(4)
                                 ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(left:15.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SizedBox(height: 5,),
-                                    Row(
+
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 0),
+                                  child: Transform.translate(
+                                    offset: Offset(5,0),
+                                    child: Row(
                                       children: [
-                                        Text(data.data!["name"],textScaleFactor: 1,style: TextStyle(color:Colors.white),),
-                                        SizedBox(width: 5,),
-
-                                        FocusedMenuHolder(
-                                          menuOffset: 5,
-                                          menuItems: [
-                                            FocusedMenuItem(
-                                                title: Text("online"),
-                                                trailingIcon: Icon(Icons.circle ,size:12 , color: Colors.green,),
-                                                onPressed: (){
-                                                  UserState = "online";
-                                                }),
-                                            FocusedMenuItem(
-                                                title: Text("Away"),
-                                                trailingIcon: Icon(Icons.circle ,size:12 , color: Colors.red,),
-                                                onPressed: (){
-                                                  UserState = "Away";
-                                                }),
-                                          ],
-                                          onPressed: (){},
-                                          menuWidth: 80,
-                                          openWithTap: true,
-                                          child: Container(
-
-                                            decoration: BoxDecoration(
-                                              color:Colors.white,
-                                              borderRadius: BorderRadius.circular(4)
-                                            ),
-
-                                            child: Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 0),
-                                              child: Transform.translate(
-                                                offset: Offset(5,0),
-                                                child: Row(
-                                                  children: [
-                                                    Transform.translate(
-                                                        offset: Offset(0,1.5),
-                                                        child: CircleAvatar(radius: 5, backgroundColor: UserState == "online"?Colors.green:Colors.red,)),
-                                                    SizedBox(width:1),
-                                                    Text(UserState),
-                                                    Transform.translate(
-                                                        offset: Offset(0,1.5),
-                                                        child: Icon(Icons.arrow_drop_down ,)),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-
+                                        Transform.translate(
+                                            offset: Offset(0,1.5),
+                                            child: CircleAvatar(radius: 5, backgroundColor: UserState == "online"?Colors.green:Colors.red,)),
+                                        SizedBox(width:1),
+                                        Text(UserState),
+                                        Transform.translate(
+                                            offset: Offset(0,1.5),
+                                            child: Icon(Icons.arrow_drop_down ,)),
                                       ],
                                     ),
-                                    Text(data.data!["email"],textScaleFactor: 1,style: TextStyle(color: Colors.white),),
-                                  ],
+                                  ),
                                 ),
-
                               ),
-                            ],
-                          )
-                      ),
-                      Text("Display Settings"),
-                      ListTile(
-                        title:Text("Lang"),
-                        trailing: Text("Eng"),
-                      ),
-                      ListTile(
-                        onTap: (){
-                          // ThemeCubit.get(context).ThemeSwitcher();
-                        },
-                        title:Text("Theme"),
-                        trailing:
-                        Text(ActiveTheme == 0 ?"Light":"Dark"),
-                      ),
-                      Text("System Settings"),
-                      ListTile(
-                        onTap: (){
-                          Navigator.push(context,
-                            MaterialPageRoute(builder: (BuildContext context) => Settings_Screen()),);
-                        },
-                        leading: Icon(Icons.settings),
-                        title:Text("Settings"),
-                      ),
-                      ListTile(
-                        onTap: (){
-                          Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=> ContactsFetcher()));
-                        },
-                        leading: Icon(Icons.contacts),
-                        title:Text("ContactPictures"),
-                      ),
-                      ListTile(
-                        onTap: (){
-                            Navigator.push(context, MaterialPageRoute(
-                                builder: (BuildContext context) =>
-                                    MultipleThemesView()
-                            ));
+                            ),
 
-                        },
-                        leading: FaIcon(FontAwesomeIcons.theaterMasks),
-                        title:Text("Theme Customization"),
-                      ),
-                    ],
+                          ],
+                        ),
+                        Text(ProfileCubit.get(context).CurrentUser.first.email.toString(),textScaleFactor: 1,style: TextStyle(color: Colors.white),),
+                      ],
+                    ),
+
                   ),
-              );
+                ],
+              )
+          ):Container(
+              height: MediaQuery.of(context).size.height*0.20,
 
-            }
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors:[
+                  Colors.purple,
+                  Colors.blue],begin: Alignment.topRight,end: Alignment.bottomLeft),
+              ),
+              child:Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(height: MediaQuery.of(context).size.height*0.01,),
+
+                  Padding(
+                    padding: EdgeInsets.only(left:15.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 5,),
+                        Row(
+                          children: [
+                            Text("Guest",textScaleFactor: 1,style: TextStyle(color:Colors.white),),
+                            SizedBox(width: 5,),
+
+                            ElevatedButton(onPressed: (){
+                              signOut(context);
+                            }, child: Text("Login")),
+
+                          ],
+                        ),
+
+                      ],
+                    ),
+
+                  ),
+                ],
+              )
+          ),
+          Text("Display Settings"),
+          ListTile(
+            title:Text("Lang"),
+            trailing: Text("Eng"),
+          ),
+          ListTile(
+            onTap: (){
+              // ThemeCubit.get(context).ThemeSwitcher();
+            },
+            title:Text("Theme"),
+            trailing:
+            Text(ActiveTheme == 0 ?"Light":"Dark"),
+          ),
+          Text("System Settings"),
+          ListTile(
+            onTap: (){
+              Navigator.push(context,
+                MaterialPageRoute(builder: (BuildContext context) => Settings_Screen()),);
+            },
+            leading: Icon(Icons.settings),
+            title:Text("Settings"),
+          ),
+          ListTile(
+            onTap: (){
+              Navigator.push(context,MaterialPageRoute(builder: (BuildContext context)=> ContactsFetcher()));
+            },
+            leading: Icon(Icons.contacts),
+            title:Text("ContactPictures"),
+          ),
+          ListTile(
+            onTap: (){
+              Navigator.push(context, MaterialPageRoute(
+                  builder: (BuildContext context) =>
+                      MultipleThemesView()
+              ));
+
+            },
+            leading: FaIcon(FontAwesomeIcons.theaterMasks),
+            title:Text("Theme Customization"),
+          ),
+        ],
+      ),
     ),
   );
 }
@@ -1395,25 +1410,34 @@ Widget defaultTextForm(
 }
 Widget defaultButton({
   double width = double.infinity,
-  Color background = Colors.blue,
-  required Function() function,
-  required String text,
+  Color? background,
+  LinearGradient? gradient,
+  Color titleColor =  Colors.white,
+  double FontSize = 14,
+  required Function() onPressed,
+  required String Title,
+
   bool isUpperCase = true,
   double radius = 3.0,
 }) =>
     Container(
+      height: 35,
       width: width,
       child: MaterialButton(
-        onPressed: function,
+        onPressed: onPressed,
         child: Text(
-          isUpperCase ? text.toUpperCase() : text,
-          style: const TextStyle(
-            color: Colors.white,
+          isUpperCase ? Title.toUpperCase() : Title,
+          style: TextStyle(
+            fontFamily: "Cairo",
+            fontWeight: FontWeight.w500,
+            fontSize: FontSize,
+            color:titleColor,
           ),
         ),
       ),
       decoration: BoxDecoration(
         color: background,
+        gradient: gradient,
         borderRadius: BorderRadius.circular(
           radius,
         ),
@@ -1422,18 +1446,20 @@ Widget defaultButton({
 
 void showToast({
   required String text,
-  required ToastStates state,})=>
+  required ToastStates state,
+  Color Textcolor = Colors.white,
+})=>
     Fluttertoast.showToast(
         msg: text,
         toastLength: Toast.LENGTH_LONG,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 5,
         backgroundColor: chooseToastColor(state),
-        textColor: Colors.white,
+        textColor: Textcolor,
         fontSize: 16.0
     );
 
-enum ToastStates {SUCCESS, ERROR, WARNING}
+enum ToastStates {SUCCESS, ERROR, WARNING , INFO}
 
 Color chooseToastColor(ToastStates state)
 {
@@ -1441,6 +1467,9 @@ Color chooseToastColor(ToastStates state)
 
   switch(state)
   {
+    case ToastStates.INFO:
+      color = Colors.white;
+      break;
     case ToastStates.SUCCESS:
       color = Colors.green;
       break;

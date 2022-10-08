@@ -104,7 +104,7 @@ class DialerRegisterScreen extends StatelessWidget {
                           ConditionalBuilder(
                               condition: state is! DialerLoadingRegisterUserState,
                               builder: (BuildContext context) =>defaultButton(
-                                function: () {
+                                onPressed: () {
                                   if (formKey.currentState!.validate()) {
                                     LoginCubit.get(context).RegisterUser(
                                         name: namecontroller.text,
@@ -113,7 +113,7 @@ class DialerRegisterScreen extends StatelessWidget {
                                         password: passwordcontroller.text);
                                   }
                                 },
-                                text: 'Submit',
+                                Title: 'Submit',
                                 isUpperCase: true,
                               ),
                               fallback: (context)=> Center(

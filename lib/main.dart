@@ -21,11 +21,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'Components/components.dart';
 import 'Components/constants.dart';
 import 'Layout/Cubit/cubit.dart';
 import 'Layout/incall_screen.dart';
+import 'Modules/Login&Register/Initial_Screen.dart';
 import 'Modules/Login&Register/login_screen.dart';
 import 'Modules/Phone/Cubit/cubit.dart';
 import 'NativeBridge/native_bridge.dart';
@@ -47,7 +49,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 void backgroundMain() {
   WidgetsFlutterBinding.ensureInitialized();
-
+print ("Helloooooooo!!!!!!!! from background Main in Flutter");
 }
 
 void main() async {
@@ -58,6 +60,22 @@ void main() async {
   DioHelper.dio;
   await CacheHelper.init();
   token = CacheHelper.getData(key: 'token');
+
+
+
+  if (await Permission.contacts.request().isGranted) {
+    ContactsPermission=true;
+  }
+
+  if (await Permission.phone.request().isGranted) {
+    PhonePermision=true;
+  }
+
+  if (await Permission.microphone.request().isGranted) {
+    MicrophonePermission=true;
+  }
+
+
 
   var channel = const MethodChannel('com.example/background_service');
   var callbackHandle = PluginUtilities.getCallbackHandle(backgroundMain);
@@ -105,7 +123,8 @@ void main() async {
   if(token != null)
   {
     Homescreen = Home();
-  } else {
+  }
+  else {
     Homescreen = LoginScreen();
   }
 
@@ -133,7 +152,54 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-    return MultiBlocProvider(
+if(PhonePermision ==false || ContactsPermission==false)
+{
+  return MultiBlocProvider(
+    providers: [
+
+      // BlocProvider(create:(context)=> ChatAppCubit()),
+      BlocProvider(create: (context)=>NativeBridge()..phonestateEvents()),
+      BlocProvider(create: (context)=> AppCubit()),
+      BlocProvider(create: (context)=>ProfileCubit()),
+      BlocProvider(create: (context)=>ThemeCubit()),
+      BlocProvider(create: (context)=>ChatAppCubit()),
+
+
+    ],
+    child:BlocBuilder<AppCubit,AppStates>(
+
+        builder:(context,state)
+        {
+
+          if(Themedata.isNotEmpty)
+          {
+            ThemeCubit.get(context).LoadThemeData();
+          }
+          ThemeSharedPref(context);
+
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            debugShowMaterialGrid: false,
+            theme: ThemeConfig(),
+            // themeMode: themeSwitch?ThemeMode.light:ThemeMode.dark,
+            home: WillPopScope(
+              onWillPop: () async{
+                if(Navigator.of(context).canPop())
+                {
+                  return true;
+                } else {
+                  NativeBridge.get(context).invokeNativeMethod("sendToBackground");
+                  return false;
+                }
+              },
+              child: const Initial_Screen(),
+            ),
+          );
+        }),
+  );
+}
+else {
+  return MultiBlocProvider(
       providers: [
 
         // BlocProvider(create:(context)=> ChatAppCubit()),
@@ -152,11 +218,13 @@ class MyApp extends StatelessWidget {
         builder:(context,state)
         {
 
-          ThemeSharedPref(context);
+
           if(Themedata.isNotEmpty)
             {
+
               ThemeCubit.get(context).LoadThemeData();
             }
+          ThemeSharedPref(context);
 
 
                 return MaterialApp(
@@ -178,12 +246,13 @@ class MyApp extends StatelessWidget {
                       BlocProvider.value(
                           value: ProfileCubit.get(context)..GetChatContacts(PhoneContactsCubit.get(context).Contacts)),
                       BlocProvider.value(
-                          value: PhoneLogsCubit.get(context)..getCallLogsInitial(PhoneContactsCubit.get(context).Contacts)),
+                          value: PhoneLogsCubit.get(context)..getCallLogsInitial(PhoneContactsCubit.get(context).Contacts,true)),
                     ], child:
                         homeScreen),
                   ),
                 );
               }),
     );
+}
   }
 }

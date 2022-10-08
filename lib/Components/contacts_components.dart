@@ -13,6 +13,7 @@ import 'package:flutter_contacts/properties/note.dart';
 import 'package:hexcolor/hexcolor.dart';
 
 Container FavoritesContactsGroups(PhoneContactsCubit Cubit,context , AccessibilityText) {
+
   return Container(
     height:MediaQuery.of(context).size.height*0.15,
     // width: double.infinity,
@@ -39,10 +40,10 @@ Container FavoritesContactsGroups(PhoneContactsCubit Cubit,context , Accessibili
                     physics:BouncingScrollPhysics(),
                     scrollDirection: Axis.horizontal,
                     itemCount: Cubit.FavoratesContacts.length,
-                    separatorBuilder: (context,index)=> SizedBox(width: 10,),
+                    separatorBuilder: (context,index)=> const SizedBox(width: 10,),
                     itemBuilder: (context, index) {
-                      PhoneContactsCubit.get(context).FavoratesItemColors();
-                      return FavoritesCards(context ,Cubit.FavoratesContacts[index]);
+
+                      return FavoritesCards(context ,Cubit.FavoratesContacts[index],PhoneContactsCubit.get(context).BaseColors[index]);
                     },
                   ),
                 ),
@@ -73,8 +74,7 @@ Container FavoritesContactsGroups(PhoneContactsCubit Cubit,context , Accessibili
 
 
 
-Container FavoritesCards( context , Contact) {
-  final Color?  FavColor = PhoneContactsCubit.get(context).FavoratesItemColor;
+Container FavoritesCards( context , Contact , FavColor) {
   return Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(6),

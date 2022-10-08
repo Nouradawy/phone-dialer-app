@@ -273,12 +273,12 @@ class ContactEditor extends StatelessWidget {
           width: 95,
           child: DropdownButtonFormField(
             // icon: preIcon,
-            value: PhoneContactsCubit.get(context).PhoneSideMenu.first,
+            value: PhoneContactsCubit.get(context).phoneSideMenu.first,
             alignment: AlignmentDirectional.center,
             onChanged: (label) {
               PhoneContactsCubit.get(context).PhoneSideMenuController[index]=label as PhoneLabel;
             },
-            items: PhoneContactsCubit.get(context).PhoneSideMenu.map((value) {
+            items: PhoneContactsCubit.get(context).phoneSideMenu.map((value) {
               return DropdownMenuItem(
                   value:value,
                   child: ForumLabels(value));

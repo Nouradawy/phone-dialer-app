@@ -28,22 +28,7 @@ bool NewTheme = false;
 
 
 
-///ToDo:Add permisition handler layout
-Future<void> PermissionHandle() async {
-  var status = await Permission.contacts.status;
-  if (status.isDenied) {
-    // We didn't ask for permission yet or the permission has been denied before but not permanently.
-    await [
-      Permission.contacts,
-      Permission.phone,
-      Permission.microphone,
-
-    ].request();
-  }
-
-}
-
-  void ThemeSwitcher()
+  void SaveActiveTheme()
   {
     // ThemeSwitch = !ThemeSwitch;
     // print("ThemeNow : $ThemeSwitch" );

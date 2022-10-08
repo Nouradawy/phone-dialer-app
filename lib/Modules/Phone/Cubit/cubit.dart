@@ -9,6 +9,8 @@ class PhoneLogsCubit extends Cubit<PhoneLogsStates> {
   PhoneLogsCubit() : super(PhoneLogsInitialState());
   static PhoneLogsCubit get(context) => BlocProvider.of(context);
   bool PhoneRange = false;
+  bool AddToBlackList=true;
+  int? CurrentBLockIndex;
 
   List BaseColors =[
     Colors.green,
@@ -18,22 +20,34 @@ class PhoneLogsCubit extends Cubit<PhoneLogsStates> {
 
   ];
 
-  Color? AvatarColor ;
-  int ColorIndex =0;
 
   List PhoneCallLogs =[];
   List PhoneCallMissed =[];
   List PhoneCallInBound =[];
   List PhoneCallOutBound =[];
 
-  void LogAvatarColors(){
-    AvatarColor = BaseColors[ColorIndex];
-    ColorIndex == BaseColors.length-1?ColorIndex = 0:ColorIndex++;
+  void LogAvatarColors(LogLength , bool isInitial){
+    if(isInitial ==true) {
+
+
+      int LogLengthReminder = LogLength~/4;
+
+      for (var i = 0; i <= LogLengthReminder; i++) {
+        BaseColors.addAll([Colors.green, Colors.indigo, Colors.yellow, Colors.orange]);
+      }
+      print(BaseColors.length);
+    }
+      else
+        {
+          if(LogLength-1 <BaseColors.length)
+            BaseColors.addAll([Colors.green, Colors.indigo, Colors.yellow, Colors.orange]);
+        }
 
   }
 
-  void getCallLogsInitial(List<AppContact> contacts)  async {
+  void getCallLogsInitial(List<AppContact> contacts , bool isInitial)  async {
     final Iterable<CallLogEntry> cLog = await CallLog.get();
+    LogAvatarColors(cLog.length,isInitial);
     for (CallLogEntry entry in cLog)
     {
 
@@ -46,6 +60,7 @@ class PhoneLogsCubit extends Cubit<PhoneLogsStates> {
         "Date":DateTime.fromMillisecondsSinceEpoch(entry.timestamp!),
 
       });
+
 
       if(entry.callType ==CallType.outgoing )
       {
@@ -84,7 +99,6 @@ class PhoneLogsCubit extends Cubit<PhoneLogsStates> {
       }
 
     }
-
   }
   List contactCalllog = [];
   void ContactCallLogs(AppContact contact){
@@ -99,17 +113,12 @@ class PhoneLogsCubit extends Cubit<PhoneLogsStates> {
     PhoneCallOutBound.clear();
     PhoneCallInBound.clear();
     PhoneCallMissed.clear();
-    getCallLogsInitial(contacts);
+    getCallLogsInitial(contacts,false);
     PhoneRange =false;
     emit(PhoneLogsUpdated());
   }
 
-  void FilterLogScreen(List<AppContact> contacts){
-    PhoneCallLogs.clear();
-    getCallLogsInitial(contacts);
-    PhoneRange =false;
-    emit(PhoneLogsUpdated());
-  }
+
 
 
 
@@ -159,5 +168,10 @@ class PhoneLogsCubit extends Cubit<PhoneLogsStates> {
   GetPhoneType(CallLogEntry entry){
     return entry.callType.toString().replaceAll("CallType.", "");
   }
+
+  PhoneDropdownMenu(){
+    emit(PhoneLogsDropdown());
+  }
+
 
 }

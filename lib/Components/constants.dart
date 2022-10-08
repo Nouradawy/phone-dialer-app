@@ -12,6 +12,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_contacts/contact.dart';
 
+import '../Modules/profile/Profile Cubit/profile_cubit.dart';
+
 class MyBlocObserver extends BlocObserver {
 
   void updateUserState({
@@ -70,12 +72,14 @@ void signOut(context) {
   CacheHelper.deleteData(key: 'token').then(
         (value) {
       if (value) {
+        ProfileCubit.get(context).ChatContacts.clear();
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
               builder: (BuildContext context) => LoginScreen()),
               (Route<dynamic> route) => false,
         );
+
       }
     },
   );
@@ -127,9 +131,12 @@ class RenderBlendMask extends RenderProxyBox {
 
 List<Contact>? contactsfilterd;
 int? NotesPageIndex;
-
+bool ContactsPermission = false;
+bool MicrophonePermission = false;
+bool PhonePermision =false;
 bool proximityValues = false;
 bool  initialState = true;
+bool isGuest = false;
 int CreateUniqueId(){
   return DateTime.now().microsecondsSinceEpoch.remainder(100000);
 }

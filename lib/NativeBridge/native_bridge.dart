@@ -12,6 +12,7 @@ import 'package:dialer_app/Modules/Contacts/appcontacts.dart';
 import 'package:dialer_app/NativeBridge/native_states.dart';
 import 'package:dialer_app/Network/Local/cache_helper.dart';
 import 'package:dialer_app/Network/Local/shared_data.dart';
+import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -24,7 +25,10 @@ import 'package:stop_watch_timer/stop_watch_timer.dart';
 import '../Models/user_model.dart';
 
 class NativeBridge extends Cubit<NativeStates> {
+  double Dxx = 0;
+  double Dy = 0;
   bool? InternetisConnected;
+  bool BackGroundCustomize =false;
   String? PhoneNumberQuery;
   String? CallerappID;
   bool? ConferenceManage =false;
@@ -95,7 +99,7 @@ class NativeBridge extends Cubit<NativeStates> {
     InternetisConnected = await InternetConnectionCheckerPlus().hasConnection;
   }
 
-  void proximity() {
+  void UpdateScreen() {
     emit(ScreenRefresh());
   }
 
@@ -180,7 +184,6 @@ class NativeBridge extends Cubit<NativeStates> {
       return SearchIN.contains(PhoneNumberQuery.toString().replaceAll(" ", ""));
     }).toList() : [];
 
-    // GetContactByID();
   }
 
   Future<void> GetContactByID() async {
@@ -193,7 +196,6 @@ class NativeBridge extends Cubit<NativeStates> {
   }
 
   List CallNotes = [];
-  List CallNotesUpdate = [];
   int CurrentCallIndex =0;
   Future<void> listenSensor() async {
     streamSubscription = ProximitySensor.events.listen((int event) {
@@ -215,38 +217,38 @@ class NativeBridge extends Cubit<NativeStates> {
 
   bool ContactIdExist=false;
 
-  void InCallNotes() {
-    CallNotes=[];
-      ContactNotes.forEach((e) {
-        if (e["id"] == CallerID[0]["id"]) {
-          ContactIdExist=true;
-          CallNotes = e["Notes"]
-              .replaceAll("[", "")
-              .replaceAll("]", "")
-              .split(',');
-        }
-      });
-
-      if(ContactIdExist==false)
-      {
-        ContactNotes.add({
-          "id":CallerID[0]["id"],
-          "Notes" : ""
-        });
-        ContactNotes.forEach((e) {
-          if (e["id"] == CallerID[0]["id"]) {
-            ContactIdExist=true;
-            CallNotes = e["Notes"]
-                .replaceAll("[", "")
-                .replaceAll("]", "")
-                .split(',');
-          }
-        });
-
-      }
-      ContactIdExist=false;
-
-  }
+  // void InCallNotes() {
+  //   CallNotes=[];
+  //     ContactNotes.forEach((e) {
+  //       if (e["id"] == CallerID[0]["id"]) {
+  //         ContactIdExist=true;
+  //         CallNotes = e["Notes"]
+  //             .replaceAll("[", "")
+  //             .replaceAll("]", "")
+  //             .split(',');
+  //       }
+  //     });
+  //
+  //     if(ContactIdExist==false)
+  //     {
+  //       ContactNotes.add({
+  //         "id":CallerID[0]["id"],
+  //         "Notes" : ""
+  //       });
+  //       ContactNotes.forEach((e) {
+  //         if (e["id"] == CallerID[0]["id"]) {
+  //           ContactIdExist=true;
+  //           CallNotes = e["Notes"]
+  //               .replaceAll("[", "")
+  //               .replaceAll("]", "")
+  //               .split(',');
+  //         }
+  //       });
+  //
+  //     }
+  //     ContactIdExist=false;
+  //
+  // }
 
   bool InCallMsg = false;
 
@@ -357,17 +359,23 @@ class NativeBridge extends Cubit<NativeStates> {
 
 
   Future<void> CallerAppID(UserPhoneNumber) async {
-    await FirebaseFirestore.instance
-        .collection("CallingSession")
-        .doc(UserPhoneNumber.replaceAll(" ", "") + "-" +
-        PhoneNumberQuery!.replaceAll(" ", "").replaceAll("+", ""))
-        .snapshots()
-        .listen((event) {
-
-      CallerappID = event.data()?["recipientToken"];
-      Calls[CurrentCallIndex]["CallerAppID"] = CallerappID;
-      emit(ScreenRefresh());
-    });
+    if(UserPhoneNumber !=null)
+    {
+      await FirebaseFirestore.instance
+          .collection("CallingSession")
+          .doc(UserPhoneNumber.replaceAll(" ", "") +
+              "-" +
+              PhoneNumberQuery!.replaceAll(" ", "").replaceAll("+", ""))
+          .snapshots()
+          .listen((event) {
+        CallerappID = event.data()?["recipientToken"];
+        Calls[CurrentCallIndex]["CallerAppID"] = CallerappID;
+        emit(ScreenRefresh());
+      });
+    }
+    else{
+      Calls[CurrentCallIndex]["CallerAppID"]=null;
+    }
   }
 
 
