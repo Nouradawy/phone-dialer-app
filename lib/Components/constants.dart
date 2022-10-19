@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
@@ -137,6 +138,8 @@ bool PhonePermision =false;
 bool proximityValues = false;
 bool  initialState = true;
 bool isGuest = false;
+bool isRejected = false;
+late StreamSubscription<dynamic> Accelerometerstream;
 int CreateUniqueId(){
   return DateTime.now().microsecondsSinceEpoch.remainder(100000);
 }

@@ -4,6 +4,8 @@ import android.annotation.TargetApi
 import android.os.Build
 import android.telecom.Call
 import android.telecom.CallScreeningService
+import com.phone.dialer.dialer_app.BackgroundService
+import com.phone.dialer.dialer_app.helpers.CallManager
 
 var BLockList:MutableList<String>  = mutableListOf()
 
@@ -16,7 +18,6 @@ class MyCallScreeningService : CallScreeningService() {
         val phoneNumber = getPhoneNumber(callDetails)
         var response = CallResponse.Builder()
         response = handlePhoneCall(response,phoneNumber)
-
         respondToCall(callDetails, response.build())
     }
 

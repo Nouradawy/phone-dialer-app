@@ -11,6 +11,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_contacts/contact.dart';
+import 'package:flutter_contacts/properties/account.dart';
 import 'package:flutter_contacts/properties/phone.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -33,6 +34,7 @@ import 'Modules/profile/Profile Cubit/profile_cubit.dart';
 import 'NativeBridge/native_states.dart';
 import 'Network/Local/cache_helper.dart';
 import 'Network/Local/shared_data.dart';
+import 'Notifications/notifications.dart';
 import 'Themes/theme_config.dart';
 import 'main.dart';
 
@@ -44,12 +46,15 @@ class Home extends StatelessWidget{
 
     var Cubit = AppCubit.get(context);
     var NativeCubit = NativeBridge.get(context);
+    var PhoneCubit = PhoneContactsCubit.get(context);
 
     double AppbarSize = MediaQuery.of(context).size.height*Cubit.AppbarSize;
     return BlocListener<NativeBridge,NativeStates>(
         listener: (context,state){
+
           if(state is PhoneStateRinging )
           {
+
             NativeCubit.CheckInternetConnection();
             NativeCubit.isRinging = true;
             // NativeCubit.InternetisConnected==true?NativeCubit.OnRecivedCallingSession(ProfileCubit.get(context).CurrentUser[0].phone.toString()):null;
@@ -66,6 +71,8 @@ class Home extends StatelessWidget{
 
             NativeCubit.GetContactByID();
             NativeCubit.CurrentCallIndex=NativeCubit.Calls.length-1;
+
+            CreateCallNotification(NativeCubit.Calls[NativeCubit.CurrentCallIndex]["DisplayName"]!=null?NativeCubit.Calls[NativeCubit.CurrentCallIndex]["DisplayName"].toString().toUpperCase():"Unkown",NativeCubit.PhoneNumberQuery);
             NativeCubit.CallDuration.add(StopWatchTimer(
               mode: StopWatchMode.countUp,
               presetMillisecond: StopWatchTimer.getMilliSecFromMinute(0),
@@ -74,7 +81,7 @@ class Home extends StatelessWidget{
               // onChangeRawSecond: (value) => print('onChangeRawSecond $value'),
               // onChangeRawMinute: (value) => print('onChangeRawMinute $value'),
             ));
-            BgLauncher.bringAppToForeground();
+            // BgLauncher.bringAppToForeground();
             Navigator.pushAndRemoveUntil(context,
               MaterialPageRoute(builder: (BuildContext context) => InCallScreen()),
                   (Route<dynamic>route)=>false,);
@@ -141,7 +148,7 @@ class Home extends StatelessWidget{
                 appBar:MainAppBar(context, AppbarSize , AppCubit.get(context).searchController),
                 drawer: AppDrawer(context, AppbarSize),
                 drawerDragStartBehavior: DragStartBehavior.start ,
-                floatingActionButton: BottomSheet (context, tabController , DisplayName ,PhoneNumber ),
+                floatingActionButton: BottomSheet (context, tabController , DisplayName ,PhoneNumber , PhoneCubit ),
                 body: BlocBuilder<PhoneContactsCubit,PhoneContactStates>(
                   builder:(context,state) {
                     return Stack(
@@ -229,7 +236,8 @@ class Home extends StatelessWidget{
 
 }
 
-Widget BottomSheet (context, tabController , DisplayName ,PhoneNumber ){
+Widget BottomSheet (context, tabController , DisplayName ,PhoneNumber ,PhoneCubit){
+
   if(PhoneContactsCubit.get(context).isShowen==false)
     {
       if(tabController.index==0 &&PhoneContactsCubit.get(context).BlockWarning==false )
@@ -249,6 +257,7 @@ Widget BottomSheet (context, tabController , DisplayName ,PhoneNumber ){
             borderRadius: BorderRadius.circular(16),
           ),
           onPressed: () {
+            int count=0;
             showModalBottomSheet(
                 context: context,
                 shape: const RoundedRectangleBorder(
@@ -258,58 +267,101 @@ Widget BottomSheet (context, tabController , DisplayName ,PhoneNumber ){
                 ),
                 isScrollControlled: true,
                 builder: (context) {
-                  return Padding(
-                    padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).viewInsets.bottom),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              IconButton(
-                                icon: Icon(Icons.cancel),
-                                onPressed: () {},
+                  return BlocBuilder<PhoneContactsCubit,PhoneContactStates>(
+                    builder: (context,states) {
+                      return Padding(
+                        padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  TextButton(
+                                    onPressed: () {}, child: Text("Cancel"),
+                                  ),
+                                  Text("data"),
+                                  IconButton(
+                                    icon: Icon(Icons.check),
+                                    onPressed: () async {
+                                      final newContact = Contact()
+                                        ..name.first = DisplayName.text
+                                        ..phones = [Phone(PhoneNumber.text)]
+                                        ..accounts = [Account(PhoneCubit.DefaultPhoneAccounts[PhoneCubit.DefaultPhoneAccountIndex]["rawId"],PhoneCubit.DefaultPhoneAccounts[PhoneCubit.DefaultPhoneAccountIndex]["AccountType"],PhoneCubit.DefaultPhoneAccounts[PhoneCubit.DefaultPhoneAccountIndex]["AccountName"],PhoneCubit.DefaultPhoneAccounts[PhoneCubit.DefaultPhoneAccountIndex]["mimetypes"])];
+                                      await newContact.insert();
+                                    },
+                                  ),
+                                ],
                               ),
-                              Text("data"),
-                              IconButton(
-                                icon: Icon(Icons.check),
-                                onPressed: () async {
-                                  final newContact = Contact()
-                                    ..name.first = DisplayName.text
-                                    ..phones = [Phone(PhoneNumber.text)];
-                                  await newContact.insert();
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(left:25.0),
+                              child: DropdownButton(
+                                itemHeight: 60,
+                                value:PhoneContactsCubit.get(context).DefaultPhoneAccounts[PhoneContactsCubit.get(context).SelectedPhoneAccountIndex],
+                                items: PhoneContactsCubit.get(context).DefaultPhoneAccounts.map((value){
+                                  count++;
+                                  return DropdownMenuItem(
+                                    value:value,
+                                    child:
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        PhoneContactsCubit.get(context).AccountIcon(PhoneContactsCubit.get(context).DefaultPhoneAccounts[count-1]["AccountType"]),
+                                        Padding(
+                                          padding: const EdgeInsets.only(left:8.0),
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              // SizedBox(height: 4,),
+                                              PhoneContactsCubit.get(context).AccountTitle(PhoneContactsCubit.get(context).DefaultPhoneAccounts[count-1]["AccountType"]),
+                                              Text("${PhoneContactsCubit.get(context).DefaultPhoneAccounts[count-1]["AccountName"]}"),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                }).toList(),
+                                onChanged: (value) {
+                                  PhoneContactsCubit.get(context).SelectedPhoneAccountIndex = PhoneContactsCubit.get(context).DefaultPhoneAccounts.indexOf(value);
+                                  PhoneContactsCubit.get(context).Daillerinput();
                                 },
+
                               ),
-                            ],
-                          ),
+                            ),
+                            TextFormField(
+                              controller: DisplayName,
+                              decoration: InputDecoration(
+                                icon: Icon(Icons.person),
+                                suffixIcon: IconButton(
+                                    onPressed: () {}, icon: Icon(Icons.cancel)),
+                                labelText: "Name",
+                                fillColor: Colors.grey[200],
+                                filled: true,
+                              ),
+                            ),
+                            TextFormField(
+                              controller: PhoneNumber,
+                              decoration: InputDecoration(
+                                icon: Icon(Icons.phone),
+                                suffixIcon: IconButton(
+                                    onPressed: () {}, icon: Icon(Icons.cancel)),
+                                labelText: "Number",
+                                fillColor: Colors.grey[200],
+                                filled: true,
+                              ),
+                            ),
+                          ],
                         ),
-                        TextFormField(
-                          controller: DisplayName,
-                          decoration: InputDecoration(
-                            icon: Icon(Icons.person),
-                            suffixIcon: IconButton(
-                                onPressed: () {}, icon: Icon(Icons.cancel)),
-                            labelText: "Name",
-                            fillColor: Colors.grey[200],
-                            filled: true,
-                          ),
-                        ),
-                        TextFormField(
-                          controller: PhoneNumber,
-                          decoration: InputDecoration(
-                            icon: Icon(Icons.phone),
-                            suffixIcon: IconButton(
-                                onPressed: () {}, icon: Icon(Icons.cancel)),
-                            labelText: "Number",
-                            fillColor: Colors.grey[200],
-                            filled: true,
-                          ),
-                        ),
-                      ],
-                    ),
+                      );
+                    }
                   );
                 });
           },

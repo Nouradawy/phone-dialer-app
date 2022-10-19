@@ -1,22 +1,17 @@
 package com.phone.dialer.dialer_app.services
 
 import android.annotation.TargetApi
+import android.app.ActivityManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
 import android.telecom.Call
-import android.telecom.Call.Details.CAPABILITY_MANAGE_CONFERENCE
-import android.telecom.Call.Details.CAPABILITY_MERGE_CONFERENCE
-import android.telecom.Conference
-import android.telecom.Connection
 import android.telecom.InCallService
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.phone.dialer.dialer_app.MyStreamHandler
 import com.phone.dialer.dialer_app.R
-import com.phone.dialer.dialer_app.activities.CallActivity
 import com.phone.dialer.dialer_app.eventSink
 import com.phone.dialer.dialer_app.helpers.CallManager
 
@@ -24,6 +19,17 @@ import com.phone.dialer.dialer_app.helpers.CallManager
 var PhoneID : String? = null
 
 class CallService : InCallService() {
+
+//    fun isUserIsOnHomeScreen(): String {
+//        val manager: ActivityManager = this.getSystemService(InCallService.ACTIVITY_SERVICE) as ActivityManager
+//        val processes: MutableList<ActivityManager.AppTask>? = manager.
+//        if (processes != null) {
+//            println("LastIndex Process list : "+processes.size)
+//            println("LastIndex Process list : "+processes)
+//        }
+//
+//        return "false"
+//    }
 
     val callListener = object : Call.Callback() {
                         override fun onStateChanged(call: Call?, state: Int) {
@@ -36,7 +42,7 @@ class CallService : InCallService() {
                                  * or waiting. */
                                 Call.STATE_DISCONNECTED -> {
                                     println("Iam disconnected")
-                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "false", state).toMap())
+                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "false","false", state).toMap())
                                 }
                                 /** Device call state: Ringing. A new call arrived and is
                                  * ringing or waiting. In the latter case, another call is
@@ -44,7 +50,7 @@ class CallService : InCallService() {
                                 Call.STATE_DIALING -> {
                                     println("DialingState-MainMethod")
                                    
-                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "false", state).toMap())
+                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "false","false", state).toMap())
                                 }
 
                                 Call.STATE_ACTIVE -> {
@@ -55,16 +61,16 @@ class CallService : InCallService() {
                                     {
                                         println("Call caps: " + element.details)
                                     }
-                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "false", state).toMap())
+                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "false","false", state).toMap())
                                 }
 
                                 Call.STATE_CONNECTING -> {
                                     println("ConnectingState-MainMethod")
-                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "false", state).toMap())
+                                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "false","false", state).toMap())
                                 }
                                 Call.STATE_HOLDING -> {
                                     println("onHold-MainMethod")
-                                  eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "false", state).toMap())
+                                  eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID, "false","false", state).toMap())
                                 }
 
 
@@ -79,10 +85,8 @@ class CallService : InCallService() {
 
         super.onCallAdded(call)
         CallManager.call = call
-        CallConnection()
         CallManager.inCallService = this
         CallManager.registerCallback(callListener)
-
 
 //        val fullScreenPendingIntent = PendingIntent.getActivity(this,0,getPackageManager().getLaunchIntentForPackage("com.phone.dialer.dialer_app"),PendingIntent.FLAG_UPDATE_CURRENT)
 //        val builder = NotificationCompat
@@ -92,8 +96,11 @@ class CallService : InCallService() {
 //                .setContentText("Phone is ringing.")
 //                .setPriority(NotificationCompat.PRIORITY_HIGH)
 //                .setCategory(NotificationCompat.CATEGORY_CALL)
-//                .setOngoing(true)
-//                .setFullScreenIntent(fullScreenPendingIntent, true);
+//                .setOngoing(false)
+//                .setFullScreenIntent(fullScreenPendingIntent, true)
+//            .setCategory(NotificationCompat.CATEGORY_CALL)
+
+
 
 
         PhoneID = CallManager.call?.details?.handle?.toString()?.removeTelPrefix()?.parseCountryCode()
@@ -103,7 +110,7 @@ class CallService : InCallService() {
 //                notify(1, builder.build())
 //            }
 
-            Callcallback.PhoneRinging()
+            Callcallback.PhoneRinging("isUserIsOnHomeScreen().toString()")
 
 
         }
@@ -143,9 +150,9 @@ fun String.parseCountryCode(): String = Uri.decode(this)
 class Callcallback {
 
     companion object {
-        fun PhoneRinging(){
+        fun PhoneRinging(isHome:String){
             println("it's ringing : " +PhoneID.toString())
-            eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID.toString(), if(CallManager.call?.conferenceableCalls?.isEmpty() == true) "false" else "true", state = Call.STATE_RINGING).toMap())
+            eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID.toString(), if(CallManager.call?.conferenceableCalls?.isEmpty() == true) "false" else "true",isHome, state = Call.STATE_RINGING).toMap())
         }
     }
 }

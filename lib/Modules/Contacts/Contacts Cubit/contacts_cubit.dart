@@ -17,8 +17,10 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
   PhoneContactsCubit() : super(ContactsInitialState());
   static PhoneContactsCubit get(context) => BlocProvider.of(context);
   bool BlockWarning =false;
-
+  int RadioIndex=1;
   int DefaultPhoneAccountIndex = 0;
+  int SelectedPhoneAccountIndex = 0;
+  final List DefaultPhoneAccounts=[];
   List<AppContact> Contacts = [];
   List<AppContact> ContactsNoThumb = [];
   List<AppContact> FavoratesContacts = [];
@@ -50,6 +52,8 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
 
   List<TextEditingController> ChatController = [];
   List<SocialMediaLabel> ChatSideMenuController=<SocialMediaLabel>[];
+  TextEditingController WebsiteController = TextEditingController();
+  TextEditingController NoteController = TextEditingController();
 
   int PhoneNumberTextFormCount=0;
   int EmailTextFormCount=0;
@@ -57,12 +61,15 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
   int EventTextFormCount=0;
   int ChatTextFormCount=0;
   bool NoteEditting=false;
+  bool FavIsSelected=false;
+  bool BlockIsSelected=false;
   TextEditingController NotesController= TextEditingController();
 
   void TextFormFieldInitialize(List NumbersInAccount , AppContact contact){
 
     if(NumbersInAccount.isNotEmpty)
     {
+      ///adding +1 empty Phonenumber Entry
       PhoneNumberTextFormCount = NumbersInAccount.length;
       NumbersInAccount.add({
         "label": phoneSideMenu.first,
@@ -215,16 +222,16 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
   }
 
   void AddNote(){
-    NoteEditting = !NoteEditting;
     emit(DropDownDisplayName());
   }
 
   void ContactUpdate(AppContact contact,context){
-    contact.info?.phones.clear();
-    for(int i=0 ; i<PhoneNumberController.length; i++) {
 
-      PhoneNumberController[i].text.isNotEmpty?contact.info?.phones.add(Phone('${PhoneNumberController[i].text}', label: PhoneSideMenuController[i] )):null;
-    }
+      contact.info?.phones.clear();
+      for (int i = 0; i < PhoneNumberController.length; i++) {
+        PhoneNumberController[i].text.isNotEmpty ? contact.info?.phones.add(Phone(PhoneNumberController[i].text, label: PhoneSideMenuController[i])) : null;
+      }
+
 
     contact.info?.emails.clear();
     for(int i=0 ; i<EmailAddressController.length ; i++) {
@@ -247,6 +254,11 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
       for (int i = 0; i < ChatController.length; i++) {
         ChatController[i].text.isNotEmpty? contact.info?.socialMedias.add(SocialMedia(ChatController[i].text, label: ChatSideMenuController[i])) : null;
       }
+
+    WebsiteController.text.isNotEmpty?contact.info?.websites.clear():null;
+    WebsiteController.text.isNotEmpty?contact.info?.websites.add(Website(WebsiteController.text,label: WebsiteLabel.homepage)):null;
+
+
 
 
     contact.info?.update();
@@ -338,7 +350,7 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
 
 
 
-  final List DefaultPhoneAccounts=[];
+
 
   Future<void> GetRawContacts() async {
     List colors = [
@@ -351,50 +363,55 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
     List<AppContact> _contacts = (await FlutterContacts.getContacts(withProperties: true, withPhoto: true , withAccounts: true , withThumbnail: true ).catchError((error){
       print("Contacts Error : " + error.toString());
     })).map((contact) {
-      Color baseColor = colors[colorIndex];
-      colorIndex++;
-      if (colorIndex == colors.length) {
-        colorIndex = 0;
-      }
-      List? baseNotes=[];
 
-      ContactNotes.forEach((element) {
-        if(contact.id == element["id"])
-          {
-            baseNotes = element["Notes"].replaceAll("[","").replaceAll("]","").split(',');
+        Color baseColor = colors[colorIndex];
+        colorIndex++;
+        if (colorIndex == colors.length) {
+          colorIndex = 0;
+        }
+        List? baseNotes = [];
+
+        ContactNotes.forEach((element) {
+          if (contact.id == element["id"]) {
+            baseNotes = element["Notes"].replaceAll("[", "").replaceAll("]", "").split(',');
           }
-      });
+        });
 
-      return AppContact(info: contact, color: baseColor , tag:contact.displayName[0].toUpperCase(),Notes:baseNotes);
+        return AppContact(info: contact, color: baseColor, tag: contact.displayName.isNotEmpty ? contact.displayName[0].toUpperCase() : "Z", Notes: baseNotes);
+
     }).toList();
 
     Contacts =_contacts;
 
     Contacts.forEach((element) {
 
-      element.info!.thumbnail == null?ContactsNoThumb.add(element):null;
-      if(element.info?.isStarred == true)
-        {
+      if(element.info!.displayName.isNotEmpty&&element.info!.name.first.isNotEmpty||element.info!.phones.isNotEmpty)
+      {
+        element.info!.thumbnail == null ? ContactsNoThumb.add(element) : null;
+        if (element.info?.isStarred == true) {
           FavoratesContacts.add(element);
         }
 
-      element.info?.accounts.forEach((e) {
-        if(e.type.isNotEmpty || e.name.isNotEmpty) {
-          DefaultPhoneAccounts.add({
-            "AccountType": e.type,
-            "AccountName": e.name,
-          });
+        element.info?.accounts.forEach((e) {
+          if (e.type.isNotEmpty || e.name.isNotEmpty) {
+            DefaultPhoneAccounts.add({
+              "AccountType": e.type,
+              "AccountName": e.name,
+              "rawId": e.rawId,
+              "mimetypes": e.mimetypes,
+            });
+          }
+        });
+      } else
+        {
+          Contacts.removeAt(Contacts.indexOf(element));
         }
-      });
-
     });
 
     FavoratesItemColors(FavoratesContacts.length,true);
 
     final ids = DefaultPhoneAccounts.map((e) => e["AccountName"]).toSet();
     DefaultPhoneAccounts.retainWhere((element) => ids.remove(element["AccountName"]));
-    Contacts.first.PhoneAccounts = DefaultPhoneAccounts;
-    print("Default PhoneAccounts = ${Contacts.first.PhoneAccounts}");
       emit(RawContactsSuccessState());
   }
 
@@ -556,7 +573,8 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
 
 List WhatsappContacts =[];
 List PhoneAccounts =[];
-int SelectedPhoneAccountIndex = 0;
+
+
 void FilterContactsByAccount(AppContact contact){
   PhoneAccounts.clear();
   WhatsappContacts.clear();
@@ -576,7 +594,7 @@ void FilterContactsByAccount(AppContact contact){
   PhoneAccounts.retainWhere((element) => ids.remove(element["AccountName"]));
   SelectedPhoneAccountIndex = DefaultPhoneAccountIndex;
       print("Final Phone Accounts : $PhoneAccounts");
-  print(WhatsappContacts);
+      print("Final Whatsapp Accounts :$WhatsappContacts");
 }
 
   Text AccountTitle(AccountType) {

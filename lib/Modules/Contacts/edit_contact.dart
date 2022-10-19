@@ -10,6 +10,7 @@ import 'package:focused_menu/modals.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 
+import '../../Themes/theme_config.dart';
 import 'appcontacts.dart';
 import 'contacts_screen.dart';
 
@@ -31,11 +32,9 @@ class ContactEditor extends StatelessWidget {
   TextEditingController Company = TextEditingController();
   TextEditingController JobTitle = TextEditingController();
   TextEditingController NickName = TextEditingController();
-  TextEditingController Website = TextEditingController();
-  TextEditingController Notes = TextEditingController();
+
   String? testinglabel;
   String? testinglabe;
-
   @override
   Widget build(BuildContext context) {
     DisplayName.text = '${contact.info?.displayName}';
@@ -50,41 +49,116 @@ class ContactEditor extends StatelessWidget {
     PhoneticLastName.text = "${contact.info?.name.lastPhonetic}";
     Company.text = contact.info!.organizations.isNotEmpty?'${contact.info?.organizations.single.company}':"";
     JobTitle.text = contact.info!.organizations.isNotEmpty?'${contact.info?.organizations.single.title}':"";
-    Website.text = contact.info!.websites.isNotEmpty?'${contact.info?.websites.single.url}':"";
+    PhoneContactsCubit.get(context).WebsiteController.text = contact.info!.websites.isNotEmpty?'${contact.info?.websites.single.url}':"";
     NickName.text = '${contact.info?.name.nickname}';
-    Notes.text = contact.info!.notes.isNotEmpty?'${contact.info?.notes.single.note}':"";
-
+    PhoneContactsCubit.get(context).NoteController.text = contact.info!.notes.isNotEmpty?'${contact.info?.notes.single.note}':"";
     PhoneContactsCubit.get(context).TextFormFieldInitialize(NumbersInAccount , contact);
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(icon:Icon(Icons.close),onPressed: (){
+        leading: TextButton(onPressed: (){
           PhoneContactsCubit.get(context).ContactCancel(contact,context);
-          },),
-        title: Center(child: Text("Edit Contact",style: TextStyle(color: Colors.black,fontSize: 15),)),
+          }, child: const Text("Cancel"),),
+        title: const Center(child: Text("edit contact",style: TextStyle(color: Colors.black,fontSize: 15),)),
         actions: [
-          Padding(
-            padding: EdgeInsets.only(right: 19.0),
-            child:IconButton(onPressed: (){
-              PhoneContactsCubit.get(context).ContactUpdate(contact,context);
-            }, icon:Icon(Icons.check),)
-          ),
+          TextButton(onPressed: (){
+            contact.info?.displayName = DisplayName.text;
+            contact.info?.name.prefix = PrefixName.text;
+            contact.info?.name.suffix = SufixName.text;
+            contact.info?.name.first = FirstName.text;
+            contact.info?.name.last = LastName.text;
+            contact.info?.name.middle = MiddleName.text;
+            contact.info?.name.firstPhonetic = PhoneticName.text;
+            contact.info?.name.firstPhonetic = PhoneticFirstName.text;
+            contact.info?.name.middlePhonetic = PhoneticMiddleName.text;
+            contact.info?.name.lastPhonetic = PhoneticLastName.text;
+            contact.info?.organizations.clear();
+            Company.text.isNotEmpty ?contact.info?.organizations.add(Organization(company: Company.text,title: JobTitle.text)):null;
+            contact.info?.name.nickname = NickName.text;
+            PhoneContactsCubit.get(context).ContactUpdate(contact,context);
+          }, child:const Text("Done")),
         ],
       ),
       body:SingleChildScrollView(
         child: BlocBuilder<PhoneContactsCubit,PhoneContactStates>(
           builder:(context,state) {
+            int count =0;
             return Column(
               crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              ContactAvatar(contact, 70),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: ContactAvatar(contact, 90),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        DropdownButton(
+                          itemHeight: 60,
+                          value:PhoneContactsCubit.get(context).DefaultPhoneAccounts[PhoneContactsCubit.get(context).SelectedPhoneAccountIndex],
+                          items: PhoneContactsCubit.get(context).DefaultPhoneAccounts.map((value){
+                            count++;
+                            return DropdownMenuItem(
+                              value:value,
+                              child:
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  PhoneContactsCubit.get(context).AccountIcon(PhoneContactsCubit.get(context).DefaultPhoneAccounts[count-1]["AccountType"]),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left:8.0),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        // SizedBox(height: 4,),
+                                        PhoneContactsCubit.get(context).AccountTitle(PhoneContactsCubit.get(context).DefaultPhoneAccounts[count-1]["AccountType"]),
+                                        SizedBox(
+                                          width: 100,
+                                          child: Text("${PhoneContactsCubit.get(context).DefaultPhoneAccounts[count-1]["AccountName"]}",overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            PhoneContactsCubit.get(context).SelectedPhoneAccountIndex = PhoneContactsCubit.get(context).DefaultPhoneAccounts.indexOf(value);
+                            PhoneContactsCubit.get(context).Daillerinput();
+                          },
+
+
+                        ),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width*0.60,
+                          child: Column(
+                            children: [
+                              ContactFormFieldHeader(Company,Icon(Icons.business,color:ContactFormIconColor(),size:20),"Company",false),
+                              SizedBox(height: 15,),
+                              ContactFormFieldHeader(JobTitle,Icon(Icons.work,color:ContactFormIconColor(),size: 20,),"Job title",false),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
               SizedBox(height: 30,),
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
                       width: MediaQuery.of(context).size.width*0.90,
-                      child: ContactFormField(PhoneContactsCubit.get(context).DNtoggler == true?PrefixName:DisplayName,Icon(Icons.person),PhoneContactsCubit.get(context).DNtoggler == true?"Prefix":"Display name",true)),
+                      child: ContactFormField(PhoneContactsCubit.get(context).DNtoggler == true?PrefixName:DisplayName,Icon(Icons.person,color: ContactFormIconColor(),),PhoneContactsCubit.get(context).DNtoggler == true?"Prefix":"Display name",true)),
                   Padding(
                     padding: const EdgeInsets.only(right:8.0,left:10),
                     child: IconButton(
@@ -117,7 +191,6 @@ class ContactEditor extends StatelessWidget {
                 ]),
               ):Container(),
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
                       width: MediaQuery.of(context).size.width*0.90,
@@ -152,62 +225,59 @@ class ContactEditor extends StatelessWidget {
                     ]),
               ):Container(),
 
-              Padding(
-                padding: const EdgeInsets.only(left:5.0),
-                child: Column(
-                  children: [
-                    ContactFormField(Company,Icon(Icons.business),"Company",false),
-                    ContactFormField(JobTitle,Icon(Icons.work),"Job title",false),
-                  ],
-                ),
-              ),
 
-              Container(
-                height: (PhoneContactsCubit.get(context).PhoneNumberController.length)*65,
+
+              SizedBox(
+                height: (PhoneContactsCubit.get(context).PhoneNumberController.length)*71,
                 child: ListView.builder(
                   physics: NeverScrollableScrollPhysics(),
                     itemCount: PhoneContactsCubit.get(context).PhoneNumberController.length,
                     itemBuilder: (context,index) {
-                      return PhoneTextForm(index,context);
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: PhoneTextForm(index,context),
+                      );
                     }),
               ),
               Container(
-                height: (PhoneContactsCubit.get(context).EmailAddressController.length)*65,
+                height: (PhoneContactsCubit.get(context).EmailAddressController.length)*71,
                 child: ListView.builder(
                   physics: NeverScrollableScrollPhysics(),
                     itemCount: PhoneContactsCubit.get(context).EmailAddressController.length,
-                    itemBuilder: (context,index)=>EmailAddressTextForm(index,context,)),
+                    itemBuilder: (context,index)=>Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: EmailAddressTextForm(index,context,),
+                    )),
               ),
               Container(
-                height: (PhoneContactsCubit.get(context).AddressController.length)*65,
+                height: (PhoneContactsCubit.get(context).AddressController.length)*71,
                 child: ListView.builder(
                   physics: NeverScrollableScrollPhysics(),
                     itemCount: PhoneContactsCubit.get(context).AddressController.length,
-                    itemBuilder: (context,index)=>AddressTextForm(index,context,)),
+                    itemBuilder: (context,index)=>Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: AddressTextForm(index,context,),
+                    )),
               ),
               Container(
-                height: (PhoneContactsCubit.get(context).EventController.length)*65,
+                height: (PhoneContactsCubit.get(context).EventController.length)*71,
                 child: ListView.builder(
                   physics: NeverScrollableScrollPhysics(),
                     itemCount: PhoneContactsCubit.get(context).EventController.length,
-                    itemBuilder: (context,index)=>EventTextForm(index,context,)),
+                    itemBuilder: (context,index)=>Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: EventTextForm(index,context,),
+                    )),
               ),
-              // Container(
-              //
-              //   height: 65,
-              //   child: ListView.builder(
-              //     physics: NeverScrollableScrollPhysics(),
-              //       itemCount: 1,
-              //       itemBuilder: (context,index)=>PhoneFormField(index,PhoneContactsCubit.get(context).PhoneNumberController[index],context,null,"Related Persons",PhoneContactsCubit.get(context).RelatedSideMenu,Icon(
-              //         Icons.account_box_sharp,
-              //       ),)),
-              // ),
               Container(
-                height: (PhoneContactsCubit.get(context).ChatController.length)*65,
+                height: (PhoneContactsCubit.get(context).ChatController.length)*71,
                 child: ListView.builder(
                   physics: NeverScrollableScrollPhysics(),
                     itemCount: PhoneContactsCubit.get(context).ChatController.length,
-                    itemBuilder: (context,index)=>ChatTextForm(index,context,)),
+                    itemBuilder: (context,index)=>Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ChatTextForm(index,context,),
+                    )),
               ),
               Container(
                 height: 65,
@@ -216,7 +286,7 @@ class ContactEditor extends StatelessWidget {
                     itemCount: 1,
                     itemBuilder: (context,index)=>Padding(
                         padding: EdgeInsets.only(left: 5),
-                        child: ContactFormField(NickName,FaIcon(FontAwesomeIcons.userNinja),"Nickname",false))),
+                        child: ContactFormField(NickName,FaIcon(FontAwesomeIcons.userNinja,color: ContactFormIconColor(),),"Nickname",false))),
               ),
               Container(
                 height: 65,
@@ -225,7 +295,7 @@ class ContactEditor extends StatelessWidget {
                     itemCount: 1,
                     itemBuilder: (context,index)=>Padding(
                         padding: EdgeInsets.only(left: 5),
-                        child: ContactFormField(Website,Icon(Icons.language),"Website",false))),
+                        child: ContactFormField(PhoneContactsCubit.get(context).WebsiteController,Icon(Icons.language,color: ContactFormIconColor(),),"Website",false))),
               ),
               Container(
                 height: 65,
@@ -234,7 +304,7 @@ class ContactEditor extends StatelessWidget {
                     itemCount: 1,
                     itemBuilder: (context,index)=>Padding(
                         padding: EdgeInsets.only(left: 5),
-                        child: ContactFormField(Notes,Icon(Icons.note),"Notes",false))),
+                        child: ContactFormField(PhoneContactsCubit.get(context).NoteController,Icon(Icons.note,color: ContactFormIconColor(),),"Notes",false))),
               ),
 
             ],
@@ -249,309 +319,399 @@ class ContactEditor extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(right: DropDown==true?0.0:32,left: PreIcon !=null?15.0:55 , top: 8 , bottom: 8),
       child: TextFormField(
+        style: ContactFormMainTextStyle(),
         controller: controller,
         decoration: InputDecoration(
+          labelStyle: ContactFormLabelTextStyle(),
           icon: PreIcon,
-          suffixIcon: IconButton(onPressed: (){},icon: Icon(Icons.cancel)),
+          suffixIcon: IconButton(onPressed: (){},icon: const Icon(Icons.cancel,size: 20,)),
           labelText: LabelText,
-          fillColor: Colors.grey[200],
+          fillColor: ContactFormfillColor(),
             filled: true,
         ),
       ),
     );
   }
 
-
-  Row PhoneTextForm(index,context) {
-    return Row(
-      children: [
-        SizedBox(width: 20),
-        index==0?FaIcon(FontAwesomeIcons.phoneAlt):SizedBox(width: 24),
-        SizedBox(width: 10),
-        ///DropDownMenu (Label)
-        Container(
-          width: 95,
-          child: DropdownButtonFormField(
-            // icon: preIcon,
-            value: PhoneContactsCubit.get(context).phoneSideMenu.first,
-            alignment: AlignmentDirectional.center,
-            onChanged: (label) {
-              PhoneContactsCubit.get(context).PhoneSideMenuController[index]=label as PhoneLabel;
-            },
-            items: PhoneContactsCubit.get(context).phoneSideMenu.map((value) {
-              return DropdownMenuItem(
-                  value:value,
-                  child: ForumLabels(value));
-            }).toList(),
-          ),
-        ),
-        /// Divider bettween DropDownMenu and textField
-        Container(
-          width: 1,
-          height: 20,
-          color: Colors.black,
-        ),
-        /// TextField
-        Padding(
-        padding: EdgeInsets.only(right:15, top: 8 , bottom: 8),
-        child: Container(
-          width: MediaQuery.of(context).size.width-170,
-          child: TextFormField(
-            onChanged: (value){
-              if(PhoneContactsCubit.get(context).PhoneNumberController.last.text.isNotEmpty)
-              {
-                PhoneContactsCubit.get(context).PhoneNumberadd(true);
-              }
-              if(value.isEmpty&&PhoneContactsCubit.get(context).PhoneNumberController.length >1)
-              { PhoneContactsCubit.get(context).PhoneNumberadd(false); }
-
-            },
-            controller: PhoneContactsCubit.get(context).PhoneNumberController[index],
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.only(left:5),
-              suffixIcon: IconButton(onPressed: (){},icon: Icon(Icons.cancel)),
-              labelText: "Number",
-              fillColor: Colors.grey[200],
-                filled: false,
-            ),
-          ),
-        ),
+  TextFormField ContactFormFieldHeader(controller,PreIcon , LabelText , bool?DropDown) {
+    return TextFormField(
+      style: ContactFormMainTextStyle(),
+      controller: controller,
+      decoration: InputDecoration(
+        labelStyle: ContactFormLabelTextStyle(),
+        icon: PreIcon,
+        suffixIcon: IconButton(onPressed: (){},icon: const Icon(Icons.cancel,size: 20,)),
+        labelText: LabelText,
+        fillColor: ContactFormfillColor(),
+          filled: true,
       ),
-
-      ]
     );
   }
-  Row EmailAddressTextForm(index,context,) {
-    return Row(
-      children: [
-        SizedBox(width: 20),
-        index==0?Icon(Icons.contact_mail,):SizedBox(width: 24),
-        SizedBox(width: 10),
-        ///DropDownMenu (Label)
-        Container(
-          width: 95,
-          child: DropdownButtonFormField(
-            value: PhoneContactsCubit.get(context).EmailSideMenu.first,
-            alignment: AlignmentDirectional.center,
-            onChanged: (label) {
-              PhoneContactsCubit.get(context).EmailSideMenuController[index]=label as EmailLabel;
-            },
-            items: PhoneContactsCubit.get(context).EmailSideMenu.map((value) {
-              return DropdownMenuItem(
-                  value:value,
-                  child: ForumLabels(value));
-            }).toList(),
-          ),
-        ),
-        /// Divider bettween DropDownMenu and textField
-        Container(
-          width: 1,
-          height: 20,
-          color: Colors.black,
-        ),
-        /// TextField
-        Padding(
-        padding: EdgeInsets.only(right:15, top: 8 , bottom: 8),
-        child: Container(
-          width: MediaQuery.of(context).size.width-170,
-          child: TextFormField(
-            onChanged: (value){
-              if(PhoneContactsCubit.get(context).EmailAddressController.last.text.isNotEmpty)
-              {
-                PhoneContactsCubit.get(context).EmailAddressAdd(true);
-              }
-              if(value.isEmpty&&PhoneContactsCubit.get(context).EmailAddressController.length >1)
-              { PhoneContactsCubit.get(context).EmailAddressAdd(false);}
 
-            },
-            controller: PhoneContactsCubit.get(context).EmailAddressController[index],
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.only(left:5),
-              suffixIcon: IconButton(onPressed: (){},icon: Icon(Icons.cancel)),
-              labelText: 'Email',
-              fillColor: Colors.grey[200],
-                filled: false,
+
+  Container PhoneTextForm(index,context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5),
+        color: Colors.white,
+      ),
+      height: 55,
+      child: Row(
+        children: [
+          const SizedBox(width: 10),
+          index==0?Icon(Icons.call,color:PhoneTextFormIconColor()):const SizedBox(width: 24),
+          const SizedBox(width: 8),
+          ///DropDownMenu (Label)
+          Container(
+            width: 78,
+            child: DropdownButtonFormField(
+              style: PhoneTextFormDropdownTextStyle(),
+              decoration:const InputDecoration(
+              enabledBorder:InputBorder.none ,
+              ),
+              // icon: preIcon,
+              value: PhoneContactsCubit.get(context).phoneSideMenu.first,
+              alignment: AlignmentDirectional.center,
+              onChanged: (label) {
+                PhoneContactsCubit.get(context).PhoneSideMenuController[index]=label as PhoneLabel;
+              },
+              items: PhoneContactsCubit.get(context).phoneSideMenu.map((value) {
+                return DropdownMenuItem(
+                  alignment: AlignmentDirectional.center,
+                    value:value,
+                    child: ForumLabels(value));
+              }).toList(),
+            ),
+          ),
+          /// Divider bettween DropDownMenu and textField
+          Container(
+            width: 1,
+            height: 20,
+            color: Colors.black,
+          ),
+          /// TextField
+          Padding(
+          padding: EdgeInsets.only(right:12, top: 8 , bottom: 8),
+          child: Container(
+            width: MediaQuery.of(context).size.width-170,
+            child: TextFormField(
+              style: PhoneTextFormMainTextStyle(),
+              onChanged: (value){
+                if(PhoneContactsCubit.get(context).PhoneNumberController.last.text.isNotEmpty)
+                {
+                  PhoneContactsCubit.get(context).PhoneNumberadd(true);
+                }
+                if(value.isEmpty&&PhoneContactsCubit.get(context).PhoneNumberController.length >1)
+                { PhoneContactsCubit.get(context).PhoneNumberadd(false); }
+
+              },
+              controller: PhoneContactsCubit.get(context).PhoneNumberController[index],
+              decoration: InputDecoration(
+                labelStyle: PhoneTextFormLabelTextStyle(),
+                enabledBorder: InputBorder.none,
+                contentPadding: EdgeInsets.only(left:5),
+                suffixIcon: IconButton(onPressed: (){},icon: Icon(Icons.remove_circle_outline),splashRadius: 3,color: Colors.red,iconSize: 21,),
+                labelText: "Number",
+                fillColor: Colors.grey[200],
+                  filled: false,
+              ),
             ),
           ),
         ),
-      ),
 
-      ]
+        ]
+      ),
     );
   }
-  Row AddressTextForm(index,context,) {
-    return Row(
-      children: [
-        SizedBox(width: 20),
-        index==0?Icon(Icons.place):SizedBox(width: 24),
-        SizedBox(width: 10),
-        ///DropDownMenu (Label)
-        Container(
-          width: 95,
-          child: DropdownButtonFormField(
-            value: PhoneContactsCubit.get(context).EmailSideMenu.first,
+  Container EmailAddressTextForm(index,context,) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5),
+        color: Colors.white,
+      ),
+      height: 55,
+      child: Row(
+        children: [
+          const SizedBox(width: 10),
+          index==0?Icon(Icons.contact_mail,color:PhoneTextFormIconColor()):const SizedBox(width: 24),
+          const SizedBox(width: 8),
+          ///DropDownMenu (Label)
+          Container(
             alignment: AlignmentDirectional.center,
-            onChanged: (label) {
-              PhoneContactsCubit.get(context).AddressSideMenuController[index]=label as AddressLabel;
-            },
-            items: PhoneContactsCubit.get(context).EmailSideMenu.map((value) {
-              return DropdownMenuItem(
-                  value:value,
-                  child: ForumLabels(value));
-            }).toList(),
+            width: 78,
+            child: DropdownButtonFormField(
+              decoration:const InputDecoration(
+                enabledBorder:InputBorder.none ,
+              ),
+              style: PhoneTextFormDropdownTextStyle(),
+              value: PhoneContactsCubit.get(context).EmailSideMenu.first,
+              alignment: AlignmentDirectional.center,
+              onChanged: (label) {
+                PhoneContactsCubit.get(context).EmailSideMenuController[index]=label as EmailLabel;
+              },
+              items: PhoneContactsCubit.get(context).EmailSideMenu.map((value) {
+                return DropdownMenuItem(
+                    alignment: AlignmentDirectional.center,
+                    value:value,
+                    child: ForumLabels(value));
+              }).toList(),
+            ),
           ),
-        ),
-        /// Divider bettween DropDownMenu and textField
-        Container(
-          width: 1,
-          height: 20,
-          color: Colors.black,
-        ),
-        /// TextField
-        Padding(
-        padding: EdgeInsets.only(right:15, top: 8 , bottom: 8),
-        child: Container(
-          width: MediaQuery.of(context).size.width-170,
-          child: TextFormField(
-            onChanged: (value){
-              if(PhoneContactsCubit.get(context).AddressController.last.text.isNotEmpty)
-              {
-                PhoneContactsCubit.get(context).AddressAdd(true);
-              }
-              if(value.isEmpty&&PhoneContactsCubit.get(context).AddressController.length >1) { PhoneContactsCubit.get(context).AddressAdd(false);}
-            },
-            controller: PhoneContactsCubit.get(context).AddressController[index],
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.only(left:5),
-              suffixIcon: IconButton(onPressed: (){},icon: Icon(Icons.cancel)),
-              labelText: "Address",
-              fillColor: Colors.grey[200],
-                filled: false,
+          /// Divider bettween DropDownMenu and textField
+          Container(
+            width: 1,
+            height: 20,
+            color: Colors.black,
+          ),
+          /// TextField
+          Padding(
+          padding: EdgeInsets.only(right:15, top: 8 , bottom: 8),
+          child: Container(
+            width: MediaQuery.of(context).size.width-170,
+            child: TextFormField(
+              style: PhoneTextFormMainTextStyle(),
+              onChanged: (value){
+                if(PhoneContactsCubit.get(context).EmailAddressController.last.text.isNotEmpty)
+                {
+                  PhoneContactsCubit.get(context).EmailAddressAdd(true);
+                }
+                if(value.isEmpty&&PhoneContactsCubit.get(context).EmailAddressController.length >1)
+                { PhoneContactsCubit.get(context).EmailAddressAdd(false);}
+
+              },
+              controller: PhoneContactsCubit.get(context).EmailAddressController[index],
+              decoration: InputDecoration(
+                labelStyle: PhoneTextFormLabelTextStyle(),
+                enabledBorder: InputBorder.none,
+                contentPadding: EdgeInsets.only(left:5),
+                suffixIcon: IconButton(onPressed: (){},icon: Icon(Icons.remove_circle_outline),splashRadius: 3,color: Colors.red,iconSize: 21,),
+                labelText: 'Email',
+                fillColor: Colors.grey[200],
+                  filled: false,
+              ),
             ),
           ),
         ),
-      ),
 
-      ]
+        ]
+      ),
     );
   }
-  Row EventTextForm(index,context,) {
-    return Row(
-      children: [
-        SizedBox(width: 20),
-        index==0?Icon(Icons.event):SizedBox(width: 24),
-        SizedBox(width: 10),
-        ///DropDownMenu (Label)
-        Container(
-          width: 95,
-          child: DropdownButtonFormField(
-            // icon: preIcon,
-            value: PhoneContactsCubit.get(context).EventSideMenu.first,
-            alignment: AlignmentDirectional.center,
-            onChanged: (label) {
-              PhoneContactsCubit.get(context).EventSideMenuController[index]=label as EventLabel;
-            },
-            items: PhoneContactsCubit.get(context).EventSideMenu.map((value) {
-              return DropdownMenuItem(
-                  value:value,
-                  child: ForumLabels(value));
-            }).toList(),
-          ),
-        ),
-        /// Divider bettween DropDownMenu and textField
-        Container(
-          width: 1,
-          height: 20,
-          color: Colors.black,
-        ),
-        /// TextField
-        Padding(
-        padding: EdgeInsets.only(right:15, top: 8 , bottom: 8),
-        child: Container(
-          width: MediaQuery.of(context).size.width-170,
-          child:
-          TextFormField(
-            onTap: (){
-              showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now(), lastDate: DateTime((DateTime.now().year)+10,1,1),).then((value){
-                PhoneContactsCubit.get(context).EventController[index].text = DateFormat.yMMMd().format(value!);
-              });
-            },
-            onChanged: (value){
-              if(PhoneContactsCubit.get(context).EventController.last.text.isNotEmpty)
-              {
-                PhoneContactsCubit.get(context).EventAdd(true);
-              } if(value.isEmpty&&PhoneContactsCubit.get(context).EventController.length >1) { PhoneContactsCubit.get(context).EventAdd(false);}
+  Container AddressTextForm(index,context,) {
+    return Container(
+      decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(5),
+      color: Colors.white,
+    ),
+      height: 55,
 
-            },
-            controller: PhoneContactsCubit.get(context).EventController[index],
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.only(left:5),
-              suffixIcon: IconButton(onPressed: (){},icon: Icon(Icons.cancel)),
-              labelText: "Date",
-              fillColor: Colors.grey[200],
-                filled: false,
+      child: Row(
+        children: [
+          const SizedBox(width: 10),
+          index==0?Icon(Icons.place,color:PhoneTextFormIconColor()):const SizedBox(width: 24),
+          const SizedBox(width: 8),
+          ///DropDownMenu (Label)
+          Container(
+            width: 78,
+            child: DropdownButtonFormField(
+              style: PhoneTextFormDropdownTextStyle(),
+              decoration:InputDecoration(
+                enabledBorder:InputBorder.none ,
+              ),
+              value: PhoneContactsCubit.get(context).EmailSideMenu.first,
+              alignment: AlignmentDirectional.center,
+              onChanged: (label) {
+                PhoneContactsCubit.get(context).AddressSideMenuController[index]=label as AddressLabel;
+              },
+              items: PhoneContactsCubit.get(context).EmailSideMenu.map((value) {
+                return DropdownMenuItem(
+                    alignment: AlignmentDirectional.center,
+                    value:value,
+                    child: ForumLabels(value));
+              }).toList(),
+            ),
+          ),
+          /// Divider bettween DropDownMenu and textField
+          Container(
+            width: 1,
+            height: 20,
+            color: Colors.black,
+          ),
+          /// TextField
+          Padding(
+          padding: EdgeInsets.only(right:15, top: 8 , bottom: 8),
+          child: Container(
+            width: MediaQuery.of(context).size.width-170,
+            child: TextFormField(
+              style: PhoneTextFormMainTextStyle(),
+              onChanged: (value){
+                if(PhoneContactsCubit.get(context).AddressController.last.text.isNotEmpty)
+                {
+                  PhoneContactsCubit.get(context).AddressAdd(true);
+                }
+                if(value.isEmpty&&PhoneContactsCubit.get(context).AddressController.length >1) { PhoneContactsCubit.get(context).AddressAdd(false);}
+              },
+              controller: PhoneContactsCubit.get(context).AddressController[index],
+              decoration: InputDecoration(
+                labelStyle: PhoneTextFormLabelTextStyle(),
+                enabledBorder: InputBorder.none,
+                contentPadding: EdgeInsets.only(left:5),
+                suffixIcon: IconButton(onPressed: (){},icon: Icon(Icons.remove_circle_outline),splashRadius: 3,color: Colors.red,iconSize: 21,),
+                labelText: "Address",
+                fillColor: Colors.grey[200],
+                  filled: false,
+              ),
             ),
           ),
         ),
-      ),
 
-      ]
+        ]
+      ),
     );
   }
-  Row ChatTextForm(index,context) {
-    return Row(
-      children: [
-        SizedBox(width: 20),
-        index==0?Icon(Icons.forum):SizedBox(width: 24),
-        SizedBox(width: 10),
-        ///DropDownMenu (Label)
-        Container(
-          width: 95,
-          child: DropdownButtonFormField(
-            // icon: preIcon,
-            value: PhoneContactsCubit.get(context).ChatSideMenu.first,
-            alignment: AlignmentDirectional.center,
-            onChanged: (label) {
-              if(label.toString().contains('Phone')){
-              index == index?PhoneContactsCubit.get(context).ChatSideMenuController[index]=label as SocialMediaLabel:null;
-              }
-            },
-            items: PhoneContactsCubit.get(context).ChatSideMenu.map((value) {
-              return DropdownMenuItem(
-                  value:value,
-                  child: ForumLabels(value));
-            }).toList(),
+  Container EventTextForm(index,context,) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5),
+        color: Colors.white,
+      ),
+      height: 55,
+      child: Row(
+        children: [
+          const SizedBox(width: 10),
+          index==0?Icon(Icons.event,color:PhoneTextFormIconColor()):SizedBox(width: 24),
+          const SizedBox(width: 8),
+          ///DropDownMenu (Label)
+          Container(
+            width: 85,
+            child: DropdownButtonFormField(
+              style: PhoneTextFormDropdownTextStyle(),
+              decoration:const InputDecoration(
+                enabledBorder:InputBorder.none ,
+              ),
+              value: PhoneContactsCubit.get(context).EventSideMenu.first,
+              alignment: AlignmentDirectional.center,
+              onChanged: (label) {
+                PhoneContactsCubit.get(context).EventSideMenuController[index]=label as EventLabel;
+              },
+              items: PhoneContactsCubit.get(context).EventSideMenu.map((value) {
+                return DropdownMenuItem(
+                    alignment: AlignmentDirectional.center,
+                    value:value,
+                    child: ForumLabels(value));
+              }).toList(),
+            ),
           ),
-        ),
-        /// Divider bettween DropDownMenu and textField
-        Container(
-          width: 1,
-          height: 20,
-          color: Colors.black,
-        ),
-        /// TextField
-        Padding(
-        padding: EdgeInsets.only(right:15, top: 8 , bottom: 8),
-        child: Container(
-          width: MediaQuery.of(context).size.width-170,
-          child: TextFormField(
-            onChanged: (value){
-              if(PhoneContactsCubit.get(context).ChatController.last.text.isNotEmpty) {PhoneContactsCubit.get(context).ChatUserNameAdd(true);}
-              if(value.isEmpty&&PhoneContactsCubit.get(context).ChatController.length >1) { PhoneContactsCubit.get(context).ChatUserNameAdd(false);}
-            },
-            controller: PhoneContactsCubit.get(context).ChatController[index],
-            decoration: InputDecoration(
-              contentPadding: EdgeInsets.only(left:5),
-              suffixIcon: IconButton(onPressed: (){},icon: Icon(Icons.cancel)),
-              labelText: "IM",
-              fillColor: Colors.grey[200],
-                filled: false,
+          /// Divider bettween DropDownMenu and textField
+          Container(
+            width: 1,
+            height: 20,
+            color: Colors.black,
+          ),
+          /// TextField
+          Padding(
+          padding: EdgeInsets.only(right:15, top: 8 , bottom: 8),
+          child: Container(
+            width: MediaQuery.of(context).size.width-170,
+            child:
+            TextFormField(
+              style: PhoneTextFormMainTextStyle(),
+              onTap: (){
+                showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now(), lastDate: DateTime((DateTime.now().year)+10,1,1),).then((value){
+                  PhoneContactsCubit.get(context).EventController[index].text = DateFormat.yMMMd().format(value!);
+                });
+              },
+              onChanged: (value){
+                if(PhoneContactsCubit.get(context).EventController.last.text.isNotEmpty)
+                {
+                  PhoneContactsCubit.get(context).EventAdd(true);
+                } if(value.isEmpty&&PhoneContactsCubit.get(context).EventController.length >1) { PhoneContactsCubit.get(context).EventAdd(false);}
+
+              },
+              controller: PhoneContactsCubit.get(context).EventController[index],
+              decoration: InputDecoration(
+                labelStyle: PhoneTextFormLabelTextStyle(),
+                enabledBorder: InputBorder.none,
+                contentPadding: EdgeInsets.only(left:5),
+                suffixIcon: IconButton(onPressed: (){},icon: Icon(Icons.remove_circle_outline),splashRadius: 3,color: Colors.red,iconSize: 21,),
+                labelText: "Date",
+                fillColor: Colors.grey[200],
+                  filled: false,
+              ),
             ),
           ),
         ),
-      ),
 
-      ]
+        ]
+      ),
+    );
+  }
+  Container ChatTextForm(index,context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5),
+        color: Colors.white,
+      ),
+      height: 55,
+      child: Row(
+        children: [
+          const SizedBox(width: 10),
+          index==0?Icon(Icons.forum,color:PhoneTextFormIconColor()):const SizedBox(width: 24),
+          const SizedBox(width: 8),
+          ///DropDownMenu (Label)
+          Container(
+            width: 78,
+            child: DropdownButtonFormField(
+              value: PhoneContactsCubit.get(context).ChatSideMenu.first,
+              decoration:const InputDecoration(
+                enabledBorder:InputBorder.none ,
+              ),
+              alignment: AlignmentDirectional.center,
+              onChanged: (label) {
+                if(label.toString().contains('Phone')){
+                index == index?PhoneContactsCubit.get(context).ChatSideMenuController[index]=label as SocialMediaLabel:null;
+                }
+              },
+              items: PhoneContactsCubit.get(context).ChatSideMenu.map((value) {
+                return DropdownMenuItem(
+                    alignment: AlignmentDirectional.center,
+                    value:value,
+                    child: ForumLabels(value));
+              }).toList(),
+            ),
+          ),
+          /// Divider bettween DropDownMenu and textField
+          Container(
+            width: 1,
+            height: 20,
+            color: Colors.black,
+          ),
+          /// TextField
+          Padding(
+          padding: EdgeInsets.only(right:15, top: 8 , bottom: 8),
+          child: Container(
+            width: MediaQuery.of(context).size.width-170,
+            child: TextFormField(
+              onChanged: (value){
+                if(PhoneContactsCubit.get(context).ChatController.last.text.isNotEmpty) {PhoneContactsCubit.get(context).ChatUserNameAdd(true);}
+                if(value.isEmpty&&PhoneContactsCubit.get(context).ChatController.length >1) { PhoneContactsCubit.get(context).ChatUserNameAdd(false);}
+              },
+              controller: PhoneContactsCubit.get(context).ChatController[index],
+              decoration: InputDecoration(
+                labelStyle: PhoneTextFormLabelTextStyle(),
+                enabledBorder: InputBorder.none,
+                contentPadding: EdgeInsets.only(left:5),
+                suffixIcon: IconButton(onPressed: (){},icon: Icon(Icons.remove_circle_outline),splashRadius: 3,color: Colors.red,iconSize: 21,),
+                labelText: "IM",
+                fillColor: Colors.grey[200],
+                  filled: false,
+              ),
+            ),
+          ),
+        ),
+
+        ]
+      ),
     );
   }
 

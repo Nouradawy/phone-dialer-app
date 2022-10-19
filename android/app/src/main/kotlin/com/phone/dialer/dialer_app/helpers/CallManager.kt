@@ -1,26 +1,73 @@
 package com.phone.dialer.dialer_app.helpers
 
 import android.annotation.TargetApi
-import android.database.Observable
+import android.content.ComponentName
+import android.content.Context
 import android.net.Uri
-import android.telecom.Call.Details
 import android.os.Build
-import android.os.Looper
+import android.os.Bundle
 import android.telecom.*
+
 import android.telecom.Call.Details.PROPERTY_CONFERENCE
+
 import androidx.annotation.RequiresApi
 import com.phone.dialer.dialer_app.MyStreamHandler
 import com.phone.dialer.dialer_app.eventSink
+import com.phone.dialer.dialer_app.services.CallHandler
 import com.phone.dialer.dialer_app.services.CallService
 import com.phone.dialer.dialer_app.services.PhoneID
+
 
 
 // inspired by https://github.com/Chooloo/call_manage
 
 
-class CallManager {
-    companion object {
 
+class CallManager(context: Context) {
+    val telecomManager: TelecomManager
+    var phoneAccountHandle: PhoneAccountHandle
+    var phoneAccount: PhoneAccount
+    var context: Context
+    init
+    {
+        this.context = context
+         phoneAccountHandle = PhoneAccountHandle(ComponentName(context.getApplicationContext(), CallHandler.TAG), "myCallHandlerId") as PhoneAccountHandle
+        telecomManager = context.getSystemService(Context.TELECOM_SERVICE) as TelecomManager
+        phoneAccount = PhoneAccount.builder(phoneAccountHandle, "myCallHandlerId").setCapabilities(PhoneAccount.CAPABILITY_SELF_MANAGED).build()
+
+    println("Phone Account" + telecomManager.getPhoneAccount(phoneAccountHandle).toString())
+//    println("Phone Account" + tm.getPhoneAccount(phoneAccountHandle).isEnabled().toString())
+//
+//
+//    println("Phone Account isEnabled" + phoneAccount.isEnabled().toString())
+//
+
+}
+
+
+
+    @TargetApi(Build.VERSION_CODES.M)
+    fun AddNewCall(){
+        val bundle = Bundle()
+        val uri: Uri = Uri.fromParts(PhoneAccount.SCHEME_TEL, "555555555", null)
+        bundle.putParcelable(TelecomManager.EXTRA_INCOMING_CALL_ADDRESS, uri)
+        bundle.putParcelable(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, phoneAccountHandle)
+
+
+
+        if(telecomManager.isIncomingCallPermitted(phoneAccountHandle))
+        {
+            telecomManager.addNewIncomingCall(phoneAccountHandle,bundle)
+        }
+    }
+
+    fun RegisterPhoneAccount(){
+        telecomManager.registerPhoneAccount(phoneAccount)
+    }
+
+
+
+    companion object {
         var call: Call? = null
         var inCallService: InCallService? = null
         var conference : Conference? = null
@@ -74,7 +121,8 @@ class CallManager {
 
                 if(element.details.hasProperty(PROPERTY_CONFERENCE))
                 {
-                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID.toString(), if(call?.conferenceableCalls?.isEmpty() == true) "false" else "true", Call.STATE_NEW).toMap())
+                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID.toString(), if(call?.conferenceableCalls?.isEmpty() == true) "false" else "true",
+                        "false", Call.STATE_NEW).toMap())
                 }
             }
 
@@ -156,13 +204,7 @@ class CallManager {
         }
 
 
-
     }
 
 }
 
-class PhoneAccount {
-    companion object{
-        var ConnectionService : ConnectionService? =null
-    }
-}

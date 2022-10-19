@@ -466,11 +466,7 @@ class PhoneLogScreen extends StatelessWidget {
                               onTap: (){
 
                                 if(PhoneLogsCubit.get(context).AddToBlackList==true) {
-                                  PhoneContactsCubit
-                                      .get(context)
-                                      .BlockWarning = !PhoneContactsCubit
-                                      .get(context)
-                                      .BlockWarning;
+                                  PhoneContactsCubit.get(context).BlockWarning = !PhoneContactsCubit.get(context).BlockWarning;
                                 }
                                 else
                                   {

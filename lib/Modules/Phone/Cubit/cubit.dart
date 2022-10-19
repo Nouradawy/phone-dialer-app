@@ -101,6 +101,7 @@ class PhoneLogsCubit extends Cubit<PhoneLogsStates> {
     }
   }
   List contactCalllog = [];
+
   void ContactCallLogs(AppContact contact){
     contactCalllog.clear();
     contactCalllog =PhoneCallLogs.toList();
@@ -108,6 +109,7 @@ class PhoneLogsCubit extends Cubit<PhoneLogsStates> {
       return contact.info!.phones.any((e) => element["number"]==e.number);
     });
   }
+
   void CallLogsUpdate (List<AppContact> contacts){
     PhoneCallLogs.clear();
     PhoneCallOutBound.clear();

@@ -19,10 +19,10 @@ class _Settings_ScreenState extends State<Settings_Screen> {
         title:Text("Settings",style: TextStyle(color: Colors.black),),
       ),
       body: ListView.builder(
-        itemCount: PhoneContactsCubit.get(context).Contacts.first.PhoneAccounts?.length,
+        itemCount: PhoneContactsCubit.get(context).DefaultPhoneAccounts.length,
         itemBuilder: (context,index)=>ListTile(
-          title: PhoneContactsCubit.get(context).AccountTitle(PhoneContactsCubit.get(context).Contacts.first.PhoneAccounts?[index]["AccountType"]),
-          subtitle: Text(PhoneContactsCubit.get(context).Contacts.first.PhoneAccounts?[index]["AccountName"]),
+          title: PhoneContactsCubit.get(context).AccountTitle(PhoneContactsCubit.get(context).DefaultPhoneAccounts[index]["AccountType"]),
+          subtitle: Text(PhoneContactsCubit.get(context).DefaultPhoneAccounts[index]["AccountName"]),
           leading: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -34,7 +34,7 @@ class _Settings_ScreenState extends State<Settings_Screen> {
                       PhoneContactsCubit.get(context).DefaultPhoneAccountIndex = value.hashCode;
                     });
                   }),
-              PhoneContactsCubit.get(context).AccountIcon(PhoneContactsCubit.get(context).Contacts.first.PhoneAccounts?[index]["AccountType"]),
+              PhoneContactsCubit.get(context).AccountIcon(PhoneContactsCubit.get(context).DefaultPhoneAccounts[index]["AccountType"]),
             ],
           ),
         ),

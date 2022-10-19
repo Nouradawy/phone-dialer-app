@@ -12,6 +12,8 @@ import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_contacts/properties/note.dart';
 import 'package:hexcolor/hexcolor.dart';
 
+import '../Notifications/notifications.dart';
+
 Container FavoritesContactsGroups(PhoneContactsCubit Cubit,context , AccessibilityText) {
 
   return Container(
@@ -59,8 +61,8 @@ Container FavoritesContactsGroups(PhoneContactsCubit Cubit,context , Accessibili
                 child: InkWell(
                     onTap: () async {
                       // print(fbList[13].toString());
-
                       //TODO: Testing FBLISt at contact screen @Fav icon
+                      NativeBridge.get(context).invokeNativeMethod("Processes");
                     },
                     child: Image.asset("assets/Images/people_black_24dp.png",scale: 1.4,)),
               ),
@@ -372,64 +374,173 @@ TextEditingController HeaderController = TextEditingController();
 
 }
 
-ConstrainedBox ContactTagNotes(BuildContext context ,Notes) {
+ConstrainedBox ContactTagNotes(BuildContext context , Notes , contact) {
   return ConstrainedBox(
     constraints: BoxConstraints(
       maxWidth: MediaQuery.of(context).size.width*0.50,
       maxHeight: 100,
     ),
     child: PageView.builder(
-      itemCount: Notes?.length,
-
+      itemCount: Notes.length+1,
       itemBuilder:(context,index) {
         NotesPageIndex = index;
         print("Page Index : "+NotesPageIndex.toString());
-        return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top:8.0),
-                child: Container(
-                    alignment: AlignmentDirectional.topCenter,
-                    width:MediaQuery.of(context).size.width*0.50,
-                    height: 70,
+        return index==Notes.length?InkWell(
+          onTap: (){
+            showModalBottomSheet(context: context , builder: (context){
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(top:20.0 , left: 20.0 , bottom: MediaQuery.of(context).viewInsets.bottom + 20),
+                    child: Stack(
+                      children: [
+                        Stack(
+                          alignment:AlignmentDirectional.topEnd,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(top:8.0),
+                              child: Container(
+                                  alignment: AlignmentDirectional.topCenter,
+                                  width:MediaQuery.of(context).size.width*0.50,
+                                  height: 90,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(4),
+                                    color:HexColor("#F5F5F5"),
+                                  ),
+                                  child:Padding(
+                                    padding: const EdgeInsets.only(top:7.0,right: 5,left: 5),
+                                    child: TextField(
+                                      decoration: const InputDecoration(
+                                        hintText: "Type in your Hint body....",
+                                        border:InputBorder.none,
+                                      ),
+
+                                      controller: PhoneContactsCubit.get(context).NotesController,
+                                      style: Theme.of(context).textTheme.button?.copyWith(color: Colors.black26),
+                                      onSubmitted: (value){
+                                        contact.NoteController?.add(value);
+                                        PhoneContactsCubit.get(context).NotesController.clear();
+                                        PhoneContactsCubit.get(context).AddNote();
+                                        print(PhoneContactsCubit.get(context).NoteEditting);
+                                        print("Notes : "+contact.NoteController.toString());
+                                      },
+
+                                    ),
+                                  )),
+                            ),
+                            IconButton(onPressed: (){
+                              HeaderController.clear();
+                              TagController.clear();
+                              TagsNotes.removeWhere((element) => element["ContactID"] == contact.info?.id);
+                            }, icon: Icon(Icons.remove_circle_outline)),
+                          ],
+                        ),
+                        Container(
+                            alignment: AlignmentDirectional.center,
+                            height:17,
+                            width:100,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(6),
+                                gradient: LinearGradient(
+                                  colors: [HexColor("#615A5A"),HexColor("#A227CE")],
+                                )
+                            ),
+                            child:Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 5.0),
+                              child: TextFormField(
+                                decoration: InputDecoration(
+                                  hintStyle: Theme.of(context).textTheme.button,
+                                  isCollapsed: true,
+                                  hintText: "Hint",
+                                  border:InputBorder.none,
+                                ),
+                                controller: HeaderController,
+                                minLines: 1,
+                                style: Theme.of(context).textTheme.button?.copyWith(overflow: TextOverflow.visible),
+
+
+                              ),
+                            )),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: IconButton(onPressed: (){
+                      if(contact.NoteController ==null)
+                      {
+                        ContactNotes.add({
+                          "id":contact.info?.id,
+                          "Notes" : ""
+                        });
+
+                      }
+                      PhoneContactsCubit.get(context).AddNote();
+                    }, icon: Icon(Icons.check_circle_outline_outlined)),
+                  ),
+                ],
+              );
+            });
+
+
+          },
+          child: Container(
+            width:MediaQuery.of(context).size.width*0.50,
+            height: 70,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(4),
+              color:HexColor("#F5F5F5"),
+            ),
+            child: Center(child: Icon(Icons.add)),
+          ),
+        ):Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top:8.0),
+                  child: Container(
+                      alignment: AlignmentDirectional.topCenter,
+                      width:MediaQuery.of(context).size.width*0.50,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        color:HexColor("#F5F5F5"),
+                      ),
+                      child:Padding(
+                        padding: const EdgeInsets.only(top:9.0,right: 7,left: 7),
+                        child: Text(Notes![index],style: Theme.of(context).textTheme.caption,),
+                      )),
+                ),
+                Container(
+                    alignment: AlignmentDirectional.center,
+                    width:26,
+                    height: 14,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(4),
-                      color:HexColor("#F5F5F5"),
+                        borderRadius: BorderRadius.circular(6),
+                        gradient: LinearGradient(
+                          colors: [HexColor("#615A5A"),HexColor("#A227CE")],
+                        )
                     ),
                     child:Padding(
-                      padding: const EdgeInsets.only(top:9.0,right: 7,left: 7),
-                      child: Text(Notes![index],style: Theme.of(context).textTheme.caption,),
+                      padding: const EdgeInsets.only(bottom: 0.0),
+                      child: Text("Hint",style:Theme.of(context).textTheme.button),
                     )),
-              ),
-              Container(
-                  alignment: AlignmentDirectional.center,
-                  width:26,
-                  height: 14,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(6),
-                      gradient: LinearGradient(
-                        colors: [HexColor("#615A5A"),HexColor("#A227CE")],
-                      )
-                  ),
-                  child:Padding(
-                    padding: const EdgeInsets.only(bottom: 0.0),
-                    child: Text("Hint",style:Theme.of(context).textTheme.button),
-                  )),
-              Transform.translate(
-                offset: Offset(-3,55),
-                child: Align(
-                    alignment: Alignment.bottomRight,
-                    child: Text("${index+1}/${Notes.length}")),
-              ),
-            ],
-          ),
+                Transform.translate(
+                  offset: Offset(-3,55),
+                  child: Align(
+                      alignment: Alignment.bottomRight,
+                      child: Text("${index+1}/${Notes.length}")),
+                ),
+              ],
+            ),
 
-        ],
-      );
+          ],
+        );
       },
     ),
   );

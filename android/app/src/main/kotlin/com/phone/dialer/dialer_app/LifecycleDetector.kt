@@ -22,6 +22,7 @@ object LifecycleDetector {
 
     }
 
+
     private class ActivityLifecycleCallbacks : Application.ActivityLifecycleCallbacks {
         override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
             if (activity is MainActivity) {

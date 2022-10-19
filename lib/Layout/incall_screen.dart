@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:action_slider/action_slider.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dialer_app/Components/components.dart';
 import 'package:dialer_app/Modules/Contacts/Contacts%20Cubit/contacts_cubit.dart';
@@ -22,12 +23,14 @@ import 'package:stop_watch_timer/stop_watch_timer.dart';
 import '../Components/constants.dart';
 import '../Modules/profile/Profile Cubit/profile_cubit.dart';
 import '../Network/Local/cache_helper.dart';
+import '../Notifications/notifications_controller.dart';
 import '../Themes/theme_config.dart';
 import '../home.dart';
 import 'Cubit/cubit.dart';
 
 
 class InCallScreen extends StatelessWidget {
+  ReceivedAction? receivedAction;
 
   @override
   Widget build(BuildContext context) {
@@ -121,6 +124,12 @@ class InCallScreen extends StatelessWidget {
 
           },
           builder: (context, state) {
+            if(isRejected==true)
+              {
+                Cubit.MergedOrRinging = false;
+                Cubit.invokeNativeMethod("RejectCall", null);
+                isRejected=false;
+              }
               if(ThemeCubit.get(context).ThemeEditorIsActive==true)
                 {
                   Cubit.isRinging=false;

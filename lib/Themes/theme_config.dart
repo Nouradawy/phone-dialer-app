@@ -151,6 +151,8 @@ TextStyle ContactNameTextStyle(){
 
 
 ////////////////////////////////////////////////Colors///////////////////////////////////////////////////
+
+
 ///////////////////////////////////Dialer//////////////////////////////////
 TextStyle DialPadNumbersColor(context) =>TextStyle(
     fontFamily: "Quicksand",
@@ -170,15 +172,15 @@ Color DialPadBackgroundColor(context)=>ThemeCubit.get(context).ThemeEditorIsActi
 
 
 ////////////////////InCall///////////////////////////
-
 Color ActiveButton(context)=>ThemeCubit.get(context).ThemeEditorIsActive?ThemeCubit.get(context).InCallButtonsNotactiveColor:HexColor(ThemeCubit.get(context).MyThemeData[ActiveTheme]["InCallButtonsNotactiveColor"]);
+
 //////////////CallLogScreen///////////////////////////
 HexColor CallLogDetailsBackStrip() =>HexColor("#8F00B9");
-// HexColor CallLogDetailsBackStrip() => ThemeSwitch?HexColor("#8F00B9"):HexColor("#8F00B9");
+
 HexColor CallLogDetailsleftContainer() => HexColor("#BFE5F9");
-// HexColor CallLogDetailsleftContainer() => ThemeSwitch?HexColor("#BFE5F9"):HexColor("#BFE5F9");
+
 HexColor CallLogDetailsRightContainer() => HexColor("#F2E7FE");
-// HexColor CallLogDetailsRightContainer() => ThemeSwitch?HexColor("#F2E7FE"):HexColor("#F2E7FE");
+
 HexColor PhoneLogDiallerNameColor(context) => ThemeCubit.get(context).ThemeEditorIsActive?HexColor('#'+ThemeCubit.get(context).PhoneLogDiallerNameColor.toString()
     .replaceAll("Color", "")
     .substring(5)
@@ -194,7 +196,7 @@ HexColor PhoneLogPhoneNumberColor(context) => ThemeCubit.get(context).ThemeEdito
 
 
 HexColor ContactsFavBackgroundColor() => HexColor("#F2F2F2");
-// HexColor ContactsFavBackgroundColor() => ThemeSwitch?HexColor("#F2F2F2"):HexColor("#1F1B24");
+
 
 Color HomePageBackgroundColor(context) => ThemeCubit.get(context).ThemeEditorIsActive?HexColor('#'+ThemeCubit.get(context).AppBackGroundColor.toString()
     .replaceAll("Color", "")
@@ -202,24 +204,47 @@ Color HomePageBackgroundColor(context) => ThemeCubit.get(context).ThemeEditorIsA
     .replaceAll(")", "")
     .toUpperCase()): HexColor(ThemeCubit.get(context).MyThemeData[ActiveTheme]["AppBackGroundColor"]);
 HexColor AppBarChatTextColor() => HexColor("#616161");
-// HexColor AppBarChatTextColor() => ThemeSwitch?HexColor("#616161"):HexColor("#000000");
+
 Color SearchBackgroundColor(context) => HexColor(ThemeCubit.get(context).MyThemeData[ActiveTheme]["SearchBackgroundColor"]).withOpacity(0.52);
-// Color SearchBackgroundColor() => ThemeSwitch?HexColor("#FFFFFF").withOpacity(0.52):HexColor("#2D4E80").withOpacity(0.52);
+
 Color AppBarChatIconBackgroundColor() => HexColor("#FFFFFF").withOpacity(0.52);
-// Color AppBarChatIconBackgroundColor() => ThemeSwitch?HexColor("#FFFFFF").withOpacity(0.52):HexColor("#FFFFFF").withOpacity(0.79);
+
 Color AppBarMoreIconColor() => HexColor("#FFD8E4");
 Color SearchIconColor() => HexColor("#959595");
-// Color SearchIconColor() => ThemeSwitch?HexColor("#959595"):HexColor("#0075CE");
+
 Color AppBarBackgroundColor(context) => HexColor(ThemeCubit.get(context).MyThemeData[ActiveTheme]["AppBarBackgroundColor"]);
 
 HexColor AppBarEditIconColor() => HexColor("#0075CE");
 Color AppBarEditIconBackGroundColor() => HexColor("#FFD8E4");
-// Color AppBarEditIconBackGroundColor() => ThemeSwitch?HexColor("#FFD8E4"):HexColor("#1F0054").withOpacity(0.78);
+
 Color TabBarlabelColor(context) => HexColor(ThemeCubit.get(context).MyThemeData[ActiveTheme]["TabBarColor"]);
 Color TabBarindicatorColor(context) => HexColor(ThemeCubit.get(context).MyThemeData[ActiveTheme]["TabBarIndicatorColor"]);
 
 Color TabBarUnselectedlabelColor(context) => HexColor(ThemeCubit.get(context).MyThemeData[ActiveTheme]["UnSelectedTabBarColor"]);
 
-// Future<File> DialPadBackgroundImagepath(context)  async => await SaveImagePermanently(ThemeCubit.get(context).DialPadBackGroundImagePicker.path);
-// Future<File> InCallBackgroundImagepath(context)  => SaveImagePermanently(ThemeCubit.get(context).MyThemeData[ActiveTheme]["InCallBackground"]);
+////////////////////ContactEdit///////////////////////////
 
+TextStyle ContactFormMainTextStyle()=>const TextStyle(
+  color: Colors.black,
+  fontWeight: FontWeight.w500,
+);
+TextStyle PhoneTextFormMainTextStyle()=>const TextStyle(
+  color: Colors.black,
+  fontWeight: FontWeight.w500,
+);
+TextStyle ContactFormLabelTextStyle()=>const TextStyle(
+  color: Colors.indigo,
+  fontWeight: FontWeight.w600,
+);
+TextStyle PhoneTextFormLabelTextStyle()=>const TextStyle(
+  color: Colors.indigo,
+  fontWeight: FontWeight.w600,
+);
+TextStyle PhoneTextFormDropdownTextStyle()=>const TextStyle(
+  color: Colors.indigo,
+  fontWeight: FontWeight.w600,
+  fontSize: 11,
+);
+Color ContactFormfillColor()=>Colors.white;
+Color ContactFormIconColor()=>Colors.indigo;
+Color PhoneTextFormIconColor()=>Colors.indigo;

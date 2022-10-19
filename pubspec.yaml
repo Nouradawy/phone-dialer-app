@@ -57,7 +57,10 @@ dependencies:
   cloud_firestore: ^3.4.9
   focused_menu: ^1.0.5
   proximity_sensor: ^1.0.2
-  awesome_notifications: ^0.6.21
+  sensors_plus: ^1.4.1
+  system_alert_window: ^1.1.2
+
+  awesome_notifications: ^0.7.2
   firebase_storage: ^10.3.3
   firebase_messaging: ^12.0.1
 
@@ -76,9 +79,10 @@ dependencies:
   shared_preferences: ^2.0.15
   dio_helper: ^1.1.19
   conditional_builder_null_safety: ^0.0.6
-#  workmanager: ^0.5.0
+  workmanager: ^0.5.0
   bg_launcher: 0.0.1
   url_launcher: ^6.1.5
+  flutter_background: ^1.1.0
 
 dev_dependencies:
   flutter_test:

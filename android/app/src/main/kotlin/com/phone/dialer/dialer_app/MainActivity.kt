@@ -2,23 +2,19 @@ package com.phone.dialer.dialer_app
 
 
 //import com.phone.dialer.dialer_app.services.Callcallback
-
-import android.app.role.RoleManager
+import android.app.ActivityManager
 import android.content.Context
-import android.content.Context.ROLE_SERVICE
 import android.content.Intent
-import android.os.PowerManager
+import android.content.pm.PackageManager
+import android.os.*
 import android.os.PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK
 import android.os.PowerManager.RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY
-import android.provider.ContactsContract.Settings.ACTION_SET_DEFAULT_ACCOUNT
-import android.telecom.Call
-import android.telephony.TelephonyManager
 import androidx.annotation.NonNull
+import androidx.annotation.RequiresApi
 import com.phone.dialer.dialer_app.activities.CallActivity
 import com.phone.dialer.dialer_app.helpers.CallManager
 import com.phone.dialer.dialer_app.services.BLockList
-import com.phone.dialer.dialer_app.services.MyCallScreeningService
-import com.phone.dialer.dialer_app.services.PhoneID
+import com.phone.dialer.dialer_app.services.CallConnection
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
@@ -26,9 +22,12 @@ import io.flutter.plugin.common.MethodChannel
 
 
 var eventSink : EventChannel.EventSink? = null
+
+
+
 class MainActivity : FlutterActivity() {
 
-
+    @RequiresApi(Build.VERSION_CODES.O)
 //    private fun createNotificationChannel() {
 //        // Create the NotificationChannel, but only on API 26+ because
 //        // the NotificationChannel class is new and not in the support library
@@ -41,12 +40,10 @@ class MainActivity : FlutterActivity() {
 //                description = "descriptionText"
 //            }
 //            // Register the channel with the system
-//            val manager  =
-//                    context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+//            val manager  = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 //            manager.createNotificationChannel(channel)
 //
 //    }
-
 
 
 
@@ -60,28 +57,37 @@ class MainActivity : FlutterActivity() {
     private lateinit var eventChannel : EventChannel
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         eventChannel = EventChannel(flutterEngine.dartExecutor.binaryMessenger,EVEENT_CHANNEL)
         eventChannel.setStreamHandler(MyStreamHandler(context))
 
         val binaryMessenger = flutterEngine.dartExecutor.binaryMessenger
-        val tm = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+//        createNotificationChannel()
 
-        MethodChannel(binaryMessenger, "com.example/background_service").apply {
-            setMethodCallHandler { method, result ->
-                if (method.method == "startService") {
-                    val callbackRawHandle = method.arguments as Long
-                    BackgroundService.startService(this@MainActivity, callbackRawHandle)
-                    result.success(null)
-                }
 
-                else {
-                    result.notImplemented()
-                }
-            }
-        }
+
+
+//        CallManager(context).RegisterPhoneAccount()
+//        CallManager(context).AddNewCall()
+
+
+//        MethodChannel(binaryMessenger, "com.example/background_service").apply {
+//            setMethodCallHandler { method, result ->
+//                if (method.method == "startService") {
+//                    val callbackRawHandle = method.arguments as Long
+//                    BackgroundService.startService(this@MainActivity, callbackRawHandle)
+//                    result.success(null)
+//                }
+//
+//                else {
+//                    result.notImplemented()
+//                }
+//            }
+//        }
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, platform).setMethodCallHandler {
 
@@ -151,13 +157,15 @@ class MainActivity : FlutterActivity() {
 //                result.error("unavilable", "faild to Reject", null)
             }
             if (states.equals("RejectCall"))  {
-                CallManager.reject()
+//                CallManager.reject()
+                CallConnection(context).onDisconnect()
 //                    result.success("RejectCallMethodSuccess")
 //                    result.error("unavilable", "faild to Reject", null)
                     }
 
             if (states.equals("AcceptCall")) {
                 CallManager.accept()
+                CallConnection.STATE_ACTIVE
 //                    result.success("AcceptCallMethodSuccess")
 //                    result.error("unavilable", "faild to Reject", null)
                 }
@@ -189,15 +197,15 @@ class MainActivity : FlutterActivity() {
                 }
             if (states.equals("FlutterStart")) {
 
-                if(CallManager.call!!.state == Call.STATE_RINGING) {
-                    println("it's ringing from invoed method : " + PhoneID.toString())
-                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID.toString(), "disconnected", state = Call.STATE_RINGING).toMap())
-                }
-
-                if(CallManager.call!!.state == Call.STATE_ACTIVE) {
-                    println("it's ringing from invoed method : " + PhoneID.toString())
-                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID.toString(), "inbound", state = Call.STATE_ACTIVE).toMap())
-                }
+//                if(CallManager.call!!.state == Call.STATE_RINGING) {
+//                    println("it's ringing from invoed method : " + PhoneID.toString())
+//                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID.toString(), "disconnected", state = Call.STATE_RINGING).toMap())
+//                }
+//
+//                if(CallManager.call!!.state == Call.STATE_ACTIVE) {
+//                    println("it's ringing from invoed method : " + PhoneID.toString())
+//                    eventSink!!.success(MyStreamHandler.PhoneCallEvent(PhoneID.toString(), "inbound", state = Call.STATE_ACTIVE).toMap())
+//                }
 
             }
 //            if(states.equals("PhoneAccounts"))
@@ -236,6 +244,9 @@ class MainActivity : FlutterActivity() {
                 println(BLockList)
 
             }
+            if(states.equals("Processes")) {
+
+            }
 
 
                 else  result.notImplemented()
@@ -259,12 +270,13 @@ class MyStreamHandler(private val context: Context) : EventChannel.StreamHandler
     }
 
 
-    data class PhoneCallEvent(var phoneNumber: String?, val type: String? , val state : Int?) {
+    data class PhoneCallEvent(var phoneNumber: String?, val OnConference: String?,val IsHomeLuncher: String?, val state : Int?) {
         fun toMap(): Map<String, String?> {
             val map = mutableMapOf<String, String?>()
             map["phoneNumber"] = phoneNumber
             map["state"] = CallManager.stateToString(state!!)
-            map["type"] = type
+            map["OnConference"] = OnConference
+            map["IsHomeLuncher"] = IsHomeLuncher
             return map
         }
     }

@@ -154,8 +154,7 @@ class NativeBridge extends Cubit<NativeStates> {
       final Map<String, dynamic> value = (event as Map).cast();
       nativePhoneEvent = NativePhoneEvent(value);
       PhoneNumberQuery = nativePhoneEvent?.phoneNumber.toString();
-      nativePhoneEvent?.type =="true"?OnConference=true:null;
-
+      nativePhoneEvent?.IsConference =="true"?OnConference=true:null;
       PhoneState();
     });
   }
@@ -380,7 +379,7 @@ class NativeBridge extends Cubit<NativeStates> {
 
 
 }
-
+String? IsHomeLuncher;
 class NativePhoneEvent {
   /// Underlying call ID assigned by the device.
   /// android: always null
@@ -392,12 +391,15 @@ class NativePhoneEvent {
   String? phoneNumber;
 
   /// The type of call event.
-  String? type;
+  String? IsConference;
+
+
 
   NativePhoneEvent(Map<String,dynamic>json){
     state = json["state"];
     phoneNumber = json["phoneNumber"];
-    type = json["type"];
+    IsConference = json["OnConference"];
+    IsHomeLuncher = json["IsHomeLuncher"];
   }
 
 
