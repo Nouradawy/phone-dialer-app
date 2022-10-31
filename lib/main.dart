@@ -29,7 +29,6 @@ import 'Themes/Cubit/cubit.dart';
 import 'home.dart';
 
 
-
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("on BackGround message");
   print("message data: ${message.data}");
@@ -223,7 +222,6 @@ if(PhonePermision ==false || ContactsPermission==false)
 else {
   return MultiBlocProvider(
       providers: [
-
         // BlocProvider(create:(context)=> ChatAppCubit()),
         BlocProvider(create: (context)=>NativeBridge()..phonestateEvents()),
         BlocProvider(create:(context)=> PhoneContactsCubit()..GetRawContacts(false)),
@@ -232,23 +230,15 @@ else {
         BlocProvider(create: (context)=>PhoneLogsCubit()),
         BlocProvider(create: (context)=>ThemeCubit()),
         BlocProvider(create: (context)=>ChatAppCubit()),
-
-
       ],
       child:BlocBuilder<AppCubit,AppStates>(
-
         builder:(context,state)
         {
-
-
           if(Themedata.isNotEmpty)
             {
-
               ThemeCubit.get(context).LoadThemeData();
             }
           ThemeSharedPref(context);
-
-
                 return MaterialApp(
                   debugShowCheckedModeBanner: false,
                   debugShowMaterialGrid: false,

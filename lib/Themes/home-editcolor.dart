@@ -45,7 +45,6 @@ class HomeScreenEdite extends StatelessWidget {
                     backgroundColor: HomePageBackgroundColor(context),
                     extendBodyBehindAppBar: true,
                     appBar:MainAppBarEditor(context, AppbarSize , AppCubit.get(context).searchController),
-                    drawer: AppDrawer(context, AppbarSize),
                     drawerDragStartBehavior: DragStartBehavior.start ,
                     floatingActionButton: ThemeCubit.get(context).dialPadIsShowen==false?FloatingActionButton(
                       shape: RoundedRectangleBorder(

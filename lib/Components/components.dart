@@ -238,6 +238,7 @@ AppBar MainAppBarEditor(BuildContext context, double AppbarSize,TextEditingContr
           ).show(context , barrierColor: Colors.black.withOpacity(0.20));
         },
         child: ClipPath(
+          clipper: MyCustomeClipper(),
           child: Stack(
               children: [
                 Container(
@@ -255,13 +256,14 @@ AppBar MainAppBarEditor(BuildContext context, double AppbarSize,TextEditingContr
                       ),
                       child: IconButton(onPressed: (){
 
-                        if(ThemeCubit.get(context).MultipleThemeEdit == false) {
-                        ThemeCubit.get(context).ThemeApplyChanges();
-                      } else {
+                        if(ThemeCubit.get(context).IsEditting == false) {
+                          ThemeCubit.get(context).ThemeApplyChanges();
+                        } else {
                           ThemeCubit.get(context).ThemeEditData();
                           ThemeCubit.get(context).SaveThemeList();
-
+                          Navigator.pop(context);
                         }
+
                       // CacheHelper.saveData(key: "DialPadImage", value: PickedFileShared.path);
 
                       }, icon:Icon(Icons.done , color: AppBarEditIconColor(),),iconSize: 20 ,
@@ -269,7 +271,6 @@ AppBar MainAppBarEditor(BuildContext context, double AppbarSize,TextEditingContr
                 ),
               ]
           ),
-          clipper: MyCustomeClipper(),
         ),
       ),
     ),
@@ -330,42 +331,26 @@ AppBar ChatAppBar(BuildContext context, double AppbarSize) => AppBar(
   );
 AppBar MultipleThemeViewAppBar(BuildContext context, double AppbarSize) => AppBar(
     automaticallyImplyLeading: false,
+  backgroundColor: Colors.white,
+  elevation: 1,
     title:Transform.translate(
       offset:const Offset(0, -4),
       child: Row(
         children: [
-          FaIcon(FontAwesomeIcons.theaterMasks),
-          Text(" Themes",style: TextStyle(
+          Icon(Icons.palette),
+          Text(" Appearance",style: TextStyle(
             fontFamily: "Cairo",
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
             color:HexColor("#404040"),
-            fontSize: 25,
+            fontSize: 20,
           ),),
         ],
       ),
     ),
-    actions: [
-      Transform.translate(
-          offset: const Offset(0, -4),
-          child: IconButton(onPressed: (){
-            if(ThemeCubit.get(context).MultipleThemeEdit==false) {
-                  ThemeCubit.get(context).ThemeEditorIsActive = true;
-                  Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => Theme_Editor()));
-            } else {
-              ThemeCubit.get(context).ThemedDeleteSelection();
-            }
-            }, icon:  Icon(ThemeCubit.get(context).MultipleThemeEdit?ThemeCubit.get(context).DeleteTheme?Icons.delete_forever:Icons.delete:Icons.library_add),color:HexColor("#23036A"),padding: const EdgeInsets.all(1),))
-    ],
+
     // leading: IconButton(onPressed: (){}, icon: Icon(Icons.more_vert,color:AppBarMoreIconColor()),),
-    toolbarHeight: AppbarSize,
-    flexibleSpace: SafeArea(
-      child: ClipPath(
-        child: Container(
-            color: AppBarBackgroundColor(context)
-        ),
-        clipper: MyCustomeClipper(),
-      ),
-    ),
+    toolbarHeight: 70,
+
   );
 AppBar ChatMessagesAppBar(BuildContext context, double AppbarSize , UserModel Contact) {
   return AppBar(
@@ -1332,8 +1317,8 @@ Drawer AppDrawer(BuildContext context , AppbarSize) {
               ));
 
             },
-            leading: FaIcon(FontAwesomeIcons.theaterMasks),
-            title:Text("Theme Customization"),
+            leading: Icon(Icons.palette),
+            title:Text("Appearance"),
           ),
         ],
       ),

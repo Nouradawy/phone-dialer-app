@@ -33,7 +33,7 @@ class ThemeCubit extends Cubit<ThemeStates>{
   int BottomNavIndex=0;
   bool AddSplitter =false;
   bool DialpadBackgroundColor =false;
-
+  bool IsEditting = false;
 
   Color CustomHomePageBackgroundColor =HexColor("#EAE6F2");
   Color SearchTextColor = SearchIconColor();
@@ -63,7 +63,6 @@ class ThemeCubit extends Cubit<ThemeStates>{
   bool PhoneLogDiallerNameColorDropdown = false;
   bool PhoneLogPhoneNumberColorDropdown = false;
   bool AppBackGroundColorDropdown = false;
-  bool MultipleThemeEdit = false;
 
   double InCallBackgroundHeight=400;
   double InCallBackgroundOffsetdx=0;
@@ -708,7 +707,7 @@ class ThemeCubit extends Cubit<ThemeStates>{
   List LiveThemeEditting = [];
   List DefaultThemeValues = [];
   TextEditingController ThemeName = TextEditingController();
-  List<TextEditingController> ThemeNameController =[];
+  TextEditingController ThemeNameController =TextEditingController();
 
 
   void addNewTheme() {
