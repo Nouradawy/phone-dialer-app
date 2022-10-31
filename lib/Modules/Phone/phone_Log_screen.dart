@@ -510,13 +510,7 @@ class PhoneLogScreen extends StatelessWidget {
                       NativeBridge.get(context).CallerID.isNotEmpty?Navigator.of(context).push(MaterialPageRoute(
                           builder: (BuildContext context) => ContactDetails(
                             NativeBridge.get(context).CallerID[0]["Contact"],
-                            onContactDelete: (AppContact _contact) {
-                              PhoneContactsCubit.get(context).GetRawContacts();
-                              Navigator.of(context).pop();
-                            },
-                            onContactUpdate: (AppContact _contact) {
-                              PhoneContactsCubit.get(context).GetRawContacts();
-                            },)
+                            )
                       )):null;
                     },
                     title: Transform.translate(
@@ -1149,13 +1143,6 @@ class PhoneLogScreen extends StatelessWidget {
                       Navigator.of(context).push(MaterialPageRoute(
                           builder: (BuildContext context) => ContactDetails(
                                 contact,
-                                onContactDelete: (AppContact _contact) {
-                                  PhoneContactsCubit.get(context).GetRawContacts();
-                                  Navigator.of(context).pop();
-                                },
-                                onContactUpdate: (AppContact _contact) {
-                                  PhoneContactsCubit.get(context).GetRawContacts();
-                                },
                               )));
                     },
                     title: Text(

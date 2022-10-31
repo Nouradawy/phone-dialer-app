@@ -41,7 +41,7 @@ class _Initial_ScreenState extends State<Initial_Screen> {
                   Navigator.push(context,
                     MaterialPageRoute(builder: (BuildContext context) => MultiBlocProvider(
                         providers: [
-                          BlocProvider(create: (context)=>PhoneContactsCubit()..GetRawContacts()),
+                          BlocProvider(create: (context)=>PhoneContactsCubit()..GetRawContacts(false)),
                           BlocProvider(create: (context)=>PhoneLogsCubit()..getCallLogsInitial(PhoneContactsCubit.get(context).Contacts,true)),
 
                         ],

@@ -26,6 +26,7 @@ import 'Layout/incall_screen.dart';
 import 'Modules/Contacts/Contacts Cubit/contacts_cubit.dart';
 
 import 'Modules/Contacts/appcontacts.dart';
+import 'Modules/Contacts/edit_contact.dart';
 import 'Modules/Phone/Cubit/cubit.dart';
 import 'Modules/Phone/phone_Log_screen.dart';
 import 'Layout/Cubit/cubit.dart';
@@ -252,11 +253,24 @@ Widget BottomSheet (context, tabController , DisplayName ,PhoneNumber ,PhoneCubi
               child:Image.asset("assets/Images/dialpad.png",scale:1.8 , color: HexColor("#EEEEEE")));
         } else {
         if(tabController.index ==1) {
+          TextEditingController DisplayName = TextEditingController();
+          TextEditingController PrefixName = TextEditingController();
+          TextEditingController SufixName = TextEditingController();
+          TextEditingController FirstName = TextEditingController();
+          TextEditingController LastName = TextEditingController();
+          TextEditingController MiddleName = TextEditingController();
+          TextEditingController PhoneticName = TextEditingController();
+          TextEditingController PhoneticFirstName = TextEditingController();
+          TextEditingController PhoneticLastName = TextEditingController();
+          TextEditingController PhoneticMiddleName = TextEditingController();
+          TextEditingController NickName = TextEditingController();
         return FloatingActionButton.extended(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
           onPressed: () {
+            PhoneContactsCubit.get(context).PhoneNumberController.add(TextEditingController());
+            PhoneContactsCubit.get(context).PhoneSideMenuController.add(PhoneLabel.mobile);
             int count=0;
             showModalBottomSheet(
                 context: context,
@@ -281,11 +295,14 @@ Widget BottomSheet (context, tabController , DisplayName ,PhoneNumber ,PhoneCubi
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   TextButton(
-                                    onPressed: () {}, child: Text("Cancel"),
+                                    onPressed: () {
+                                      Navigator.pop(context);
+
+                                    }, child: Text("Cancel"),
                                   ),
-                                  Text("data"),
-                                  IconButton(
-                                    icon: Icon(Icons.check),
+                                  Text("New Contact"),
+                                  TextButton(
+                                    child:Text("Done") ,
                                     onPressed: () async {
                                       final newContact = Contact()
                                         ..name.first = DisplayName.text
@@ -297,21 +314,21 @@ Widget BottomSheet (context, tabController , DisplayName ,PhoneNumber ,PhoneCubi
                                 ],
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(left:25.0),
-                              child: DropdownButton(
-                                itemHeight: 60,
-                                value:PhoneContactsCubit.get(context).DefaultPhoneAccounts[PhoneContactsCubit.get(context).SelectedPhoneAccountIndex],
-                                items: PhoneContactsCubit.get(context).DefaultPhoneAccounts.map((value){
-                                  count++;
-                                  return DropdownMenuItem(
-                                    value:value,
-                                    child:
+
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircleAvatar(radius: 56,),
+                                const SizedBox(width: 20),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        PhoneContactsCubit.get(context).AccountIcon(PhoneContactsCubit.get(context).DefaultPhoneAccounts[count-1]["AccountType"]),
+                                        PhoneContactsCubit.get(context).AccountIcon(PhoneContactsCubit.get(context).DefaultPhoneAccounts[PhoneContactsCubit.get(context).DefaultPhoneAccountIndex]["AccountType"]),
                                         Padding(
                                           padding: const EdgeInsets.only(left:8.0),
                                           child: Column(
@@ -319,43 +336,100 @@ Widget BottomSheet (context, tabController , DisplayName ,PhoneNumber ,PhoneCubi
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               // SizedBox(height: 4,),
-                                              PhoneContactsCubit.get(context).AccountTitle(PhoneContactsCubit.get(context).DefaultPhoneAccounts[count-1]["AccountType"]),
-                                              Text("${PhoneContactsCubit.get(context).DefaultPhoneAccounts[count-1]["AccountName"]}"),
+                                              PhoneContactsCubit.get(context).AccountTitle(PhoneContactsCubit.get(context).DefaultPhoneAccounts[PhoneContactsCubit.get(context).DefaultPhoneAccountIndex]["AccountType"]),
+                                              SizedBox(
+                                                width: 100,
+                                                child: Text("${PhoneContactsCubit.get(context).DefaultPhoneAccounts[PhoneContactsCubit.get(context).DefaultPhoneAccountIndex]["AccountName"]}",overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
                                             ],
                                           ),
                                         ),
                                       ],
                                     ),
-                                  );
-
-                                }).toList(),
-                                onChanged: (value) {
-                                  PhoneContactsCubit.get(context).SelectedPhoneAccountIndex = PhoneContactsCubit.get(context).DefaultPhoneAccounts.indexOf(value);
-                                  PhoneContactsCubit.get(context).Daillerinput();
-                                },
-
-                              ),
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width*0.52,
+                                      child: TextFormField(
+                                        style: ContactFormMainTextStyle(),
+                                        controller: NickName,
+                                        decoration: InputDecoration(
+                                          labelStyle: ContactFormLabelTextStyle(),
+                                          // icon: FaIcon(FontAwesomeIcons.userNinja,color: ContactFormIconColor(),size: 16,),
+                                          suffixIcon: IconButton(onPressed: (){},icon: const Icon(Icons.cancel,size: 20,)),
+                                          labelText: "Nickname",
+                                          fillColor: ContactFormfillColor(),
+                                          filled: true,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                            TextFormField(
-                              controller: DisplayName,
-                              decoration: InputDecoration(
-                                icon: Icon(Icons.person),
-                                suffixIcon: IconButton(
-                                    onPressed: () {}, icon: Icon(Icons.cancel)),
-                                labelText: "Name",
-                                fillColor: Colors.grey[200],
-                                filled: true,
-                              ),
+                            SizedBox(height: 15,),
+                            Row(
+                              children: [
+                                Container(
+                                    width: MediaQuery.of(context).size.width*0.90,
+                                    child: ContactFormField(context,
+                                        null,
+                                        PhoneContactsCubit.get(context).DNtoggler == true?PrefixName:DisplayName,
+                                        Icon(Icons.person,color: ContactFormIconColor(),),PhoneContactsCubit.get(context).DNtoggler == true?"Prefix":"Display name",true)),
+                                Padding(
+                                  padding: const EdgeInsets.only(right:8.0,left:10),
+                                  child: IconButton(
+                                    splashRadius: 15,
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 10,
+                                    ),
+                                    padding:EdgeInsets.zero,onPressed: (){
+                                    PhoneContactsCubit.get(context).DisplayNameToggle();
+                                  }, icon: PhoneContactsCubit.get(context).DNtoggler == true?Transform.translate(
+                                      offset: Offset(-7,0),
+                                      child: Icon(Icons.arrow_drop_up)):
+                                  Transform.translate(
+                                      offset: Offset(-8,0),
+                                      child: Icon(Icons.arrow_drop_down)),
+                                  ),
+                                )
+                              ],
                             ),
-                            TextFormField(
-                              controller: PhoneNumber,
-                              decoration: InputDecoration(
-                                icon: Icon(Icons.phone),
-                                suffixIcon: IconButton(
-                                    onPressed: () {}, icon: Icon(Icons.cancel)),
-                                labelText: "Number",
-                                fillColor: Colors.grey[200],
-                                filled: true,
+                            PhoneContactsCubit.get(context).DNtoggler==true?
+                            Padding(
+                              padding: const EdgeInsets.only(left:5.0),
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    ContactFormField(context,null,
+                                        FirstName,null,"First name",false),
+                                    ContactFormField(context,null,
+                                        MiddleName,null,"Middle name",false),
+                                    ContactFormField(context,null,
+                                        LastName,null,"Last name",false),
+                                    ContactFormField(context,null,
+                                        SufixName,null,"Suffix",false),
+                                  ]),
+                            ):Container(),
+                            SizedBox(
+                              height: (PhoneContactsCubit.get(context).PhoneNumberController.length)*71,
+                              child: ListView.builder(
+                                  physics: NeverScrollableScrollPhysics(),
+                                  itemCount: PhoneContactsCubit.get(context).PhoneNumberController.length,
+                                  itemBuilder: (context,index) {
+                                    return Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: PhoneTextForm(index,context,null),
+                                    );
+                                  }),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 13.0,vertical: 4),
+                              child: Align(
+                                alignment: AlignmentDirectional.centerStart,
+                                child: TextButton(
+                                    onPressed: (){},
+                                    child: Text("Add more info",style: TextStyle(fontSize: 13),)
+                                ),
                               ),
                             ),
                           ],
@@ -363,7 +437,10 @@ Widget BottomSheet (context, tabController , DisplayName ,PhoneNumber ,PhoneCubi
                       );
                     }
                   );
-                });
+                }).whenComplete(() {
+              PhoneContactsCubit.get(context).PhoneNumberController.clear();
+              PhoneContactsCubit.get(context).PhoneSideMenuController.clear();
+            });
           },
           label: Text(
             "Add Contact",
