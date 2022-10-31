@@ -18,7 +18,8 @@ class ContactEditor extends StatelessWidget {
   ContactEditor(this.contact,this.NumbersInAccount);
   final AppContact contact;
   final List NumbersInAccount;
-
+  var scaffoldkey = GlobalKey<ScaffoldState>();
+  var formkey = GlobalKey<FormState>();
   TextEditingController DisplayName = TextEditingController();
   TextEditingController PrefixName = TextEditingController();
   TextEditingController SufixName = TextEditingController();
@@ -55,276 +56,311 @@ class ContactEditor extends StatelessWidget {
     PhoneContactsCubit.get(context).TextFormFieldInitialize(NumbersInAccount , contact);
 
     return Scaffold(
+      key: scaffoldkey,
       appBar: AppBar(
         leading: TextButton(onPressed: (){
           PhoneContactsCubit.get(context).ContactCancel(contact,context);
           }, child: const Text("Cancel"),),
         title: const Center(child: Text("edit contact",style: TextStyle(color: Colors.black,fontSize: 15),)),
         actions: [
-          TextButton(onPressed: (){
-            contact.info?.displayName = DisplayName.text;
-            contact.info?.name.prefix = PrefixName.text;
-            contact.info?.name.suffix = SufixName.text;
-            contact.info?.name.first = FirstName.text;
-            contact.info?.name.last = LastName.text;
-            contact.info?.name.middle = MiddleName.text;
-            contact.info?.name.firstPhonetic = PhoneticName.text;
-            contact.info?.name.firstPhonetic = PhoneticFirstName.text;
-            contact.info?.name.middlePhonetic = PhoneticMiddleName.text;
-            contact.info?.name.lastPhonetic = PhoneticLastName.text;
-            contact.info?.organizations.clear();
-            Company.text.isNotEmpty ?contact.info?.organizations.add(Organization(company: Company.text,title: JobTitle.text)):null;
-            contact.info?.name.nickname = NickName.text;
-            PhoneContactsCubit.get(context).ContactUpdate(contact,context);
-          }, child:const Text("Done")),
+          BlocBuilder<PhoneContactsCubit,PhoneContactStates>(
+            builder:(context,states)=> TextButton(
+                onPressed: PhoneContactsCubit.get(context).DetailsIsChanged==false?(){
+
+                contact.info?.displayName != DisplayName.text?contact.info?.displayName = DisplayName.text:null;
+                contact.info?.name.prefix != PrefixName.text? contact.info?.name.prefix = PrefixName.text:null;
+                contact.info?.name.suffix != SufixName.text?contact.info?.name.suffix = SufixName.text:null;
+                contact.info?.name.first != FirstName.text?contact.info?.name.first = FirstName.text:null;
+                contact.info?.name.last != LastName.text?contact.info?.name.last = LastName.text:null;
+                contact.info?.name.middle != MiddleName.text?contact.info?.name.middle = MiddleName.text:null;
+                contact.info?.name.firstPhonetic != PhoneticName.text?contact.info?.name.firstPhonetic = PhoneticName.text:null;
+                contact.info?.name.firstPhonetic != PhoneticFirstName.text?contact.info?.name.firstPhonetic = PhoneticFirstName.text:null;
+                contact.info?.name.middlePhonetic != PhoneticMiddleName.text?contact.info?.name.middlePhonetic = PhoneticMiddleName.text:null;
+                contact.info?.name.lastPhonetic != PhoneticLastName.text?contact.info?.name.lastPhonetic = PhoneticLastName.text:null;
+              // if(contact.info?.organizations.first.company != Company.text ||contact.info?.organizations.first.title != JobTitle.text)
+              // {
+              //   contact.info?.organizations.clear();
+              //   contact.info?.organizations.add(Organization(company: Company.text.isNotEmpty?Company.text:"", title: JobTitle.text.isNotEmpty ?JobTitle.text:""));
+              // }
+                contact.info?.name.nickname != NickName.text?contact.info?.name.nickname = NickName.text:null;
+              PhoneContactsCubit.get(context).ContactUpdate(contact,context);
+            }:null,
+
+                child: Text("Done")
+            ),
+          ),
         ],
       ),
       body:SingleChildScrollView(
         child: BlocBuilder<PhoneContactsCubit,PhoneContactStates>(
           builder:(context,state) {
             int count =0;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Row(
+            return Form(
+              key: formkey,
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: ContactAvatar(contact, 90),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ContactAvatar(contact, 90),
+                    const SizedBox(width: 20),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        DropdownButton(
-                          itemHeight: 60,
-                          value:PhoneContactsCubit.get(context).DefaultPhoneAccounts[PhoneContactsCubit.get(context).SelectedPhoneAccountIndex],
-                          items: PhoneContactsCubit.get(context).DefaultPhoneAccounts.map((value){
-                            count++;
-                            return DropdownMenuItem(
-                              value:value,
-                              child:
-                              Row(
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            PhoneContactsCubit.get(context).AccountIcon(PhoneContactsCubit.get(context).DefaultPhoneAccounts[PhoneContactsCubit.get(context).DefaultPhoneAccountIndex]["AccountType"]),
+                            Padding(
+                              padding: const EdgeInsets.only(left:8.0),
+                              child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  PhoneContactsCubit.get(context).AccountIcon(PhoneContactsCubit.get(context).DefaultPhoneAccounts[count-1]["AccountType"]),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left:8.0),
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        // SizedBox(height: 4,),
-                                        PhoneContactsCubit.get(context).AccountTitle(PhoneContactsCubit.get(context).DefaultPhoneAccounts[count-1]["AccountType"]),
-                                        SizedBox(
-                                          width: 100,
-                                          child: Text("${PhoneContactsCubit.get(context).DefaultPhoneAccounts[count-1]["AccountName"]}",overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
+                                  // SizedBox(height: 4,),
+                                  PhoneContactsCubit.get(context).AccountTitle(PhoneContactsCubit.get(context).DefaultPhoneAccounts[PhoneContactsCubit.get(context).DefaultPhoneAccountIndex]["AccountType"]),
+                                  SizedBox(
+                                    width: 100,
+                                    child: Text("${PhoneContactsCubit.get(context).DefaultPhoneAccounts[PhoneContactsCubit.get(context).DefaultPhoneAccountIndex]["AccountName"]}",overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
                               ),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            PhoneContactsCubit.get(context).SelectedPhoneAccountIndex = PhoneContactsCubit.get(context).DefaultPhoneAccounts.indexOf(value);
-                            PhoneContactsCubit.get(context).Daillerinput();
-                          },
-
-
+                            ),
+                          ],
                         ),
                         SizedBox(
-                          width: MediaQuery.of(context).size.width*0.60,
-                          child: Column(
-                            children: [
-                              ContactFormFieldHeader(Company,Icon(Icons.business,color:ContactFormIconColor(),size:20),"Company",false),
-                              SizedBox(height: 15,),
-                              ContactFormFieldHeader(JobTitle,Icon(Icons.work,color:ContactFormIconColor(),size: 20,),"Job title",false),
-                            ],
-                          ),
+                          width: MediaQuery.of(context).size.width*0.52,
+                          child: ContactFormFieldHeader(context,
+                              contact.info!.name.nickname.isNotEmpty?contact.info?.name.nickname:null,
+                              NickName,FaIcon(FontAwesomeIcons.userNinja,color: ContactFormIconColor(),size: 16,),"Nickname",false),
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 30,),
-              Row(
-                children: [
-                  Container(
-                      width: MediaQuery.of(context).size.width*0.90,
-                      child: ContactFormField(PhoneContactsCubit.get(context).DNtoggler == true?PrefixName:DisplayName,Icon(Icons.person,color: ContactFormIconColor(),),PhoneContactsCubit.get(context).DNtoggler == true?"Prefix":"Display name",true)),
-                  Padding(
-                    padding: const EdgeInsets.only(right:8.0,left:10),
-                    child: IconButton(
-                      splashRadius: 15,
+                  ],
+                ),
+                SizedBox(height: 15,),
+                Row(
+                  children: [
+                    Container(
+                        width: MediaQuery.of(context).size.width*0.90,
+                        child: ContactFormField(context,
+                            PhoneContactsCubit.get(context).DNtoggler == true?
+                            contact.info!.name.prefix.isNotEmpty?contact.info?.name.prefix:null:
+                            contact.info!.displayName.isNotEmpty?contact.info?.displayName:null,
+                            PhoneContactsCubit.get(context).DNtoggler == true?PrefixName:DisplayName,
+                            Icon(Icons.person,color: ContactFormIconColor(),),PhoneContactsCubit.get(context).DNtoggler == true?"Prefix":"Display name",true)),
+                    Padding(
+                      padding: const EdgeInsets.only(right:8.0,left:10),
+                      child: IconButton(
+                        splashRadius: 15,
+                          constraints: const BoxConstraints(
+                            maxWidth: 10,
+                          ),
+                          padding:EdgeInsets.zero,onPressed: (){
+                        PhoneContactsCubit.get(context).DisplayNameToggle();
+                      }, icon: PhoneContactsCubit.get(context).DNtoggler == true?Transform.translate(
+                          offset: Offset(-7,0),
+                          child: Icon(Icons.arrow_drop_up)):
+                      Transform.translate(
+                          offset: Offset(-8,0),
+                          child: Icon(Icons.arrow_drop_down)),
+                      ),
+                    )
+                  ],
+                ),
+                PhoneContactsCubit.get(context).DNtoggler==true?
+                Padding(
+                  padding: const EdgeInsets.only(left:5.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                    ContactFormField(context,contact.info!.name.first.isNotEmpty?contact.info?.name.first:null,
+                        FirstName,null,"First name",false),
+                    ContactFormField(context,contact.info!.name.middle.isNotEmpty?contact.info?.name.middle:null,
+                        MiddleName,null,"Middle name",false),
+                    ContactFormField(context,contact.info!.name.last.isNotEmpty?contact.info?.name.last:null,
+                        LastName,null,"Last name",false),
+                    ContactFormField(context,contact.info!.name.suffix.isNotEmpty?contact.info?.name.suffix:null,
+                        SufixName,null,"Suffix",false),
+                  ]),
+                ):Container(),
+                Row(
+                  children: [
+                    Container(
+                        width: MediaQuery.of(context).size.width*0.90,
+                        child: ContactFormField(context,
+                            PhoneContactsCubit.get(context).DNtoggler == true?
+                            contact.info!.name.lastPhonetic.isNotEmpty?contact.info?.name.lastPhonetic:null:
+                            contact.info!.name.firstPhonetic.isNotEmpty?contact.info?.name.firstPhonetic:null,
+                            PhoneticName,null,PhoneContactsCubit.get(context).PNtoggler==true?"Phonetic last name":"Phonetic name",true)),
+                    Padding(
+                      padding: const EdgeInsets.only(right:8.0,left:10),
+                      child: IconButton(
+                        splashRadius: 15,
                         constraints: const BoxConstraints(
                           maxWidth: 10,
                         ),
                         padding:EdgeInsets.zero,onPressed: (){
-                      PhoneContactsCubit.get(context).DisplayNameToggle();
-                    }, icon: PhoneContactsCubit.get(context).DNtoggler == true?Transform.translate(
-                        offset: Offset(-7,0),
-                        child: Icon(Icons.arrow_drop_up)):
-                    Transform.translate(
-                        offset: Offset(-8,0),
-                        child: Icon(Icons.arrow_drop_down)),
-                    ),
-                  )
-                ],
-              ),
-              PhoneContactsCubit.get(context).DNtoggler==true?
-              Padding(
-                padding: const EdgeInsets.only(left:5.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                  ContactFormField(FirstName,null,"First name",false),
-                  ContactFormField(MiddleName,null,"Middle name",false),
-                  ContactFormField(LastName,null,"Last name",false),
-                  ContactFormField(SufixName,null,"Suffix",false),
-                ]),
-              ):Container(),
-              Row(
-                children: [
-                  Container(
-                      width: MediaQuery.of(context).size.width*0.90,
-                      child: ContactFormField(PhoneticName,null,PhoneContactsCubit.get(context).PNtoggler==true?"Phonetic last name":"Phonetic name",true)),
-                  Padding(
-                    padding: const EdgeInsets.only(right:8.0,left:10),
-                    child: IconButton(
-                      splashRadius: 15,
-                      constraints: const BoxConstraints(
-                        maxWidth: 10,
+                        PhoneContactsCubit.get(context).PhoneticNameToggle();
+                      }, icon: PhoneContactsCubit.get(context).PNtoggler == true?Transform.translate(
+                          offset: Offset(-7,0),
+                          child: Icon(Icons.arrow_drop_up)):
+                      Transform.translate(
+                          offset: Offset(-8,0),
+                          child: Icon(Icons.arrow_drop_down)),
                       ),
-                      padding:EdgeInsets.zero,onPressed: (){
-                      PhoneContactsCubit.get(context).PhoneticNameToggle();
-                    }, icon: PhoneContactsCubit.get(context).PNtoggler == true?Transform.translate(
-                        offset: Offset(-7,0),
-                        child: Icon(Icons.arrow_drop_up)):
-                    Transform.translate(
-                        offset: Offset(-8,0),
-                        child: Icon(Icons.arrow_drop_down)),
-                    ),
-                  )
-                ],
-              ),
-              PhoneContactsCubit.get(context).PNtoggler==true?
-              Padding(
-                padding: const EdgeInsets.only(left:5.0),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      ContactFormField(PhoneticMiddleName,null,"Phonetic middle name",false),
-                      ContactFormField(PhoneticFirstName,null,"Phonetic first name",false),
-                    ]),
-              ):Container(),
+                    )
+                  ],
+                ),
+                PhoneContactsCubit.get(context).PNtoggler==true?
+                Padding(
+                  padding: const EdgeInsets.only(left:5.0),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        ContactFormField(context,
+                            contact.info!.name.middlePhonetic.isNotEmpty?contact.info?.name.middlePhonetic:null,
+                            PhoneticMiddleName,null,"Phonetic middle name",false),
+                        ContactFormField(context,
+                            contact.info!.name.firstPhonetic.isNotEmpty?contact.info?.name.firstPhonetic:null,
+                            PhoneticFirstName,null,"Phonetic first name",false),
+                      ]),
+                ):Container(),
 
 
 
-              SizedBox(
-                height: (PhoneContactsCubit.get(context).PhoneNumberController.length)*71,
-                child: ListView.builder(
-                  physics: NeverScrollableScrollPhysics(),
-                    itemCount: PhoneContactsCubit.get(context).PhoneNumberController.length,
-                    itemBuilder: (context,index) {
-                      return Padding(
+                SizedBox(
+                  height: (PhoneContactsCubit.get(context).PhoneNumberController.length)*71,
+                  child: ListView.builder(
+                    physics: NeverScrollableScrollPhysics(),
+                      itemCount: PhoneContactsCubit.get(context).PhoneNumberController.length,
+                      itemBuilder: (context,index) {
+                        return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: PhoneTextForm(index,context),
+                        );
+                      }),
+                ),
+                Container(
+                  height: (PhoneContactsCubit.get(context).EmailAddressController.length)*71,
+                  child: ListView.builder(
+                    physics: NeverScrollableScrollPhysics(),
+                      itemCount: PhoneContactsCubit.get(context).EmailAddressController.length,
+                      itemBuilder: (context,index)=>Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: PhoneTextForm(index,context),
-                      );
-                    }),
-              ),
-              Container(
-                height: (PhoneContactsCubit.get(context).EmailAddressController.length)*71,
-                child: ListView.builder(
-                  physics: NeverScrollableScrollPhysics(),
-                    itemCount: PhoneContactsCubit.get(context).EmailAddressController.length,
-                    itemBuilder: (context,index)=>Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: EmailAddressTextForm(index,context,),
-                    )),
-              ),
-              Container(
-                height: (PhoneContactsCubit.get(context).AddressController.length)*71,
-                child: ListView.builder(
-                  physics: NeverScrollableScrollPhysics(),
-                    itemCount: PhoneContactsCubit.get(context).AddressController.length,
-                    itemBuilder: (context,index)=>Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: AddressTextForm(index,context,),
-                    )),
-              ),
-              Container(
-                height: (PhoneContactsCubit.get(context).EventController.length)*71,
-                child: ListView.builder(
-                  physics: NeverScrollableScrollPhysics(),
-                    itemCount: PhoneContactsCubit.get(context).EventController.length,
-                    itemBuilder: (context,index)=>Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: EventTextForm(index,context,),
-                    )),
-              ),
-              Container(
-                height: (PhoneContactsCubit.get(context).ChatController.length)*71,
-                child: ListView.builder(
-                  physics: NeverScrollableScrollPhysics(),
-                    itemCount: PhoneContactsCubit.get(context).ChatController.length,
-                    itemBuilder: (context,index)=>Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ChatTextForm(index,context,),
-                    )),
-              ),
-              Container(
-                height: 65,
-                child: ListView.builder(
-                  physics: NeverScrollableScrollPhysics(),
-                    itemCount: 1,
-                    itemBuilder: (context,index)=>Padding(
-                        padding: EdgeInsets.only(left: 5),
-                        child: ContactFormField(NickName,FaIcon(FontAwesomeIcons.userNinja,color: ContactFormIconColor(),),"Nickname",false))),
-              ),
-              Container(
-                height: 65,
-                child: ListView.builder(
-                  physics: NeverScrollableScrollPhysics(),
-                    itemCount: 1,
-                    itemBuilder: (context,index)=>Padding(
-                        padding: EdgeInsets.only(left: 5),
-                        child: ContactFormField(PhoneContactsCubit.get(context).WebsiteController,Icon(Icons.language,color: ContactFormIconColor(),),"Website",false))),
-              ),
-              Container(
-                height: 65,
-                child: ListView.builder(
-                  physics: NeverScrollableScrollPhysics(),
-                    itemCount: 1,
-                    itemBuilder: (context,index)=>Padding(
-                        padding: EdgeInsets.only(left: 5),
-                        child: ContactFormField(PhoneContactsCubit.get(context).NoteController,Icon(Icons.note,color: ContactFormIconColor(),),"Notes",false))),
-              ),
+                        child: EmailAddressTextForm(index,context,),
+                      )),
+                ),
+                Container(
+                  height: (PhoneContactsCubit.get(context).AddressController.length)*71,
+                  child: ListView.builder(
+                    physics: NeverScrollableScrollPhysics(),
+                      itemCount: PhoneContactsCubit.get(context).AddressController.length,
+                      itemBuilder: (context,index)=>Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: AddressTextForm(index,context,),
+                      )),
+                ),
+                Container(
+                  height: (PhoneContactsCubit.get(context).EventController.length)*71,
+                  child: ListView.builder(
+                    physics: NeverScrollableScrollPhysics(),
+                      itemCount: PhoneContactsCubit.get(context).EventController.length,
+                      itemBuilder: (context,index)=>Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: EventTextForm(index,context,),
+                      )),
+                ),
+                Container(
+                  height: (PhoneContactsCubit.get(context).ChatController.length)*71,
+                  child: ListView.builder(
+                    physics: NeverScrollableScrollPhysics(),
+                      itemCount: PhoneContactsCubit.get(context).ChatController.length,
+                      itemBuilder: (context,index)=>Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ChatTextForm(index,context,),
+                      )),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 5.0),
+                  child: Column(
+                    children: [
+                      ContactFormField(context,contact.info!.organizations.isNotEmpty?contact.info?.organizations.first.company:null,Company,Icon(Icons.business,color:ContactFormIconColor(),size:20),"Company",false ),
+                      SizedBox(height: 15,),
+                      ContactFormField(context,contact.info!.organizations.isNotEmpty?contact.info?.organizations.first.company:null,JobTitle,Icon(Icons.work,color:ContactFormIconColor(),size: 20,),"Job title",false),
+                    ],
+                  ),
+                ),
+                Container(
+                  height: 65,
+                  child: ListView.builder(
+                    physics: NeverScrollableScrollPhysics(),
+                      itemCount: 1,
+                      itemBuilder: (context,index)=>Padding(
+                          padding: EdgeInsets.only(left: 5),
+                          child: ContactFormField(context,
+                              contact.info!.websites.isNotEmpty?contact.info?.websites.first.url:null,
+                              PhoneContactsCubit.get(context).WebsiteController,Icon(Icons.language,color: ContactFormIconColor(),),"Website",false))),
+                ),
+                Container(
+                  height: 65,
+                  child: ListView.builder(
+                    physics: NeverScrollableScrollPhysics(),
+                      itemCount: 1,
+                      itemBuilder: (context,index)=>Padding(
+                          padding: EdgeInsets.only(left: 5),
+                          child: ContactFormField(context,
+                              contact.info!.notes.isNotEmpty?contact.info?.notes.first.note:null,
+                              PhoneContactsCubit.get(context).NoteController,Icon(Icons.note,color: ContactFormIconColor(),),"Notes",false))),
+                ),
 
-            ],
-          );
+              ],
+          ),
+            );
           },
         ),
       ),
     );
   }
 
-  Padding ContactFormField(controller,PreIcon , LabelText , bool?DropDown) {
+  Padding ContactFormField(context,ValueToCompare,controller,PreIcon , LabelText , bool?DropDown) {
     return Padding(
       padding: EdgeInsets.only(right: DropDown==true?0.0:32,left: PreIcon !=null?15.0:55 , top: 8 , bottom: 8),
       child: TextFormField(
+        onChanged: (value){
+          if(value == ValueToCompare)
+          {
+            PhoneContactsCubit.get(context).DetailsIsChanged=true;
+          }
+          else
+          {
+            if(value.isEmpty)
+            {
+              PhoneContactsCubit.get(context).DetailsIsChanged=true;
+            }
+            else
+            {
+              PhoneContactsCubit.get(context).DetailsIsChanged = false;
+            }
+          }
+          print(PhoneContactsCubit.get(context).DetailsIsChanged);
+          PhoneContactsCubit.get(context).SideMenuUpdater();
+
+        },
         style: ContactFormMainTextStyle(),
         controller: controller,
         decoration: InputDecoration(
           labelStyle: ContactFormLabelTextStyle(),
           icon: PreIcon,
-          suffixIcon: IconButton(onPressed: (){},icon: const Icon(Icons.cancel,size: 20,)),
+          suffixIcon: IconButton(onPressed: (){
+            controller.clear();
+            PhoneContactsCubit.get(context).SideMenuUpdater();
+          },icon: const Icon(Icons.cancel,size: 20,)),
           labelText: LabelText,
           fillColor: ContactFormfillColor(),
             filled: true,
@@ -333,8 +369,28 @@ class ContactEditor extends StatelessWidget {
     );
   }
 
-  TextFormField ContactFormFieldHeader(controller,PreIcon , LabelText , bool?DropDown) {
+  TextFormField ContactFormFieldHeader(context,ValueToCompare,TextEditingController controller,PreIcon , LabelText , bool?DropDown ) {
     return TextFormField(
+     onChanged: (value){
+       if(value == ValueToCompare)
+         {
+           PhoneContactsCubit.get(context).DetailsIsChanged=true;
+         }
+       else
+         {
+           if(value.isEmpty)
+             {
+               PhoneContactsCubit.get(context).DetailsIsChanged=true;
+             }
+           else
+           {
+            PhoneContactsCubit.get(context).DetailsIsChanged = false;
+          }
+        }
+       print(PhoneContactsCubit.get(context).DetailsIsChanged);
+       PhoneContactsCubit.get(context).SideMenuUpdater();
+
+     },
       style: ContactFormMainTextStyle(),
       controller: controller,
       decoration: InputDecoration(
@@ -402,15 +458,43 @@ class ContactEditor extends StatelessWidget {
                   PhoneContactsCubit.get(context).PhoneNumberadd(true);
                 }
                 if(value.isEmpty&&PhoneContactsCubit.get(context).PhoneNumberController.length >1)
-                { PhoneContactsCubit.get(context).PhoneNumberadd(false); }
+                {
+                  PhoneContactsCubit.get(context).PhoneNumberadd(false);
+                }
 
+                if(PhoneContactsCubit.get(context).PhoneNumberController[index].text.isEmpty || contact.info!.phones.isEmpty)
+                {
+                  PhoneContactsCubit.get(context).DetailsIsChanged=true;
+                  PhoneContactsCubit.get(context).PhoneNumberUpdate=false;
+                }
+                else
+                {
+
+                  if(PhoneContactsCubit.get(context).PhoneNumberController[index].text == contact.info?.phones[index].number)
+                  {
+                    PhoneContactsCubit.get(context).DetailsIsChanged=true;
+                    PhoneContactsCubit.get(context).PhoneNumberUpdate=false;
+
+                  }
+                  else
+                  {
+                    PhoneContactsCubit.get(context).DetailsIsChanged = false;
+                    PhoneContactsCubit.get(context).PhoneNumberUpdate = true;
+                  }
+                }
+                PhoneContactsCubit.get(context).SideMenuUpdater();
               },
               controller: PhoneContactsCubit.get(context).PhoneNumberController[index],
+              keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 labelStyle: PhoneTextFormLabelTextStyle(),
                 enabledBorder: InputBorder.none,
                 contentPadding: EdgeInsets.only(left:5),
-                suffixIcon: IconButton(onPressed: (){},icon: Icon(Icons.remove_circle_outline),splashRadius: 3,color: Colors.red,iconSize: 21,),
+                suffixIcon: IconButton(onPressed: (){
+                  PhoneContactsCubit.get(context).PhoneNumberController.removeAt(index);
+                  PhoneContactsCubit.get(context).SideMenuUpdater();
+                  print("Remove pressed");
+                },icon: Icon(Icons.remove_circle_outline),splashRadius: 3,color: Colors.red,iconSize: 21,),
                 labelText: "Number",
                 fillColor: Colors.grey[200],
                   filled: false,
@@ -423,6 +507,7 @@ class ContactEditor extends StatelessWidget {
       ),
     );
   }
+
   Container EmailAddressTextForm(index,context,) {
     return Container(
       decoration: BoxDecoration(
@@ -478,13 +563,35 @@ class ContactEditor extends StatelessWidget {
                 if(value.isEmpty&&PhoneContactsCubit.get(context).EmailAddressController.length >1)
                 { PhoneContactsCubit.get(context).EmailAddressAdd(false);}
 
+                if(PhoneContactsCubit.get(context).EmailAddressController[index].text.isEmpty || contact.info!.emails.isEmpty)
+                {
+                  PhoneContactsCubit.get(context).DetailsIsChanged=true;
+                  PhoneContactsCubit.get(context).EmailAddressUpdate=false;
+                }
+                else
+                {
+                  if(PhoneContactsCubit.get(context).EmailAddressController[index].text == contact.info?.emails[index].address)
+                  {
+                    PhoneContactsCubit.get(context).DetailsIsChanged=true;
+                    PhoneContactsCubit.get(context).EmailAddressUpdate=false;
+                  }
+                  else
+                  {
+                    PhoneContactsCubit.get(context).DetailsIsChanged = false;
+                    PhoneContactsCubit.get(context).EmailAddressUpdate = true;
+                  }
+                }
+                PhoneContactsCubit.get(context).SideMenuUpdater();
               },
               controller: PhoneContactsCubit.get(context).EmailAddressController[index],
               decoration: InputDecoration(
                 labelStyle: PhoneTextFormLabelTextStyle(),
                 enabledBorder: InputBorder.none,
                 contentPadding: EdgeInsets.only(left:5),
-                suffixIcon: IconButton(onPressed: (){},icon: Icon(Icons.remove_circle_outline),splashRadius: 3,color: Colors.red,iconSize: 21,),
+                suffixIcon: IconButton(onPressed: (){
+                  PhoneContactsCubit.get(context).EmailAddressController.removeAt(index);
+                  PhoneContactsCubit.get(context).SideMenuUpdater();
+                },icon: Icon(Icons.remove_circle_outline),splashRadius: 3,color: Colors.red,iconSize: 21,),
                 labelText: 'Email',
                 fillColor: Colors.grey[200],
                   filled: false,
@@ -497,6 +604,7 @@ class ContactEditor extends StatelessWidget {
       ),
     );
   }
+
   Container AddressTextForm(index,context,) {
     return Container(
       decoration: BoxDecoration(
@@ -515,7 +623,7 @@ class ContactEditor extends StatelessWidget {
             width: 78,
             child: DropdownButtonFormField(
               style: PhoneTextFormDropdownTextStyle(),
-              decoration:InputDecoration(
+              decoration:const InputDecoration(
                 enabledBorder:InputBorder.none ,
               ),
               value: PhoneContactsCubit.get(context).EmailSideMenu.first,
@@ -550,13 +658,36 @@ class ContactEditor extends StatelessWidget {
                   PhoneContactsCubit.get(context).AddressAdd(true);
                 }
                 if(value.isEmpty&&PhoneContactsCubit.get(context).AddressController.length >1) { PhoneContactsCubit.get(context).AddressAdd(false);}
+
+                if(PhoneContactsCubit.get(context).AddressController[index].text.isEmpty || contact.info!.addresses.isEmpty)
+                {
+                  PhoneContactsCubit.get(context).DetailsIsChanged=true;
+                  PhoneContactsCubit.get(context).AddressUpdate=false;
+                }
+                else
+                {
+                  if(PhoneContactsCubit.get(context).AddressController[index].text == contact.info?.addresses[index].address)
+                  {
+                    PhoneContactsCubit.get(context).DetailsIsChanged=true;
+                    PhoneContactsCubit.get(context).AddressUpdate=false;
+                  }
+                  else
+                  {
+                    PhoneContactsCubit.get(context).DetailsIsChanged = false;
+                    PhoneContactsCubit.get(context).AddressUpdate = true;
+                  }
+                }
+                PhoneContactsCubit.get(context).SideMenuUpdater();
               },
               controller: PhoneContactsCubit.get(context).AddressController[index],
               decoration: InputDecoration(
                 labelStyle: PhoneTextFormLabelTextStyle(),
                 enabledBorder: InputBorder.none,
                 contentPadding: EdgeInsets.only(left:5),
-                suffixIcon: IconButton(onPressed: (){},icon: Icon(Icons.remove_circle_outline),splashRadius: 3,color: Colors.red,iconSize: 21,),
+                suffixIcon: IconButton(onPressed: (){
+                  PhoneContactsCubit.get(context).AddressController.removeAt(index);
+                  PhoneContactsCubit.get(context).SideMenuUpdater();
+                },icon: Icon(Icons.remove_circle_outline),splashRadius: 3,color: Colors.red,iconSize: 21,),
                 labelText: "Address",
                 fillColor: Colors.grey[200],
                   filled: false,
@@ -569,6 +700,7 @@ class ContactEditor extends StatelessWidget {
       ),
     );
   }
+
   Container EventTextForm(index,context,) {
     return Container(
       decoration: BoxDecoration(
@@ -615,25 +747,56 @@ class ContactEditor extends StatelessWidget {
             width: MediaQuery.of(context).size.width-170,
             child:
             TextFormField(
+              readOnly: true,
               style: PhoneTextFormMainTextStyle(),
               onTap: (){
                 showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now(), lastDate: DateTime((DateTime.now().year)+10,1,1),).then((value){
                   PhoneContactsCubit.get(context).EventController[index].text = DateFormat.yMMMd().format(value!);
-                });
-              },
-              onChanged: (value){
-                if(PhoneContactsCubit.get(context).EventController.last.text.isNotEmpty)
-                {
-                  PhoneContactsCubit.get(context).EventAdd(true);
-                } if(value.isEmpty&&PhoneContactsCubit.get(context).EventController.length >1) { PhoneContactsCubit.get(context).EventAdd(false);}
+                  PhoneContactsCubit.get(context).EventPickerValue=value;
 
+                }).then((value) {
+
+                  if(PhoneContactsCubit.get(context).EventController.last.text.isNotEmpty)
+                  {
+                    print("Event tester");
+                    PhoneContactsCubit.get(context).EventAdd(true);
+                  } if(PhoneContactsCubit.get(context).EventController[index].text.isEmpty&&PhoneContactsCubit.get(context).EventController.length >=1) { PhoneContactsCubit.get(context).EventAdd(false);}
+
+
+                  if(PhoneContactsCubit.get(context).AddressController[index].text.isEmpty || contact.info!.events.isEmpty)
+                  {
+                    PhoneContactsCubit.get(context).DetailsIsChanged=true;
+                    PhoneContactsCubit.get(context).EventsUpdate=false;
+                    print("Event tester");
+                  }
+                  else
+                  {
+                    if("${PhoneContactsCubit.get(context).EventPickerValue.month}-${PhoneContactsCubit.get(context).EventPickerValue.day}-${PhoneContactsCubit.get(context).EventPickerValue.year}" == "${contact.info?.events[index].month}-${contact.info?.events[index].day}-${contact.info?.events[index].year}")
+                    {
+                      print("Event tester");
+                      PhoneContactsCubit.get(context).DetailsIsChanged=true;
+                      PhoneContactsCubit.get(context).EventsUpdate=false;
+                    }
+                    else
+                    {
+                      print("Event tester");
+                      PhoneContactsCubit.get(context).DetailsIsChanged = false;
+                      PhoneContactsCubit.get(context).EventsUpdate = true;
+                    }
+                  }
+
+                  PhoneContactsCubit.get(context).SideMenuUpdater();
+                });
               },
               controller: PhoneContactsCubit.get(context).EventController[index],
               decoration: InputDecoration(
                 labelStyle: PhoneTextFormLabelTextStyle(),
                 enabledBorder: InputBorder.none,
                 contentPadding: EdgeInsets.only(left:5),
-                suffixIcon: IconButton(onPressed: (){},icon: Icon(Icons.remove_circle_outline),splashRadius: 3,color: Colors.red,iconSize: 21,),
+                suffixIcon: IconButton(onPressed: (){
+                  PhoneContactsCubit.get(context).EventController.removeAt(index);
+                  PhoneContactsCubit.get(context).SideMenuUpdater();
+                },icon: Icon(Icons.remove_circle_outline),splashRadius: 3,color: Colors.red,iconSize: 21,),
                 labelText: "Date",
                 fillColor: Colors.grey[200],
                   filled: false,
@@ -646,6 +809,7 @@ class ContactEditor extends StatelessWidget {
       ),
     );
   }
+
   Container ChatTextForm(index,context) {
     return Container(
       decoration: BoxDecoration(
@@ -695,13 +859,36 @@ class ContactEditor extends StatelessWidget {
               onChanged: (value){
                 if(PhoneContactsCubit.get(context).ChatController.last.text.isNotEmpty) {PhoneContactsCubit.get(context).ChatUserNameAdd(true);}
                 if(value.isEmpty&&PhoneContactsCubit.get(context).ChatController.length >1) { PhoneContactsCubit.get(context).ChatUserNameAdd(false);}
+
+                if(PhoneContactsCubit.get(context).ChatController[index].text.isEmpty || contact.info!.socialMedias.isEmpty)
+                {
+                  PhoneContactsCubit.get(context).DetailsIsChanged=true;
+                  PhoneContactsCubit.get(context).ChatUpdate=false;
+                }
+                else
+                {
+                  if(PhoneContactsCubit.get(context).ChatController[index].text == contact.info?.socialMedias[index].userName)
+                  {
+                    PhoneContactsCubit.get(context).DetailsIsChanged=true;
+                    PhoneContactsCubit.get(context).ChatUpdate=false;
+                  }
+                  else
+                  {
+                    PhoneContactsCubit.get(context).DetailsIsChanged = false;
+                    PhoneContactsCubit.get(context).ChatUpdate = true;
+                  }
+                }
+                PhoneContactsCubit.get(context).SideMenuUpdater();
               },
               controller: PhoneContactsCubit.get(context).ChatController[index],
               decoration: InputDecoration(
                 labelStyle: PhoneTextFormLabelTextStyle(),
                 enabledBorder: InputBorder.none,
                 contentPadding: EdgeInsets.only(left:5),
-                suffixIcon: IconButton(onPressed: (){},icon: Icon(Icons.remove_circle_outline),splashRadius: 3,color: Colors.red,iconSize: 21,),
+                suffixIcon: IconButton(onPressed: (){
+                  PhoneContactsCubit.get(context).ChatController.removeAt(index);
+                  PhoneContactsCubit.get(context).SideMenuUpdater();
+                },icon: Icon(Icons.remove_circle_outline),splashRadius: 3,color: Colors.red,iconSize: 21,),
                 labelText: "IM",
                 fillColor: Colors.grey[200],
                   filled: false,

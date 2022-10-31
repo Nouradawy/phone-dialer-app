@@ -226,7 +226,7 @@ else {
 
         // BlocProvider(create:(context)=> ChatAppCubit()),
         BlocProvider(create: (context)=>NativeBridge()..phonestateEvents()),
-        BlocProvider(create:(context)=> PhoneContactsCubit()..GetRawContacts()),
+        BlocProvider(create:(context)=> PhoneContactsCubit()..GetRawContacts(false)),
         BlocProvider(create: (context)=> AppCubit()),
         BlocProvider(create: (context)=>ProfileCubit()),
         BlocProvider(create: (context)=>PhoneLogsCubit()),

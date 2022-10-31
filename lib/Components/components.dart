@@ -91,7 +91,7 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
         padding: const EdgeInsets.only(top:16.0,right:15),
         child: InkWell(
           onTap:(){
-            PhoneContactsCubit.get(context).GetRawContacts();
+            PhoneContactsCubit.get(context).GetRawContacts(true);
           },
           child: Stack(
             children: [

@@ -71,14 +71,7 @@ class ContactsScreen extends StatelessWidget {
                                //Todo: CacheHelper saving fblist
                             Navigator.of(context).push(MaterialPageRoute(
                                 builder: (BuildContext context) => ContactDetails(
-                                  contact,
-                                  onContactDelete: (AppContact _contact) {
-                                    PhoneContactsCubit.get(context).GetRawContacts();
-                                    Navigator.of(context).pop();
-                                    },
-                                  onContactUpdate: (AppContact _contact) {
-                                    PhoneContactsCubit.get(context).GetRawContacts();
-                                    },)
+                                  contact,)
                             ));
                             },
                               title: Text(
@@ -104,11 +97,9 @@ class ContactsScreen extends StatelessWidget {
 
 
 class ContactDetails extends StatelessWidget {
-  ContactDetails(this.contact, {required this.onContactUpdate, required this.onContactDelete});
+  ContactDetails(this.contact);
 
   final AppContact contact;
-  final Function(AppContact) onContactUpdate;
-  final Function(AppContact) onContactDelete;
 
   @override
   Widget build(BuildContext context) {

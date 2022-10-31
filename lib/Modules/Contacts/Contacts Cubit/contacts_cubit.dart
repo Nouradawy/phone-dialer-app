@@ -63,6 +63,13 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
   bool NoteEditting=false;
   bool FavIsSelected=false;
   bool BlockIsSelected=false;
+  bool DetailsIsChanged = false;
+  bool PhoneNumberUpdate = false;
+  bool EmailAddressUpdate = false;
+  bool AddressUpdate = false;
+  bool EventsUpdate = false;
+  bool ChatUpdate = false;
+  var EventPickerValue;
   TextEditingController NotesController= TextEditingController();
 
   void TextFormFieldInitialize(List NumbersInAccount , AppContact contact){
@@ -225,43 +232,54 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
     emit(DropDownDisplayName());
   }
 
-  void ContactUpdate(AppContact contact,context){
+  Future<void> ContactUpdate(AppContact contact,context) async {
 
-      contact.info?.phones.clear();
       for (int i = 0; i < PhoneNumberController.length; i++) {
-        PhoneNumberController[i].text.isNotEmpty ? contact.info?.phones.add(Phone(PhoneNumberController[i].text, label: PhoneSideMenuController[i])) : null;
+        if(PhoneNumberUpdate==true&& PhoneNumberController[i].text.isNotEmpty) {
+          contact.info?.phones[i]=Phone(PhoneNumberController[i].text, label: PhoneSideMenuController[i]);
+        }
       }
 
 
-    contact.info?.emails.clear();
+
     for(int i=0 ; i<EmailAddressController.length ; i++) {
-      EmailAddressController[i].text.isNotEmpty?contact.info?.emails.add(Email(EmailAddressController[i].text , label:EmailSideMenuController[i])):null;
+      if(EmailAddressUpdate==true && EmailAddressController[i].text.isNotEmpty) {
+        contact.info?.emails[i]=Email(EmailAddressController[i].text, label: EmailSideMenuController[i]);
+      }
 
     }
-    // //
-    contact.info?.addresses.clear();
+
+
     for(int i=0 ; i<AddressController.length; i++) {
-      AddressController[i].text.isNotEmpty?contact.info?.addresses.add(Address(AddressController[i].text , label: AddressSideMenuController[i])):null;
+      if(AddressUpdate==true &&AddressController[i].text.isNotEmpty ) {
+        contact.info?.addresses[i] = Address(AddressController[i].text, label: AddressSideMenuController[i]);
+      }
     }
     // //
-    contact.info?.events.clear();
+
     for(int i=0 ; i<EventController.length ; i++) {
-      EventController[i].text.isNotEmpty?contact.info?.events.add(Event(year:DateFormat('yMMMd').parse(EventController[i].text).year,month: DateFormat('yMMMd').parse(EventController[i].text).month, day: DateFormat('yMMMd').parse(EventController[i].text).day)):null;
+      if(EventsUpdate ==true && EventController[i].text.isNotEmpty) {
+        contact.info?.events[i] = Event(
+            year: DateFormat('yMMMd').parse(EventController[i].text).year,
+            month: DateFormat('yMMMd').parse(EventController[i].text).month,
+            day: DateFormat('yMMMd').parse(EventController[i].text).day);
+      }
     }
-    // //
-    contact.info?.socialMedias.clear();
+
+
 
       for (int i = 0; i < ChatController.length; i++) {
-        ChatController[i].text.isNotEmpty? contact.info?.socialMedias.add(SocialMedia(ChatController[i].text, label: ChatSideMenuController[i])) : null;
+        if(ChatUpdate==true && ChatController[i].text.isNotEmpty) {
+        contact.info?.socialMedias[i] = SocialMedia(ChatController[i].text, label: ChatSideMenuController[i]);
       }
+    }
 
     WebsiteController.text.isNotEmpty?contact.info?.websites.clear():null;
     WebsiteController.text.isNotEmpty?contact.info?.websites.add(Website(WebsiteController.text,label: WebsiteLabel.homepage)):null;
 
 
-
-
-    contact.info?.update();
+    await contact.info?.update();
+    GetRawContacts(true);
     Navigator.pop(context);
     PhoneContactsCubit.get(context).PhoneNumberController.clear();
     PhoneContactsCubit.get(context).PhoneSideMenuController.clear();
@@ -275,6 +293,7 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
     PhoneContactsCubit.get(context).EventSideMenuController.clear();
     emit(ChatAddSuccessState());
   }
+
   void ContactCancel(AppContact contact,context){
     Navigator.pop(context);
     PhoneContactsCubit.get(context).PhoneNumberController.clear();
@@ -352,7 +371,7 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
 
 
 
-  Future<void> GetRawContacts() async {
+  Future<void> GetRawContacts(bool ContactReSync) async {
     List colors = [
       Colors.green,
       Colors.indigo,
@@ -382,37 +401,42 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
     }).toList();
 
     Contacts =_contacts;
-
-    Contacts.forEach((element) {
-
-      if(element.info!.displayName.isNotEmpty&&element.info!.name.first.isNotEmpty||element.info!.phones.isNotEmpty)
-      {
-        element.info!.thumbnail == null ? ContactsNoThumb.add(element) : null;
-        if (element.info?.isStarred == true) {
-          FavoratesContacts.add(element);
-        }
-
-        element.info?.accounts.forEach((e) {
-          if (e.type.isNotEmpty || e.name.isNotEmpty) {
-            DefaultPhoneAccounts.add({
-              "AccountType": e.type,
-              "AccountName": e.name,
-              "rawId": e.rawId,
-              "mimetypes": e.mimetypes,
-            });
+    if(ContactReSync==false)
+    {
+      Contacts.forEach((element) {
+        if (element.info!.displayName.isNotEmpty && element.info!.name.first.isNotEmpty || element.info!.phones.isNotEmpty) {
+          element.info!.thumbnail == null ? ContactsNoThumb.add(element) : null;
+          if (element.info?.isStarred == true) {
+            FavoratesContacts.add(element);
           }
-        });
-      } else
-        {
+
+          element.info?.accounts.forEach((e) {
+            if (e.type.isNotEmpty || e.name.isNotEmpty) {
+              DefaultPhoneAccounts.add({
+                "AccountType": e.type,
+                "AccountName": e.name,
+                "rawId": e.rawId,
+                "mimetypes": e.mimetypes,
+              });
+            }
+          });
+          FavoratesItemColors(FavoratesContacts.length, true);
+          final ids = DefaultPhoneAccounts.map((e) => e["AccountName"]).toSet();
+          DefaultPhoneAccounts.retainWhere((element) => ids.remove(element["AccountName"]));
+        } else {
           Contacts.removeAt(Contacts.indexOf(element));
         }
-    });
+      });
 
-    FavoratesItemColors(FavoratesContacts.length,true);
+    } else {
+      Contacts.forEach((element) {
+        if (element.info!.displayName.isEmpty && element.info!.name.first.isEmpty || element.info!.phones.isEmpty) {
+          Contacts.removeAt(Contacts.indexOf(element));
+        }
+      });
+    }
 
-    final ids = DefaultPhoneAccounts.map((e) => e["AccountName"]).toSet();
-    DefaultPhoneAccounts.retainWhere((element) => ids.remove(element["AccountName"]));
-      emit(RawContactsSuccessState());
+    emit(RawContactsSuccessState());
   }
 
   void GetCallerID(PhoneNumberQuery) {
