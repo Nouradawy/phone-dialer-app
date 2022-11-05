@@ -82,7 +82,7 @@ class Home extends StatelessWidget{
               // onChangeRawSecond: (value) => print('onChangeRawSecond $value'),
               // onChangeRawMinute: (value) => print('onChangeRawMinute $value'),
             ));
-            // BgLauncher.bringAppToForeground();
+            BgLauncher.bringAppToForeground();
             Navigator.pushAndRemoveUntil(context,
               MaterialPageRoute(builder: (BuildContext context) => InCallScreen()),
                   (Route<dynamic>route)=>false,);

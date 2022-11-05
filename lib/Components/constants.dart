@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_contacts/contact.dart';
+import 'package:screen_state/screen_state.dart';
 
 import '../Modules/profile/Profile Cubit/profile_cubit.dart';
 
@@ -140,6 +141,7 @@ bool  initialState = true;
 bool isGuest = false;
 bool isRejected = false;
 late StreamSubscription<dynamic> Accelerometerstream;
+late StreamSubscription<ScreenStateEvent> ScreenStateSubscription;
 int CreateUniqueId(){
   return DateTime.now().microsecondsSinceEpoch.remainder(100000);
 }

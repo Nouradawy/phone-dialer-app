@@ -457,7 +457,7 @@ class InCallScreen extends StatelessWidget {
     );
   }
 double BackgroundImageH=0;
-
+bool? Record =false;
   Column InCallButtons(BuildContext context  , isRinging ,NativeBridge Cubit , ThemeCubit themeCubit) {
     double Screenhight =MediaQuery.of(context).size.height +  MediaQuery.of(context).padding.bottom;
     return isRinging?Column(
