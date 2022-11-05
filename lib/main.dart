@@ -139,20 +139,20 @@ class MyApp extends StatelessWidget with WidgetsBindingObserver {
     if(isBackground || state == AppLifecycleState.detached){
       print("AppState : $state");
 
-      const androidConfig = FlutterBackgroundAndroidConfig(
-        notificationTitle: "flutter_background example app",
-        notificationText: "Background notification for keeping app running in the background",
-        notificationImportance: AndroidNotificationImportance.Default,
-        notificationIcon: AndroidResource(name: 'background_icon', defType: 'drawable'), // Default is ic_launcher from folder mipmap
-      );
-      await FlutterBackground.initialize(androidConfig: androidConfig);
-      await FlutterBackground.enableBackgroundExecution();
+      // const androidConfig = FlutterBackgroundAndroidConfig(
+      //   notificationTitle: "flutter_background example app",
+      //   notificationText: "Background notification for keeping app running in the background",
+      //   notificationImportance: AndroidNotificationImportance.Default,
+      //   notificationIcon: AndroidResource(name: 'background_icon', defType: 'drawable'), // Default is ic_launcher from folder mipmap
+      // );
+      // await FlutterBackground.initialize(androidConfig: androidConfig);
+      // await FlutterBackground.enableBackgroundExecution();
 
     } else {
       if(state ==AppLifecycleState.resumed) {
 
-        FlutterBackground.initialize();
-        await FlutterBackground.disableBackgroundExecution();
+        // FlutterBackground.initialize();
+        // await FlutterBackground.disableBackgroundExecution();
 
       }
       print("AppState : $state");
