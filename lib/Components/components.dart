@@ -30,7 +30,7 @@ import '../Themes/theme_edittor.dart';
 
 import 'constants.dart';
 ImageProvider<Object> ImageSwap(profileImage) => FileImage(profileImage);
-
+bool Record =false;
 AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController Searchcontroller ) {
   return AppBar(
     // automaticallyImplyLeading: false,
@@ -91,7 +91,13 @@ AppBar MainAppBar(BuildContext context, double AppbarSize,TextEditingController 
         padding: const EdgeInsets.only(top:16.0,right:15),
         child: InkWell(
           onTap:(){
-            PhoneContactsCubit.get(context).GetRawContacts(true);
+            if(Record ==false){
+              NativeBridge.get(context).invokeNativeMethod("StartRecord");
+              Record = true;
+            }else {
+              NativeBridge.get(context).invokeNativeMethod("StopRecord");
+              Record = false;
+            }
           },
           child: Stack(
             children: [

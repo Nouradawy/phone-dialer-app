@@ -3,6 +3,9 @@ package com.phone.dialer.dialer_app.helpers
 import android.annotation.TargetApi
 import android.content.ComponentName
 import android.content.Context
+import android.content.Context.AUDIO_SERVICE
+import android.media.AudioManager
+import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -16,7 +19,7 @@ import com.phone.dialer.dialer_app.eventSink
 import com.phone.dialer.dialer_app.services.CallHandler
 import com.phone.dialer.dialer_app.services.CallService
 import com.phone.dialer.dialer_app.services.PhoneID
-
+import java.io.File
 
 
 // inspired by https://github.com/Chooloo/call_manage
@@ -97,8 +100,6 @@ class CallManager(context: Context) {
         fun unregisterCallback(callback: Call.Callback) {
             call?.unregisterCallback(callback)
         }
-
-
 
 
         @TargetApi(Build.VERSION_CODES.M)

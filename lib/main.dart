@@ -11,9 +11,11 @@ import 'package:dialer_app/Themes/theme_config.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_background/flutter_background.dart';
+import 'package:flutter/services.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:screen_state/screen_state.dart';
 import 'Components/components.dart';
 import 'Components/constants.dart';
 import 'Layout/Cubit/cubit.dart';
@@ -37,7 +39,7 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   showToast(text: 'on BackGround', state: ToastStates.SUCCESS,);
 }
 
-
+void backgroundMain (){}
 
 // Future<void> callbackDispatcher() async {
 //   Workmanager().executeTask((task, inputData) async {
@@ -58,6 +60,8 @@ void main() async {
   await CacheHelper.init();
   token = CacheHelper.getData(key: 'token');
 
+
+
   if (await Permission.contacts.request().isGranted) {
     ContactsPermission=true;
   }
@@ -70,9 +74,10 @@ void main() async {
     MicrophonePermission=true;
   }
 
-  // var channel = const MethodChannel('com.example/background_service');
-  // var callbackHandle = PluginUtilities.getCallbackHandle(backgroundMain);
-  // channel.invokeMethod('startService', callbackHandle?.toRawHandle());
+
+  var channel = const MethodChannel('com.example/background_service');
+  var callbackHandle = PluginUtilities.getCallbackHandle(backgroundMain);
+  channel.invokeMethod('startService', callbackHandle?.toRawHandle());
 
 
   String NotificationToken = FirebaseMessaging.instance.getToken().toString();
@@ -126,7 +131,7 @@ class MyApp extends StatelessWidget with WidgetsBindingObserver {
   final Widget homeScreen;
 
 
-  const MyApp({
+   MyApp({
     // required this.themeSwitch,
     required this.homeScreen,
   });
@@ -135,24 +140,22 @@ class MyApp extends StatelessWidget with WidgetsBindingObserver {
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     super.didChangeAppLifecycleState(state);
 
-    final isBackground = state == AppLifecycleState.paused;
-    if(isBackground || state == AppLifecycleState.detached){
+    final isBackground = state == AppLifecycleState.inactive;
+    if(isBackground || state == AppLifecycleState.paused){
       print("AppState : $state");
+      try {
+        ScreenStateSubscription = Screen().screenStateStream!.listen((ScreenStateEvent event){
+          print("Screen State : "+event.toString());
+        });
 
-      // const androidConfig = FlutterBackgroundAndroidConfig(
-      //   notificationTitle: "flutter_background example app",
-      //   notificationText: "Background notification for keeping app running in the background",
-      //   notificationImportance: AndroidNotificationImportance.Default,
-      //   notificationIcon: AndroidResource(name: 'background_icon', defType: 'drawable'), // Default is ic_launcher from folder mipmap
-      // );
-      // await FlutterBackground.initialize(androidConfig: androidConfig);
-      // await FlutterBackground.enableBackgroundExecution();
+      } on ScreenStateException catch (exception) {
+        print(exception);
+      }
+
 
     } else {
       if(state ==AppLifecycleState.resumed) {
-
-        // FlutterBackground.initialize();
-        // await FlutterBackground.disableBackgroundExecution();
+        ScreenStateSubscription.cancel();
 
       }
       print("AppState : $state");

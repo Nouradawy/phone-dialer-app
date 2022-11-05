@@ -51,18 +51,19 @@ dependencies:
   azlistview: ^2.0.0
 
   fluttertoast: ^8.0.9
-  firebase_core: ^1.20.0
-  firebase_auth: ^3.5.1
+  firebase_core: ^2.1.1
+  firebase_auth: ^4.1.0
 
-  cloud_firestore: ^3.4.9
+  cloud_firestore: ^4.0.3
   focused_menu: ^1.0.5
   proximity_sensor: ^1.0.2
   sensors_plus: ^1.4.1
   system_alert_window: ^1.1.2
 
   awesome_notifications: ^0.7.2
-  firebase_storage: ^10.3.3
-  firebase_messaging: ^12.0.1
+  firebase_storage: ^11.0.3
+  firebase_messaging: ^14.0.3
+
 
   ndialog: ^4.1.1
   action_slider: ^0.6.0
@@ -82,7 +83,7 @@ dependencies:
   workmanager: ^0.5.0
   bg_launcher: 0.0.1
   url_launcher: ^6.1.5
-  flutter_background: ^1.1.0
+  screen_state: ^2.0.0
 
 dev_dependencies:
   flutter_test:

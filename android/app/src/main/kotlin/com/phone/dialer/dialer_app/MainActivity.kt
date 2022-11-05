@@ -2,15 +2,20 @@ package com.phone.dialer.dialer_app
 
 
 //import com.phone.dialer.dialer_app.services.Callcallback
-import android.app.ActivityManager
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+import android.accessibilityservice.AccessibilityService
+import android.app.Service
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.*
 import android.os.PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK
 import android.os.PowerManager.RELEASE_FLAG_WAIT_FOR_NO_PROXIMITY
+import android.util.Log
+import android.view.accessibility.AccessibilityEvent
 import androidx.annotation.NonNull
 import androidx.annotation.RequiresApi
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.phone.dialer.dialer_app.activities.CallActivity
 import com.phone.dialer.dialer_app.helpers.CallManager
 import com.phone.dialer.dialer_app.services.BLockList
@@ -26,6 +31,7 @@ var eventSink : EventChannel.EventSink? = null
 
 
 class MainActivity : FlutterActivity() {
+
 
     @RequiresApi(Build.VERSION_CODES.O)
 //    private fun createNotificationChannel() {
@@ -59,6 +65,7 @@ class MainActivity : FlutterActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
+
         super.configureFlutterEngine(flutterEngine)
         eventChannel = EventChannel(flutterEngine.dartExecutor.binaryMessenger,EVEENT_CHANNEL)
         eventChannel.setStreamHandler(MyStreamHandler(context))
@@ -71,23 +78,24 @@ class MainActivity : FlutterActivity() {
 
 
 
+
 //        CallManager(context).RegisterPhoneAccount()
 //        CallManager(context).AddNewCall()
 
 
-//        MethodChannel(binaryMessenger, "com.example/background_service").apply {
-//            setMethodCallHandler { method, result ->
-//                if (method.method == "startService") {
-//                    val callbackRawHandle = method.arguments as Long
-//                    BackgroundService.startService(this@MainActivity, callbackRawHandle)
-//                    result.success(null)
-//                }
-//
-//                else {
-//                    result.notImplemented()
-//                }
-//            }
-//        }
+        MethodChannel(binaryMessenger, "com.example/background_service").apply {
+            setMethodCallHandler { method, result ->
+                if (method.method == "startService") {
+                    val callbackRawHandle = method.arguments as Long
+                    BackgroundService.startService(this@MainActivity, callbackRawHandle)
+                    result.success(null)
+                }
+
+                else {
+                    result.notImplemented()
+                }
+            }
+        }
 
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, platform).setMethodCallHandler {
 
@@ -242,9 +250,6 @@ class MainActivity : FlutterActivity() {
                 var number: MutableList<String> = call.arguments as MutableList<String>
                 BLockList = number
                 println(BLockList)
-
-            }
-            if(states.equals("Processes")) {
 
             }
 
