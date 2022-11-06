@@ -189,7 +189,7 @@ class ContactDetails extends StatelessWidget {
                       GestureDetector(
                           onTap: (){
                             PhoneContactsCubit.get(context).ContactEdit= !PhoneContactsCubit.get(context).ContactEdit;
-                            PhoneContactsCubit.get(context).Daillerinput();
+                            PhoneContactsCubit.get(context).ScreenRefresh();
                           },
                           child: ContactAvatar(contact, 70)),
                       SizedBox(width: 10),
@@ -711,7 +711,7 @@ class ContactDetails extends StatelessWidget {
               PhoneContactsCubit.get(context).ContactEdit==false?Container():GestureDetector(
                 onTap: (){
                   PhoneContactsCubit.get(context).ContactEdit= !PhoneContactsCubit.get(context).ContactEdit;
-                  PhoneContactsCubit.get(context).Daillerinput();
+                  PhoneContactsCubit.get(context).ScreenRefresh();
                 },
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX:6,sigmaY: 6),
@@ -1093,14 +1093,14 @@ void OpenWarning(context,AppContact contact,index) async{
                   Row(children: [
                     Radio(value: 1, groupValue: PhoneContactsCubit.get(context).RadioIndex, onChanged: (value){
                       PhoneContactsCubit.get(context).RadioIndex=value.hashCode;
-                      PhoneContactsCubit.get(context).Daillerinput();
+                      PhoneContactsCubit.get(context).ScreenRefresh();
                     }),
                     Text("Block ${contact.info?.phones[index].number} only")
                   ]),
                   Row(children: [
                     Radio(value: 2, groupValue: PhoneContactsCubit.get(context).RadioIndex, onChanged: (value){
                       PhoneContactsCubit.get(context).RadioIndex=value.hashCode;
-                      PhoneContactsCubit.get(context).Daillerinput();
+                      PhoneContactsCubit.get(context).ScreenRefresh();
                     }),
                     Text("Block all contact numbers")
                   ]),
@@ -1129,7 +1129,7 @@ void OpenWarning(context,AppContact contact,index) async{
                   defaultButton(
                     onPressed: (){
                       Navigator.pop(context);
-                      PhoneContactsCubit.get(context).Daillerinput();
+                      PhoneContactsCubit.get(context).ScreenRefresh();
                     },
                     width: 150,
                     Title: "Cancel",

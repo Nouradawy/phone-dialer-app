@@ -495,7 +495,7 @@ class PhoneContactsCubit extends Cubit<PhoneContactStates>{
 
     emit(isShowenSuccessState());
   }
-  void Daillerinput(){
+  void ScreenRefresh(){
     emit(dailerInputSuccessstate());
   }
 

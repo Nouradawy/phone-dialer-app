@@ -133,6 +133,7 @@ class RenderBlendMask extends RenderProxyBox {
 
 List<Contact>? contactsfilterd;
 int? NotesPageIndex;
+
 bool ContactsPermission = false;
 bool MicrophonePermission = false;
 bool PhonePermision =false;
@@ -140,6 +141,7 @@ bool proximityValues = false;
 bool  initialState = true;
 bool isGuest = false;
 bool isRejected = false;
+ScreenStateEvent? ScreenState;
 late StreamSubscription<dynamic> Accelerometerstream;
 late StreamSubscription<ScreenStateEvent> ScreenStateSubscription;
 int CreateUniqueId(){

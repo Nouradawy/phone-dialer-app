@@ -45,7 +45,7 @@ class PhoneLogScreen extends StatelessWidget {
 
       });
       Future.delayed(Duration(seconds: 1),(){
-        PhoneContactsCubit.get(context).Daillerinput();
+        PhoneContactsCubit.get(context).ScreenRefresh();
 
       });
 
@@ -434,7 +434,7 @@ class PhoneLogScreen extends StatelessWidget {
                         }
                       });
                       print("$index : ${PhoneLogsCubit.get(context).PhoneCallLogs[index]["number"].toString()} : ${PhoneLogsCubit.get(context).AddToBlackList}");
-                      PhoneContactsCubit.get(context).Daillerinput();
+                      PhoneContactsCubit.get(context).ScreenRefresh();
                       showMenu(context: context,
                         items: [
                           PopupMenuItem(
@@ -474,7 +474,7 @@ class PhoneLogScreen extends StatelessWidget {
                                     CacheHelper.saveData(key: "BlackList", value: json.encode(BlockList));
                                     NativeBridge.get(context).invokeNativeMethod("BlackListUpdate", BlockList);
                                   }
-                                PhoneContactsCubit.get(context).Daillerinput();
+                                PhoneContactsCubit.get(context).ScreenRefresh();
                               },
                               child: Row(
                             children:  [
@@ -1127,7 +1127,7 @@ class PhoneLogScreen extends StatelessWidget {
         CacheHelper.saveData(key: "BlackList", value: json.encode(BlockList));
         NativeBridge.get(context).invokeNativeMethod("BlackListUpdate", BlockList);
         showToast(text: 'This number Removed Successfly', state: ToastStates.INFO , Textcolor:Colors.black);
-        PhoneContactsCubit.get(context).Daillerinput();
+        PhoneContactsCubit.get(context).ScreenRefresh();
       },
       title: Text(BlockList[index].toString()),
       trailing: Icon(Icons.remove_circle),

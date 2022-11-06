@@ -12,7 +12,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:screen_state/screen_state.dart';
@@ -59,7 +58,13 @@ void main() async {
   DioHelper.dio;
   await CacheHelper.init();
   token = CacheHelper.getData(key: 'token');
-
+  ScreenStateSubscription = Screen().screenStateStream!.listen((ScreenStateEvent event){
+    ScreenState = event;
+    if(event == ScreenStateEvent.SCREEN_OFF) {
+      const MethodChannel("NativeBridge").invokeMethod("sendToBackground");
+    }
+    print("Screen State : "+event.toString());
+  });
 
 
   if (await Permission.contacts.request().isGranted) {
@@ -127,38 +132,26 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget with WidgetsBindingObserver {
-  // final bool themeSwitch;
   final Widget homeScreen;
 
 
    MyApp({
-    // required this.themeSwitch,
     required this.homeScreen,
   });
+
 
   @override
   Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     super.didChangeAppLifecycleState(state);
-
     final isBackground = state == AppLifecycleState.inactive;
+
     if(isBackground || state == AppLifecycleState.paused){
       print("AppState : $state");
-      try {
-        ScreenStateSubscription = Screen().screenStateStream!.listen((ScreenStateEvent event){
-          print("Screen State : "+event.toString());
-        });
-
-      } on ScreenStateException catch (exception) {
-        print(exception);
-      }
-
 
     } else {
       if(state ==AppLifecycleState.resumed) {
-        ScreenStateSubscription.cancel();
 
       }
-      print("AppState : $state");
 
     }
   }
@@ -166,16 +159,16 @@ class MyApp extends StatelessWidget with WidgetsBindingObserver {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
     WidgetsBinding.instance.addObserver(this);
-
     // NotificationsController.initializeNotificationsEventListeners();
-
 
 if(PhonePermision ==false || ContactsPermission==false)
 {
   return MultiBlocProvider(
     providers: [
-
       // BlocProvider(create:(context)=> ChatAppCubit()),
       BlocProvider(create: (context)=>NativeBridge()..phonestateEvents()),
       BlocProvider(create: (context)=> AppCubit()),

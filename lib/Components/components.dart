@@ -681,7 +681,7 @@ bool DualSIM = false;
                     onTap: (){
                       dialerController.text = dialerController.text.isNotEmpty ? dialerController.text.substring(0,dialerController.text.length-1) : dialerController.text;
                       if(dialerController.text.isEmpty){
-                        PhoneContactsCubit.get(context).Daillerinput();
+                        PhoneContactsCubit.get(context).ScreenRefresh();
                         PhoneContactsCubit.get(context).isSearching = false;
                       }
 
@@ -689,7 +689,7 @@ bool DualSIM = false;
                     onLongPress: (){
                       dialerController.clear();
                       if(dialerController.text.isEmpty){
-                        PhoneContactsCubit.get(context).Daillerinput();
+                        PhoneContactsCubit.get(context).ScreenRefresh();
                       }
                       PhoneContactsCubit.get(context).isSearching = false;
                     },
@@ -1004,10 +1004,10 @@ Container DialPadButtonLayoutInCall(BuildContext context, double AppbarSize , St
 void AddingNumberToDialPad(TextEditingController dialerController, BuildContext context , String Num) {
   if(dialerController.text.isEmpty)
   {
-    PhoneContactsCubit.get(context).Daillerinput();
+    PhoneContactsCubit.get(context).ScreenRefresh();
     dialerController.text =Num;
   }else{
-    PhoneContactsCubit.get(context).Daillerinput();
+    PhoneContactsCubit.get(context).ScreenRefresh();
     dialerController.text =dialerController.text +Num;
   }
 }

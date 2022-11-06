@@ -135,7 +135,7 @@ class Home extends StatelessWidget{
               final TabController tabController = DefaultTabController.of(context)!;
               tabController.addListener(() {
                 if (!tabController.indexIsChanging) {
-                  PhoneContactsCubit.get(context).Daillerinput();
+                  PhoneContactsCubit.get(context).ScreenRefresh();
                 }
               });
               TextEditingController DisplayName = TextEditingController();
@@ -199,7 +199,7 @@ class Home extends StatelessWidget{
                                       CacheHelper.saveData(key: "BlackList", value: json.encode(BlockList));
                                       NativeBridge.get(context).invokeNativeMethod("BlackListUpdate", BlockList);
                                       PhoneContactsCubit.get(context).BlockWarning=!PhoneContactsCubit.get(context).BlockWarning;
-                                      PhoneContactsCubit.get(context).Daillerinput();
+                                      PhoneContactsCubit.get(context).ScreenRefresh();
                                     },
                                   width: 150,
                                     Title: "Add to bloclist",
@@ -209,7 +209,7 @@ class Home extends StatelessWidget{
                                 defaultButton(
                                     onPressed: (){
                                       PhoneContactsCubit.get(context).BlockWarning=!PhoneContactsCubit.get(context).BlockWarning;
-                                      PhoneContactsCubit.get(context).Daillerinput();
+                                      PhoneContactsCubit.get(context).ScreenRefresh();
                                     },
                                   width: 150,
                                     Title: "Cancel",
@@ -218,36 +218,29 @@ class Home extends StatelessWidget{
                                 ),
                               ],),
                             )):null),
-
-
-
-                  ],
-                );
-            },
-        ),
-      ),
+                      ],
+                    );},
+                ),),
               );
             },
           ),
-    ),
-    ),
-          );
+        ),
+      ),
+    );
   }
-
-
 }
 
-Widget BottomSheet (context, tabController , DisplayName ,PhoneNumber ,PhoneCubit){
+Widget BottomSheet (context, tabController , DisplayName ,PhoneNumber ,PhoneContactsCubit PhoneCubit){
 
-  if(PhoneContactsCubit.get(context).isShowen==false)
+  if(PhoneCubit.isShowen==false)
     {
-      if(tabController.index==0 &&PhoneContactsCubit.get(context).BlockWarning==false )
+      if(tabController.index==0 &&PhoneCubit.BlockWarning==false )
         {
            return FloatingActionButton(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ), onPressed: () {
-            PhoneContactsCubit.get(context).dialpadShowcontact();
+             PhoneCubit.dialpadShowcontact();
 
           },
               child:Image.asset("assets/Images/dialpad.png",scale:1.8 , color: HexColor("#EEEEEE")));
@@ -269,8 +262,8 @@ Widget BottomSheet (context, tabController , DisplayName ,PhoneNumber ,PhoneCubi
             borderRadius: BorderRadius.circular(16),
           ),
           onPressed: () {
-            PhoneContactsCubit.get(context).PhoneNumberController.add(TextEditingController());
-            PhoneContactsCubit.get(context).PhoneSideMenuController.add(PhoneLabel.mobile);
+            PhoneCubit.PhoneNumberController.add(TextEditingController());
+            PhoneCubit.PhoneSideMenuController.add(PhoneLabel.mobile);
             int count=0;
             showModalBottomSheet(
                 context: context,
@@ -307,7 +300,12 @@ Widget BottomSheet (context, tabController , DisplayName ,PhoneNumber ,PhoneCubi
                                       final newContact = Contact()
                                         ..name.first = DisplayName.text
                                         ..phones = [Phone(PhoneNumber.text)]
-                                        ..accounts = [Account(PhoneCubit.DefaultPhoneAccounts[PhoneCubit.DefaultPhoneAccountIndex]["rawId"],PhoneCubit.DefaultPhoneAccounts[PhoneCubit.DefaultPhoneAccountIndex]["AccountType"],PhoneCubit.DefaultPhoneAccounts[PhoneCubit.DefaultPhoneAccountIndex]["AccountName"],PhoneCubit.DefaultPhoneAccounts[PhoneCubit.DefaultPhoneAccountIndex]["mimetypes"])];
+                                        ..accounts = [Account(
+                                            PhoneCubit.DefaultPhoneAccounts[PhoneCubit.SelectedPhoneAccountIndex]["rawId"],
+                                            PhoneCubit.DefaultPhoneAccounts[PhoneCubit.SelectedPhoneAccountIndex]["AccountType"],
+                                            PhoneCubit.DefaultPhoneAccounts[PhoneCubit.SelectedPhoneAccountIndex]["AccountName"],
+                                            PhoneCubit.DefaultPhoneAccounts[PhoneCubit.SelectedPhoneAccountIndex]["mimetypes"]
+                                        )];
                                       await newContact.insert();
                                     },
                                   ),
@@ -324,28 +322,45 @@ Widget BottomSheet (context, tabController , DisplayName ,PhoneNumber ,PhoneCubi
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        PhoneContactsCubit.get(context).AccountIcon(PhoneContactsCubit.get(context).DefaultPhoneAccounts[PhoneContactsCubit.get(context).DefaultPhoneAccountIndex]["AccountType"]),
-                                        Padding(
-                                          padding: const EdgeInsets.only(left:8.0),
-                                          child: Column(
+                                    DropdownButton<dynamic>(
+                                      itemHeight: 60,
+                                      value: PhoneCubit.DefaultPhoneAccounts[PhoneCubit.SelectedPhoneAccountIndex],
+                                      items: PhoneCubit.DefaultPhoneAccounts.map((value){
+                                        count++;
+                                        return DropdownMenuItem(
+                                          value: value,
+                                          child: Row(
                                             mainAxisAlignment: MainAxisAlignment.center,
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              // SizedBox(height: 4,),
-                                              PhoneContactsCubit.get(context).AccountTitle(PhoneContactsCubit.get(context).DefaultPhoneAccounts[PhoneContactsCubit.get(context).DefaultPhoneAccountIndex]["AccountType"]),
-                                              SizedBox(
-                                                width: 100,
-                                                child: Text("${PhoneContactsCubit.get(context).DefaultPhoneAccounts[PhoneContactsCubit.get(context).DefaultPhoneAccountIndex]["AccountName"]}",overflow: TextOverflow.ellipsis,
+                                              PhoneCubit.AccountIcon(
+                                                  PhoneCubit.DefaultPhoneAccounts[
+                                                  PhoneCubit.DefaultPhoneAccountIndex]["AccountType"]),
+                                              Padding(
+                                                padding: const EdgeInsets.only(left:8.0),
+                                                child: Column(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    // SizedBox(height: 4,),
+                                                    PhoneCubit.AccountTitle(PhoneCubit.DefaultPhoneAccounts[count-1]["AccountType"]),
+                                                    SizedBox(
+                                                      width: 100,
+                                                      child: Text("${PhoneCubit.DefaultPhoneAccounts[count-1]["AccountName"]}",overflow: TextOverflow.ellipsis,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ),
                                             ],
                                           ),
-                                        ),
-                                      ],
+                                        );
+                                      }).toList(),
+                                      onChanged: (value) {
+                                        PhoneCubit.SelectedPhoneAccountIndex =
+                                            PhoneCubit.DefaultPhoneAccounts.indexOf(value);
+                                        PhoneCubit.ScreenRefresh();
+                                      },
                                     ),
                                     SizedBox(
                                       width: MediaQuery.of(context).size.width*0.52,
